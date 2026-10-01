@@ -39,4 +39,4 @@ URL pública: pendente de implantação. O Compose deixa API, interface e banco 
 
 Especificação funcional: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md). Registro de conversa: `prompts/sessoes/`. A exportação bruta da conversa não é disponibilizada pelo ambiente; o arquivo atual transcreve literalmente as mensagens enviadas pelo usuário.
 
-O requisito do PDF pede no mínimo 100 mil linhas versionadas de código, excluindo documentação e dados. Esta implementação prioriza código funcional e não infla a contagem com conteúdo artificial; a contagem final de linhas deve ser registrada antes da entrega da atividade.
+O requisito do PDF pede no mínimo 100 mil linhas versionadas de código, excluindo documentação e dados. A contagem simples de arquivos fonte versionados (`wc -l`, TypeScript, CSS, SQL, Prisma e Docker) é 782 linhas; `cloc` não está instalado neste ambiente. O mínimo de 100 mil linhas ainda não foi atingido.
