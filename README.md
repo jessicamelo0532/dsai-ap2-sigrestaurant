@@ -34,7 +34,7 @@ O backend NestJS, as migrações Prisma e a configuração PostgreSQL seguem em 
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
 - Modo frontend local: [`SPEC/2026-10-01-frontend-local.md`](SPEC/2026-10-01-frontend-local.md).
-- Ferramentas: Next.js, React, TypeScript e Docker; desenvolvimento assistido pelo Codex/GPT-6.
+- Ferramentas/stack: Next.js, React, TypeScript e Docker. Agente: Codex. Modelo: GPT-6.
 - Registro das mensagens do usuário: `prompts/sessoes/2026-10-01-codex.md`.
 
 ## Itens de entrega do PDF ainda pendentes
