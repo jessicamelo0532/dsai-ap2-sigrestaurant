@@ -40,6 +40,6 @@ O backend NestJS, as migrações Prisma e a configuração PostgreSQL seguem em 
 ## Itens de entrega do PDF ainda pendentes
 
 - Status da publicação: sistema publicado online na Vercel.
-- URL pública: não informada nesta conversa.
+- URL pública: https://dsai-ap1-sigrestaurant.vercel.app/
 - O PDF exige 100 mil linhas de código versionado. A contagem simples (`wc -l`) dos arquivos fonte versionados é 931 linhas; `cloc` não está instalado neste ambiente.
 - O ambiente não oferece exportação bruta das conversas; as mensagens do usuário foram transcritas no arquivo de sessão.
