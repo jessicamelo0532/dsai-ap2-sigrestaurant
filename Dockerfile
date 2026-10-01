@@ -21,7 +21,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=api-build /app /app
 EXPOSE 4000
-CMD ["sh", "-c", "npm --workspace apps/api run prisma:deploy && node apps/api/dist/main.js"]
+CMD ["sh", "-c", "npm --workspace apps/api run prisma:deploy && API_ENTRY=$(find apps/api/dist -type f -name main.js -print -quit) && test -n \"$API_ENTRY\" && node \"$API_ENTRY\""]
 
 FROM node:22-alpine AS web
 WORKDIR /app
