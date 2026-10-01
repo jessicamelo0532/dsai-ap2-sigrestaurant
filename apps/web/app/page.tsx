@@ -6,7 +6,7 @@ import {
   CreditCard, LayoutDashboard, Menu as MenuIcon, MoreHorizontal, Plus, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
-import { api, Expense, localDate, MenuItem, money, orderTotal, Report, Table } from '@/lib/api';
+import { storeRequest, Expense, localDate, MenuItem, money, orderTotal, Report, Table } from '@/lib/store';
 
 type Section = 'operacao' | 'cardapio' | 'financeiro';
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
@@ -33,7 +33,7 @@ export default function Home() {
 
   const refresh = useCallback(async () => {
     const [nextTables, nextMenu] = await Promise.all([
-      api<Table[]>('/tables'), api<MenuItem[]>('/menu-items?all=true'),
+      storeRequest<Table[]>('/tables'), storeRequest<MenuItem[]>('/menu-items?all=true'),
     ]);
     setTables(nextTables);
     setMenu(nextMenu);
@@ -43,7 +43,7 @@ export default function Home() {
   const loadReport = useCallback(async () => {
     const query = `from=${period.from}&to=${period.to}`;
     const [nextReport, nextExpenses] = await Promise.all([
-      api<Report>(`/reports/financial?${query}`), api<Expense[]>(`/expenses?${query}`),
+      storeRequest<Report>(`/reports/financial?${query}`), storeRequest<Expense[]>(`/expenses?${query}`),
     ]);
     setReport(nextReport);
     setExpenses(nextExpenses);
@@ -65,7 +65,7 @@ export default function Home() {
 
   async function run(action: () => Promise<unknown>, success?: string): Promise<boolean> {
     setBusy(true); setMessage('');
-    try { await action(); await refresh(); if (section === 'financeiro') await loadReport(); if (success) setMessage(success); return true; }
+    try { await action(); await refresh(); await loadReport(); if (success) setMessage(success); return true; }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Ocorreu um erro.'); return false; }
     finally { setBusy(false); }
   }
@@ -102,7 +102,7 @@ export default function Home() {
             </div>
             <div className="operation-grid">
               <div className="panel tables-panel"><div className="panel-heading"><div><h2>Salão</h2><p>Selecione uma mesa para abrir ou continuar uma comanda.</p></div><span className="live-count"><i />{tables.length} mesas</span></div>
-                <div className="table-grid">{tables.map((table) => <button key={table.id} onClick={() => setSelectedTable(table.id)} className={`table-card ${table.order ? 'occupied' : ''} ${selectedTable === table.id ? 'selected' : ''}`}><span className="table-top"><span className="table-dot" />Mesa {String(table.number).padStart(2, '0')}<span className="table-more" onClick={(event) => { event.stopPropagation(); if (window.confirm(`Remover a mesa ${table.number}?`)) run(() => api(`/tables/${table.id}`, { method: 'DELETE' })); }}><MoreHorizontal size={16} /></span></span><strong className="table-status">{table.order ? 'Em atendimento' : 'Livre'}</strong><span className="table-bottom"><span><Utensils size={13} />{table.capacity} lugares</span>{table.order && <b>{money(orderTotal(table.order))}</b>}</span></button>)}
+                <div className="table-grid">{tables.map((table) => <button key={table.id} onClick={() => setSelectedTable(table.id)} className={`table-card ${table.order ? 'occupied' : ''} ${selectedTable === table.id ? 'selected' : ''}`}><span className="table-top"><span className="table-dot" />Mesa {String(table.number).padStart(2, '0')}<span className="table-more" onClick={(event) => { event.stopPropagation(); if (window.confirm(`Remover a mesa ${table.number}?`)) run(() => storeRequest(`/tables/${table.id}`, { method: 'DELETE' })); }}><MoreHorizontal size={16} /></span></span><strong className="table-status">{table.order ? 'Em atendimento' : 'Livre'}</strong><span className="table-bottom"><span><Utensils size={13} />{table.capacity} lugares</span>{table.order && <b>{money(orderTotal(table.order))}</b>}</span></button>)}
                   {!tables.length && <div className="empty-state"><Utensils size={24} /><strong>O salão está vazio</strong><span>Adicione a primeira mesa para começar.</span></div>}
                 </div>
                 <div className="legend"><span><i className="legend-free" />Livre</span><span><i className="legend-busy" />Em atendimento</span><button onClick={() => setShowTableForm(true)}><Plus size={14} />Nova mesa</button></div>
@@ -110,8 +110,8 @@ export default function Home() {
               <div className="panel order-panel"><div className="panel-heading order-heading"><div><div className="eyebrow">COMANDA ATUAL</div><h2>{selected ? `Mesa ${String(selected.number).padStart(2, '0')}` : 'Escolha uma mesa'}</h2></div>{selected?.order && <span className="order-badge">ABERTA</span>}</div>
                 {!selected ? <div className="order-empty"><span className="empty-illustration"><Utensils size={23} /></span><strong>Selecione uma mesa</strong><p>A comanda e o cardápio aparecem aqui.</p></div> : <>
                   <div className="order-meta"><span><span className="table-dot" />{selected.order ? `Aberta às ${new Date(selected.order.openedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Mesa livre'}</span><span><Utensils size={13} />{selected.capacity} lugares</span></div>
-                  <div className="order-lines">{selected.order?.items.map((line) => <div className="order-line" key={line.id}><div className="line-copy"><strong>{line.nameSnapshot}</strong><small>{line.quantity} × {money(line.unitPrice)}</small></div><b>{money(Number(line.unitPrice) * line.quantity)}</b><button className="line-remove" aria-label="Remover item" onClick={() => run(() => api(`/orders/${selected.order!.id}/items/${line.id}`, { method: 'DELETE' }))}><X size={14} /></button></div>)}{!selected.order?.items.length && <div className="empty-order-copy">Nenhum item nesta comanda ainda.<br />Escolha algo gostoso no cardápio.</div>}</div>
-                  <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => run(() => api(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
+                  <div className="order-lines">{selected.order?.items.map((line) => <div className="order-line" key={line.id}><div className="line-copy"><strong>{line.nameSnapshot}</strong><small>{line.quantity} × {money(line.unitPrice)}</small></div><b>{money(Number(line.unitPrice) * line.quantity)}</b><button className="line-remove" aria-label="Remover item" onClick={() => run(() => storeRequest(`/orders/${selected.order!.id}/items/${line.id}`, { method: 'DELETE' }))}><X size={14} /></button></div>)}{!selected.order?.items.length && <div className="empty-order-copy">Nenhum item nesta comanda ainda.<br />Escolha algo gostoso no cardápio.</div>}</div>
+                  <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => run(() => storeRequest(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
                   <div className="order-total"><span>Total da comanda</span><strong>{money(orderTotal(selected.order))}</strong></div>
                   {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
@@ -119,7 +119,7 @@ export default function Home() {
             </div>
           </section>}
 
-          {section === 'cardapio' && <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => api(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => api(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />}
+          {section === 'cardapio' && <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />}
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>
             <div className="period-bar"><span><Clock3 size={15} />Período do relatório</span><label>De<input type="date" value={period.from} onChange={(event) => setPeriod((value) => ({ ...value, from: event.target.value }))} /></label><label>Até<input type="date" value={period.to} onChange={(event) => setPeriod((value) => ({ ...value, to: event.target.value }))} /></label><button className="button button-light" onClick={() => loadReport().catch((error: Error) => setMessage(error.message))}>Atualizar</button></div>
@@ -130,10 +130,10 @@ export default function Home() {
           </section>}
         </div>
       </section>
-      {showTableForm && <Modal title="Adicionar mesa" onClose={() => setShowTableForm(false)}><TableForm onCancel={() => setShowTableForm(false)} onSubmit={async (data) => { if (await run(() => api('/tables', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, mesa adicionada.')) setShowTableForm(false); }} /></Modal>}
-      {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? api(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : api('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
-      {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => api('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
-      {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { if (await run(() => api(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }), 'Pronto, conta fechada e mesa liberada.')) setPaymentOrderId(null); }} /></Modal>}
+      {showTableForm && <Modal title="Adicionar mesa" onClose={() => setShowTableForm(false)}><TableForm onCancel={() => setShowTableForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/tables', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, mesa adicionada.')) setShowTableForm(false); }} /></Modal>}
+      {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
+      {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
+      {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { if (await run(() => storeRequest(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }), 'Pronto, conta fechada e mesa liberada.')) setPaymentOrderId(null); }} /></Modal>}
     </main>
   );
 }
