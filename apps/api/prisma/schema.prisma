@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT
+  DEBIT
+  PIX
+}
+
+model DiningTable {
+  id        Int      @id @default(autoincrement())
+  number    Int      @unique
+  capacity  Int      @default(4)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model MenuItem {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  category    String      @default("Geral")
+  price       Decimal     @db.Decimal(10, 2)
+  available   Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  tableId       Int?
+  tableNumber   Int
+  status        OrderStatus   @default(OPEN)
+  paymentMethod PaymentMethod?
+  openedAt      DateTime      @default(now())
+  paidAt        DateTime?
+  table         DiningTable?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+
+  @@index([status, openedAt])
+  @@index([paidAt])
+}
+
+model OrderItem {
+  id            Int      @id @default(autoincrement())
+  orderId       Int
+  menuItemId    Int?
+  nameSnapshot  String
+  unitPrice     Decimal  @db.Decimal(10, 2)
+  quantity      Int
+  createdAt     DateTime @default(now())
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem      MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  incurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([incurredAt])
+}
