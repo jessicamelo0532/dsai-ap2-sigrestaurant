@@ -106,6 +106,15 @@ export class AppService {
     });
   }
 
+  async cancelOrder(id: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id } });
+      if (!order) throw new NotFoundException('Comanda não encontrada.');
+      if (order.status !== 'OPEN') throw new BadRequestException('Apenas comandas abertas podem ser canceladas.');
+      return tx.order.update({ where: { id }, data: { status: 'CANCELLED' }, include: orderInclude });
+    });
+  }
+
   async createExpense(dto: CreateExpenseDto) {
     const incurredAt = dto.incurredAt ? new Date(dto.incurredAt) : new Date();
     if (Number.isNaN(incurredAt.getTime())) throw new BadRequestException('Data da despesa inválida.');

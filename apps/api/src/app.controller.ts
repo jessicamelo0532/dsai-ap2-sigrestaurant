@@ -42,6 +42,7 @@ export class AppController {
     return this.app.removeOrderItem(id, itemId);
   }
   @Post('orders/:id/close') closeOrder(@Param('id', ParseIntPipe) id: number, @Body() dto: CloseOrderDto) { return this.app.closeOrder(id, dto); }
+  @Post('orders/:id/cancel') cancelOrder(@Param('id', ParseIntPipe) id: number) { return this.app.cancelOrder(id); }
 
   @Get('expenses') expenses(@Query('from') from?: string, @Query('to') to?: string) {
     const [start, end] = dateRange(from, to);
