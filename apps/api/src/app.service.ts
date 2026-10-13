@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service';
-import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
+import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 
@@ -125,6 +125,21 @@ export class AppService {
 
   listExpenses(from: Date, to: Date) {
     return this.prisma.expense.findMany({ where: { incurredAt: { gte: from, lt: to } }, orderBy: { incurredAt: 'desc' } });
+  }
+
+  async updateExpense(id: number, dto: UpdateExpenseDto) {
+    const expense = await this.prisma.expense.findUnique({ where: { id } });
+    if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    const incurredAt = dto.incurredAt !== undefined ? new Date(dto.incurredAt) : undefined;
+    if (incurredAt && Number.isNaN(incurredAt.getTime())) throw new BadRequestException('Data da despesa inválida.');
+    return this.prisma.expense.update({
+      where: { id },
+      data: {
+        ...(dto.description !== undefined ? { description: dto.description.trim() } : {}),
+        ...(dto.amount !== undefined ? { amount: new Prisma.Decimal(dto.amount) } : {}),
+        ...(incurredAt ? { incurredAt } : {}),
+      },
+    });
   }
 
   async deleteExpense(id: number) {

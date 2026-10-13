@@ -41,3 +41,9 @@ export class CreateExpenseDto {
   @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0.01) amount: number;
   @IsOptional() @IsString() incurredAt?: string;
 }
+
+export class UpdateExpenseDto {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(160) description?: string;
+  @IsOptional() @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0.01) amount?: number;
+  @IsOptional() @IsString() incurredAt?: string;
+}

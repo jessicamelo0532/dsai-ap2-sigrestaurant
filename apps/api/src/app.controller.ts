@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
+import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
 
 function dateRange(from?: string, to?: string) {
   const valid = (value?: string) => {
@@ -49,6 +49,7 @@ export class AppController {
     return this.app.listExpenses(start, end);
   }
   @Post('expenses') createExpense(@Body() dto: CreateExpenseDto) { return this.app.createExpense(dto); }
+  @Patch('expenses/:id') updateExpense(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateExpenseDto) { return this.app.updateExpense(id, dto); }
   @Delete('expenses/:id') deleteExpense(@Param('id', ParseIntPipe) id: number) { return this.app.deleteExpense(id); }
 
   @Get('reports/financial') report(@Query('from') from?: string, @Query('to') to?: string) {
