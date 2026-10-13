@@ -118,6 +118,13 @@ export class AppService {
     return this.prisma.expense.findMany({ where: { incurredAt: { gte: from, lt: to } }, orderBy: { incurredAt: 'desc' } });
   }
 
+  async deleteExpense(id: number) {
+    const expense = await this.prisma.expense.findUnique({ where: { id } });
+    if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    await this.prisma.expense.delete({ where: { id } });
+    return { success: true };
+  }
+
   async report(from: Date, to: Date) {
     const [expenses, paymentRows] = await Promise.all([
       this.prisma.expense.aggregate({ where: { incurredAt: { gte: from, lt: to } }, _sum: { amount: true }, _count: { id: true } }),

@@ -48,6 +48,7 @@ export class AppController {
     return this.app.listExpenses(start, end);
   }
   @Post('expenses') createExpense(@Body() dto: CreateExpenseDto) { return this.app.createExpense(dto); }
+  @Delete('expenses/:id') deleteExpense(@Param('id', ParseIntPipe) id: number) { return this.app.deleteExpense(id); }
 
   @Get('reports/financial') report(@Query('from') from?: string, @Query('to') to?: string) {
     const [start, end] = dateRange(from, to);
