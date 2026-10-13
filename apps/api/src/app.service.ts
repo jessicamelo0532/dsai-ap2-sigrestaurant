@@ -40,6 +40,10 @@ export class AppService {
     });
   }
 
+  getMenuItem(id: number) {
+    return this.requireMenuItem(id);
+  }
+
   createMenuItem(dto: CreateMenuItemDto) {
     return this.prisma.menuItem.create({ data: { ...dto, price: new Prisma.Decimal(dto.price), category: dto.category || 'Geral' } });
   }
@@ -142,6 +146,13 @@ export class AppService {
 
   async listOpenOrders() {
     return this.prisma.order.findMany({ where: { status: 'OPEN' }, include: orderInclude, orderBy: { openedAt: 'asc' } });
+  }
+
+  async getOrder(id: number) {
+    const order = await this.prisma.order.findUnique({ where: { id }, include: orderInclude });
+    if (!order) throw new NotFoundException('Comanda não encontrada.');
+    const total = order.items.reduce((sum, item) => sum.plus(item.unitPrice.mul(item.quantity)), new Prisma.Decimal(0));
+    return { ...order, total: total.toFixed(2) };
   }
 
   private async requireMenuItem(id: number) {

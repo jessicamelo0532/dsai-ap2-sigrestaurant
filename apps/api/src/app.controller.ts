@@ -28,11 +28,13 @@ export class AppController {
   @Post('tables/:id/items') addItem(@Param('id', ParseIntPipe) id: number, @Body() dto: AddOrderItemDto) { return this.app.addOrderItem(id, dto); }
 
   @Get('menu-items') menu(@Query('all') all?: string) { return this.app.listMenu(all === 'true'); }
+  @Get('menu-items/:id') menuItem(@Param('id', ParseIntPipe) id: number) { return this.app.getMenuItem(id); }
   @Post('menu-items') createMenu(@Body() dto: CreateMenuItemDto) { return this.app.createMenuItem(dto); }
   @Patch('menu-items/:id') updateMenu(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateMenuItemDto) { return this.app.updateMenuItem(id, dto); }
   @Delete('menu-items/:id') deleteMenu(@Param('id', ParseIntPipe) id: number) { return this.app.deleteMenuItem(id); }
 
   @Get('orders/open') openOrders() { return this.app.listOpenOrders(); }
+  @Get('orders/:id') order(@Param('id', ParseIntPipe) id: number) { return this.app.getOrder(id); }
   @Patch('orders/:id/items/:itemId') updateOrderItem(@Param('id', ParseIntPipe) id: number, @Param('itemId', ParseIntPipe) itemId: number, @Body() dto: UpdateOrderItemDto) {
     return this.app.updateOrderItem(id, itemId, dto);
   }
