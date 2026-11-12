@@ -45,6 +45,53 @@ jobs:
           path: apps/web/coverage/
           if-no-files-found: ignore
 
+  api:
+    name: API com PostgreSQL (build e testes)
+    # SPEC: SPEC/2026-11-12-reativacao-backend.md
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: restaurante
+          POSTGRES_PASSWORD: restaurante_ci
+          POSTGRES_DB: restaurante_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U restaurante"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Banco descartável do container de teste; o nome termina em _test (trava da suíte).
+      DATABASE_URL: postgresql://restaurante:restaurante_ci@localhost:5432/restaurante_test?schema=public
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      - name: Build da API
+        run: npm run build:api
+
+      - name: Testes de integração com cobertura
+        run: npm run test:api:coverage
+
+      - name: Publicar relatório de cobertura da API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-api
+          path: apps/api/coverage/
+          if-no-files-found: ignore
+
   duplicacao:
     name: Duplicação de código (jscpd, até 5%)
     runs-on: ubuntu-latest
