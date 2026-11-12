@@ -1,7 +1,7 @@
 # Reativação do backend NestJS em desenvolvimento e CI, com testes de integração
 
 **Data:** 2026-11-12  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova (depende de `SPEC/2026-11-12-integracao-continua.md`)  
 **Derroga:** em parte `SPEC/2026-10-01-frontend-local.md`, apenas no ponto em que API e Prisma ficam "sem participar do fluxo ativo": passam a participar do desenvolvimento e do CI. A publicação e o frontend não mudam.
@@ -124,3 +124,4 @@ Nenhuma regra nova. Os testes registram as regras que o código atual já implem
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-12 | Criação e aprovação por Jéssica Lopes Melo | aprovada |
+| 2026-11-12 | CA-01, CA-02, CA-03 e CA-05 verificados: execução 43320533827 do GitHub Actions com 57 testes passando contra PostgreSQL 16 (cobertura de linhas: 91,6% da API, 100% do `app.service.ts`) e frontend verde; suíte abortou localmente com banco "restaurante". O `Dockerfile` não precisou de ajuste (instalação conferida com o novo workspace). CA-04 (reverter regra e ver teste falhar) fica pendente de verificação manual, pois os motores do Prisma não puderam ser baixados no ambiente local | implementada |
