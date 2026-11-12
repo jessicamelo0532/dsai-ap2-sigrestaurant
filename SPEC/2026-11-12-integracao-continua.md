@@ -1,7 +1,7 @@
 # Integração contínua (CI) com GitHub Actions
 
 **Data:** 2026-11-12  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova (depende de `SPEC/2026-11-10-infraestrutura-de-testes.md`)  
 **Derroga:** n/a
@@ -114,3 +114,4 @@ Ter um pipeline no GitHub Actions que, a cada push e a cada PR para a `main`, ve
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-12 | Criação e aprovação por Jéssica Lopes Melo | aprovada |
+| 2026-11-12 | CA-01 a CA-04 verificados: execução 43307788857 no GitHub Actions com build, testes, duplicação e segredos verdes; npm audit registrou o alerta crítico do Next.js sem bloquear; teste quebrado de propósito fez o comando sair com 1 | implementada |
