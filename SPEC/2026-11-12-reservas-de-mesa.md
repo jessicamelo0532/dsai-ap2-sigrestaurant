@@ -1,7 +1,7 @@
 # Reservas de mesa (API)
 
 **Data:** 2026-11-12  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova (depende de `SPEC/2026-11-12-reativacao-backend.md`)  
 **Derroga:** n/a (acrescenta uma regra à remoção de mesas, RN-09; nenhuma regra histórica muda)
@@ -137,3 +137,4 @@ Permitir agendar, consultar, remarcar e acompanhar reservas de mesa pela API, im
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-12 | Criação e aprovação por Jéssica Lopes Melo, com regras provisórias P-1 a P-5 | aprovada |
+| 2026-11-12 | CA-01 a CA-08 verificados na execução 43325073094 do GitHub Actions: 124 testes da API passando contra PostgreSQL 16 (módulo de reservas com 95,9% das linhas cobertas) e checagem de migrações sem diferença. Mutações locais nas regras puras fizeram testes falharem. Perguntas P-1 a P-5 seguem abertas para o cliente | implementada |
