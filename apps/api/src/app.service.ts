@@ -29,6 +29,11 @@ export class AppService {
     if (!table) throw new NotFoundException('Mesa não encontrada.');
     const open = await this.prisma.order.findFirst({ where: { tableId: id, status: 'OPEN' } });
     if (open) throw new BadRequestException('Feche a comanda antes de remover esta mesa.');
+    // RN-09 da SPEC/2026-11-12-reservas-de-mesa.md
+    const booked = await this.prisma.reservation.findFirst({
+      where: { tableId: id, status: 'BOOKED', endsAt: { gt: new Date() } },
+    });
+    if (booked) throw new BadRequestException('Esta mesa tem reservas agendadas. Cancele ou remarque antes de remover.');
     await this.prisma.diningTable.delete({ where: { id } });
     return { success: true };
   }
