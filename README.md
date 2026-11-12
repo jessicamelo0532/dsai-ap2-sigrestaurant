@@ -16,6 +16,22 @@ Abra http://localhost:3000. Para encerrar, use `docker compose down`.
 
 Importe o repositório e defina `apps/web` como **Root Directory**. Não é necessário configurar `NEXT_PUBLIC_API_URL`, `DATABASE_URL` ou outros serviços externos no modo frontend.
 
+## Executar os testes
+
+Com as dependências instaladas, na raiz do repositório:
+
+```bash
+npm test
+```
+
+O comando delega ao workspace `apps/web` e executa a suíte Vitest uma única vez (`vitest run`). Para observação contínua durante o desenvolvimento:
+
+```bash
+npm --workspace apps/web run test:watch
+```
+
+Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node`, sem rede, banco ou serviços externos.
+
 ## Funcionalidades disponíveis
 
 - Criar e remover mesas; mesas ocupadas não podem ser removidas.
