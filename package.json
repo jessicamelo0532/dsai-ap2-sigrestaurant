@@ -6,6 +6,7 @@
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
     "start": "npm --workspace apps/web run start",
-    "test": "npm --workspace apps/web run test"
+    "test": "npm --workspace apps/web run test",
+    "test:coverage": "npm --workspace apps/web run test:coverage"
   }
 }
