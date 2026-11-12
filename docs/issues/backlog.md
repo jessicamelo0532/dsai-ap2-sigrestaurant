@@ -2,6 +2,8 @@
 
 Issues do backlog, na ordem de dependência. Cada item exige **SPEC datada em `SPEC/` antes** do primeiro commit de código (métrica de specs da Aula 09).
 
+O texto completo de cada issue está em [`bodies/`](bodies/) — um arquivo por fase, com o corpo, os labels e as dependências. A publicação no GitHub é feita por `node scripts/publicar-issues.mjs` (idempotente: issue já existente com o mesmo título é pulada).
+
 ## Fase 0 — Bloqueadores de avaliação
 
 | # | Issue | Depende de |
