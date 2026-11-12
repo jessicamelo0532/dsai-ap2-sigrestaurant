@@ -8,7 +8,8 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "coverage": "vitest run --coverage --coverage.include='lib/**' --coverage.include='app/**'"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

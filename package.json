@@ -7,6 +7,11 @@
     "build": "npm --workspace apps/web run build",
     "start": "npm --workspace apps/web run start",
     "test": "npm --workspace apps/web run test",
-    "test:coverage": "npm --workspace apps/web run test:coverage"
+    "test:coverage": "npm --workspace apps/web run test:coverage",
+    "coverage": "npm --workspace apps/web run coverage",
+    "metricas": "node scripts/metricas.mjs"
+  },
+  "devDependencies": {
+    "jscpd": "^4.0.5"
   }
 }
