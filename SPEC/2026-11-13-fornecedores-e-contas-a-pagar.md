@@ -1,7 +1,7 @@
 # Fornecedores, compras e contas a pagar (API)
 
 **Data:** 2026-11-13  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-13-estoque-de-ingredientes.md` (a compra gera entrada de estoque)  
 **Derroga:** n/a. Acrescenta uma regra às despesas (RN-10): a despesa gerada pelo pagamento de uma compra não é editada nem removida pela rota de despesas.
@@ -123,3 +123,4 @@ Registrar uma compra uma vez só e ter, a partir dela, a entrada no estoque, a c
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-13 | Criação e aprovação por Jéssica Lopes Melo, com regras provisórias P-1 a P-4 | aprovada |
+| 2026-11-13 | CA-01 a CA-06 verificados na execução 43365664589 do GitHub Actions: 248 testes da API passando contra PostgreSQL 16 (módulo de compras com 98,9% das linhas cobertas) e checagem de migrações sem diferença. Nove mutações nas regras puras fizeram testes falharem (uma sobreviveu na primeira rodada e ganhou caso de teste: CPF com dígito verificador 0). "Próximos 7 dias" do resumo = hoje e os 6 dias seguintes. Perguntas P-1 a P-4 seguem abertas para o cliente | implementada |
