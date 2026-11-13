@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service';
+import { deductStockForSale } from './stock/stock-sale';
 import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
@@ -106,6 +107,8 @@ export class AppService {
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Esta comanda já foi fechada.');
       if (!order.items.length) throw new BadRequestException('Adicione pelo menos um item antes de fechar a conta.');
+      // Baixa de estoque na mesma transação (SPEC/2026-11-13-estoque-de-ingredientes.md, RF-08).
+      await deductStockForSale(tx, order);
       await tx.order.update({ where: { id }, data: { status: 'PAID', paymentMethod: dto.paymentMethod, paidAt: new Date() } });
       return tx.order.findUnique({ where: { id }, include: orderInclude });
     });

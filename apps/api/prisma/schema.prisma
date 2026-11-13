@@ -27,6 +27,21 @@ enum ReservationStatus {
   NO_SHOW
 }
 
+enum StockUnit {
+  UN
+  KG
+  G
+  L
+  ML
+}
+
+enum StockMovementType {
+  PURCHASE
+  LOSS
+  ADJUSTMENT
+  SALE
+}
+
 model DiningTable {
   id           Int           @id @default(autoincrement())
   number       Int           @unique
@@ -37,27 +52,29 @@ model DiningTable {
 }
 
 model MenuItem {
-  id          Int         @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   name        String
   description String?
-  category    String      @default("Geral")
-  price       Decimal     @db.Decimal(10, 2)
-  available   Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  category    String       @default("Geral")
+  price       Decimal      @db.Decimal(10, 2)
+  available   Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   orderItems  OrderItem[]
+  recipeItems RecipeItem[]
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
-  tableId       Int?
-  tableNumber   Int
-  status        OrderStatus   @default(OPEN)
-  paymentMethod PaymentMethod?
-  openedAt      DateTime      @default(now())
-  paidAt        DateTime?
-  table         DiningTable?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
+  id             Int             @id @default(autoincrement())
+  tableId        Int?
+  tableNumber    Int
+  status         OrderStatus     @default(OPEN)
+  paymentMethod  PaymentMethod?
+  openedAt       DateTime        @default(now())
+  paidAt         DateTime?
+  table          DiningTable?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  items          OrderItem[]
+  stockMovements StockMovement[]
 
   @@index([status, openedAt])
   @@index([paidAt])
@@ -104,4 +121,43 @@ model Reservation {
 
   @@index([tableId, startsAt])
   @@index([startsAt])
+}
+
+model Ingredient {
+  id              Int             @id @default(autoincrement())
+  name            String          @unique
+  unit            StockUnit
+  quantity        Decimal         @default(0) @db.Decimal(12, 3)
+  minimumQuantity Decimal         @default(0) @db.Decimal(12, 3)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  recipeItems     RecipeItem[]
+  movements       StockMovement[]
+}
+
+model RecipeItem {
+  id           Int        @id @default(autoincrement())
+  menuItemId   Int
+  ingredientId Int
+  quantity     Decimal    @db.Decimal(12, 3)
+  menuItem     MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([menuItemId, ingredientId])
+  @@index([ingredientId])
+}
+
+model StockMovement {
+  id           Int               @id @default(autoincrement())
+  ingredientId Int
+  type         StockMovementType
+  quantity     Decimal           @db.Decimal(12, 3)
+  orderId      Int?
+  note         String?
+  createdAt    DateTime          @default(now())
+  ingredient   Ingredient        @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  order        Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([ingredientId, createdAt])
+  @@index([orderId])
 }
