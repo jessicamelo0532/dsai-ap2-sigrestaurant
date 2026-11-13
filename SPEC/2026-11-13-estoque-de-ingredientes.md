@@ -1,7 +1,7 @@
 # Estoque de ingredientes com ficha técnica e baixa automática (API)
 
 **Data:** 2026-11-13  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova (depende de `SPEC/2026-11-12-reservas-de-mesa.md`, que criou o molde de módulos da API)  
 **Derroga:** em parte a lista "fora de escopo permanente" de `SPEC/2026-10-01-restaurante.md`, no item **estoque**. Justificativa: a dupla assumiu o projeto como FDE e propõe o estoque como evolução; a decisão final é confirmada com o cliente (P-1). O fechamento de conta ganha um efeito novo (RN-08); suas regras atuais não mudam.
@@ -126,3 +126,4 @@ Saber, a qualquer momento, quanto há de cada ingrediente, o histórico de cada 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-13 | Criação e aprovação por Jéssica Lopes Melo, com regras provisórias P-1 a P-4 | aprovada |
+| 2026-11-13 | CA-01 a CA-08 verificados na execução 43363922645 do GitHub Actions: 182 testes da API passando contra PostgreSQL 16 (módulo de estoque com 97,3% das linhas cobertas) e checagem de migrações sem diferença. Sete mutações nas regras puras fizeram testes falharem. O CI pegou erros de quantidade lançados de forma síncrona, corrigidos no serviço. Perguntas P-1 a P-4 seguem abertas para o cliente | implementada |
