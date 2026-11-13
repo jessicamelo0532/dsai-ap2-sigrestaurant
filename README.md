@@ -86,6 +86,21 @@ Rotas em `/api/stock` e `/api/menu-items/:id/recipe` (SPEC [`2026-11-13-estoque-
 
 Ao fechar uma conta, os ingredientes da ficha técnica de cada item vendido saem do estoque automaticamente. A baixa não bloqueia o fechamento: se faltar ingrediente, o estoque fica negativo e aparece nos alertas (provisório até a resposta do cliente).
 
+### Fornecedores, compras e contas a pagar (somente API)
+
+Rotas em `/api/suppliers`, `/api/purchases` e `/api/payables` (SPEC [`2026-11-13-fornecedores-e-contas-a-pagar.md`](SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md)):
+
+| Método e rota | Uso |
+|---|---|
+| `GET/POST /api/suppliers`, `GET/PATCH/DELETE /api/suppliers/:id` | Fornecedores (CPF/CNPJ opcional e validado; `?all=true` inclui inativos) |
+| `POST /api/purchases` | Registrar compra: fornecedor, nota, data, vencimento e itens (ingrediente, quantidade, custo unitário) |
+| `GET /api/purchases?supplierId=&status=`, `GET /api/purchases/:id` | Consultar compras |
+| `POST /api/purchases/:id/pay` | Pagar (forma e data); gera a despesa no relatório financeiro |
+| `POST /api/purchases/:id/cancel` | Cancelar compra em aberto, estornando o estoque |
+| `GET /api/payables` | Contas a pagar por vencimento, com situação e resumo |
+
+Registrar a compra dá entrada no estoque. Pagar cria a despesa "Compra #N - Fornecedor" na data do pagamento, que só pode ser mudada pela própria compra. Cancelar só é possível se o estoque ainda tiver tudo o que entrou.
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
