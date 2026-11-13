@@ -56,12 +56,16 @@ export function applyLoss(currentMilli: number, lossMilli: number, ingredient: {
   return currentMilli - lossMilli;
 }
 
-// RN-06: ingrediente não repete na ficha técnica.
-export function assertNoDuplicateIngredients(ingredientIds: number[], nameOf: (id: number) => string): void {
+// RN-06: ingrediente não repete na ficha técnica (também usada nas compras).
+export function assertNoDuplicateIngredients(
+  ingredientIds: number[],
+  nameOf: (id: number) => string,
+  where = 'na ficha técnica',
+): void {
   const seen = new Set<number>();
   for (const id of ingredientIds) {
     if (seen.has(id)) {
-      throw new BadRequestException(`O ingrediente ${nameOf(id)} aparece mais de uma vez na ficha técnica.`);
+      throw new BadRequestException(`O ingrediente ${nameOf(id)} aparece mais de uma vez ${where}.`);
     }
     seen.add(id);
   }
