@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { fromMilli, requiredForSale, toMilli } from './stock-rules';
+import { recordMovement } from './stock-ledger';
+import { requiredForSale, toMilli } from './stock-rules';
 
 // RF-08 e RN-08: baixa dos ingredientes de uma comanda paga.
 // Roda dentro da transação do fechamento de conta (AppService.closeOrder).
@@ -23,9 +24,6 @@ export async function deductStockForSale(
 
   // Ordem fixa por id para duas baixas simultâneas não travarem uma à outra.
   for (const [ingredientId, milli] of [...required].sort(([a], [b]) => a - b)) {
-    await tx.stockMovement.create({
-      data: { ingredientId, type: 'SALE', quantity: fromMilli(-milli), orderId: order.id },
-    });
-    await tx.ingredient.update({ where: { id: ingredientId }, data: { quantity: { decrement: fromMilli(milli) } } });
+    await recordMovement(tx, { ingredientId, type: 'SALE', deltaMilli: -milli, orderId: order.id });
   }
 }
