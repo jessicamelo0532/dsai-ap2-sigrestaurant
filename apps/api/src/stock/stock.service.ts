@@ -71,19 +71,19 @@ export class StockService {
   }
 
   // RF-02
-  registerEntry(id: number, dto: StockEntryDto) {
+  async registerEntry(id: number, dto: StockEntryDto) {
     const amount = positiveMilli(dto.quantity);
     return this.move(id, 'PURCHASE', (current) => current + amount, dto.note);
   }
 
   // RF-03 e RN-03
-  registerLoss(id: number, dto: StockLossDto) {
+  async registerLoss(id: number, dto: StockLossDto) {
     const amount = positiveMilli(dto.quantity);
     return this.move(id, 'LOSS', (current, ingredient) => applyLoss(current, amount, ingredient), dto.note);
   }
 
   // RF-04 e RN-04: grava só a diferença; sem diferença, sem movimentação.
-  registerCount(id: number, dto: StockCountDto) {
+  async registerCount(id: number, dto: StockCountDto) {
     const counted = nonNegativeMilli(dto.countedQuantity, COUNT_MESSAGE);
     return this.move(id, 'ADJUSTMENT', () => counted, dto.note);
   }
