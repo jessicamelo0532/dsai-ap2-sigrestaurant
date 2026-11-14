@@ -2,9 +2,12 @@ FROM node:22-alpine AS dependencies
 WORKDIR /app
 COPY package.json ./
 COPY apps/web/package.json apps/web/package.json
-RUN npm install
+RUN npm install --workspace apps/web
 
 FROM dependencies AS web-build
+# A URL da API é embutida no bundle do navegador: precisa vir no build.
+ARG NEXT_PUBLIC_API_URL=""
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
 RUN npm --workspace apps/web run build
 
