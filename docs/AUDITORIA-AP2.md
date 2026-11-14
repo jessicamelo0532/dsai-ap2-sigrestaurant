@@ -172,7 +172,7 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 
 ### Fase 0 — Bloqueadores de avaliação (sem produto)
 1. `SPEC/2026-11-12-conformidade-ap2.md` — SPEC datada deste plano.
-2. `.github/workflows/ci.yml` — pipeline: install → build → `npm test` → cobertura → `jscpd` ≤ 5% → `gitleaks` → `npm audit` → verificação dos trailers `Agent:`/`Spec:` → verificação de sessão por dia de commit → contagem `cloc --diff`.
+2. `.github/workflows/ci.yml` — pipeline: install → build → `npm test` → cobertura → `jscpd` ≤ 5% → `gitleaks` → `npm audit` → verificação dos trailers `Agent:`/`Spec:` → verificação de sessão por dia de commit → contagem `cloc --diff`. **Atualização 2026-11-12:** o pipeline foi implementado pela segunda integrante na branch `jessica/ci-pipeline` (SPEC `2026-11-12-integracao-continua.md`); o workflow desta branch foi removido para não duplicar a definição de CI.
 3. `package-lock.json` versionado (autorizado nesta sessão) — habilita `npm audit` e installs reprodutíveis. **Gerado com `npm install --include=optional`** — ver §3.10 para a armadilha do lockfile e a regra do CI.
 4. Script de métrica (`scripts/metricas.mjs`) reproduzindo localmente o que o extrator automático mede.
 5. Issue "Primeiras impressões" + issues de backlog (depende de `gh auth login`).
