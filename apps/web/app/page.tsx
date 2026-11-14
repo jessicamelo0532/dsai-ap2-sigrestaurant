@@ -1,12 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
   CreditCard, LayoutDashboard, Menu as MenuIcon, MoreHorizontal, Plus, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
-import { storeRequest, Expense, localDate, MenuItem, money, orderTotal, Report, Table } from '@/lib/store';
+import {
+  apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, orderTotal, Report, setMode,
+  storeRequest, subscribeMode, Table,
+} from '@/lib/store';
+import { hasLocalData, importLocalData } from '@/lib/import-local';
 
 type Section = 'operacao' | 'cardapio' | 'financeiro';
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
@@ -30,6 +34,9 @@ export default function Home() {
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
+  const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
+  const [apiState, setApiState] = useState<'idle' | 'online' | 'offline'>('idle');
+  const [localDataAvailable, setLocalDataAvailable] = useState(false);
 
   const refresh = useCallback(async () => {
     const [nextTables, nextMenu] = await Promise.all([
@@ -53,6 +60,18 @@ export default function Home() {
     refresh().catch((error: Error) => setMessage(error.message));
   }, [refresh]);
   useEffect(() => {
+    setLocalDataAvailable(hasLocalData());
+  }, [mode]);
+  useEffect(() => {
+    let active = true;
+    if (mode === 'api') {
+      checkApi().then((online) => { if (active) setApiState(online ? 'online' : 'offline'); });
+    } else {
+      setApiState('idle');
+    }
+    return () => { active = false; };
+  }, [mode]);
+  useEffect(() => {
     loadReport().catch((error: Error) => setMessage(error.message));
   }, [loadReport]);
   useEffect(() => {
@@ -66,8 +85,45 @@ export default function Home() {
   async function run(action: () => Promise<unknown>, success?: string): Promise<boolean> {
     setBusy(true); setMessage('');
     try { await action(); await refresh(); await loadReport(); if (success) setMessage(success); return true; }
-    catch (error) { setMessage(error instanceof Error ? error.message : 'Ocorreu um erro.'); return false; }
+    catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ocorreu um erro.');
+      if (mode === 'api') setApiState('offline');
+      return false;
+    }
     finally { setBusy(false); }
+  }
+
+  async function retryApi() {
+    setBusy(true);
+    const online = await checkApi();
+    setApiState(online ? 'online' : 'offline');
+    if (online) {
+      await refresh().catch((error: Error) => setMessage(error.message));
+      await loadReport().catch((error: Error) => setMessage(error.message));
+    }
+    setBusy(false);
+  }
+
+  async function runImport() {
+    setBusy(true); setMessage('');
+    try {
+      const report = await importLocalData(apiBaseUrl);
+      const parts = [
+        report.tablesCreated ? `${report.tablesCreated} mesas` : null,
+        report.menuItemsCreated ? `${report.menuItemsCreated} itens de cardápio` : null,
+        report.expensesCreated ? `${report.expensesCreated} despesas` : null,
+        report.orderLinesSent ? `${report.orderLinesSent} linhas de comanda` : null,
+        report.skipped ? `${report.skipped} ignorados` : null,
+      ].filter(Boolean).join(', ');
+      setMessage(parts ? `Pronto, dados importados para o servidor: ${parts}.` : 'Pronto, os dados deste navegador já estavam no servidor.');
+      await refresh();
+      await loadReport();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Ocorreu um erro.');
+      if (mode === 'api') setApiState('offline');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -91,6 +147,17 @@ export default function Home() {
       <section className="main-area">
         <header className="topbar"><div className="breadcrumb"><span>Restaurante</span><span className="crumb-slash">/</span><strong>{section === 'operacao' ? 'Visão geral' : section === 'cardapio' ? 'Cardápio' : 'Financeiro'}</strong></div><div className="top-actions"><span className="open-status"><i />Operação aberta</span><span className="date-chip"><Clock3 size={15} />{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}</span></div></header>
         <div className="content">
+          <ModeBar
+            mode={mode}
+            apiState={apiState}
+            busy={busy}
+            localDataAvailable={localDataAvailable}
+            canConnect={Boolean(apiBaseUrl)}
+            onRetry={retryApi}
+            onUseLocal={() => setMode('local')}
+            onUseApi={() => setMode('api')}
+            onImport={runImport}
+          />
           {message && <div className={message.startsWith('Pronto') ? 'notice success' : 'notice'} role="status">{message}<button onClick={() => setMessage('')} aria-label="Fechar aviso"><X size={15} /></button></div>}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
@@ -135,6 +202,64 @@ export default function Home() {
       {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
       {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { if (await run(() => storeRequest(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }), 'Pronto, conta fechada e mesa liberada.')) setPaymentOrderId(null); }} /></Modal>}
     </main>
+  );
+}
+
+type ModeBarProps = {
+  mode: 'api' | 'local';
+  apiState: 'idle' | 'online' | 'offline';
+  busy: boolean;
+  localDataAvailable: boolean;
+  canConnect: boolean;
+  onRetry: () => void;
+  onUseLocal: () => void;
+  onUseApi: () => void;
+  onImport: () => void;
+};
+
+function ModeBar({ mode, apiState, busy, localDataAvailable, canConnect, onRetry, onUseLocal, onUseApi, onImport }: ModeBarProps) {
+  if (mode === 'api' && apiState === 'offline') {
+    return (
+      <div className="mode-bar offline" role="status">
+        <span className="mode-dot down" />
+        <div className="mode-copy">
+          <strong>Servidor indisponível</strong>
+          <p>Não foi possível falar com a API. Nenhuma conta foi registrada sem você ver: escolha como seguir.</p>
+        </div>
+        <div className="mode-actions">
+          <button className="button button-light" onClick={onRetry} disabled={busy}>Tentar de novo</button>
+          <button className="button button-dark" onClick={onUseLocal}>Usar o modo local</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'api') {
+    return (
+      <div className="mode-bar online" role="status">
+        <span className="mode-dot up" />
+        <div className="mode-copy">
+          <strong>Conectado ao servidor</strong>
+          <p>As mesas, comandas e despesas ficam no banco e podem ser vistas por toda a equipe.</p>
+        </div>
+        <div className="mode-actions">
+          {localDataAvailable && <button className="button button-light" onClick={onImport} disabled={busy}>Importar meus dados</button>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mode-bar local" role="status">
+      <span className="mode-dot local" />
+      <div className="mode-copy">
+        <strong>Dados só neste navegador</strong>
+        <p>As mesas e as contas ficam neste aparelho. Para a equipe inteira ver a mesma comanda, conecte ao servidor.</p>
+      </div>
+      <div className="mode-actions">
+        {canConnect && <button className="button button-light" onClick={onUseApi} disabled={busy}>Conectar ao servidor</button>}
+      </div>
+    </div>
   );
 }
 

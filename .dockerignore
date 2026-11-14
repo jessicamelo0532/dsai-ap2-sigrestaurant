@@ -9,3 +9,6 @@ node_modules
 **/.env.*
 coverage
 prompts
+
+# artefato incremental do TypeScript: invalida o build da imagem
+**/*.tsbuildinfo

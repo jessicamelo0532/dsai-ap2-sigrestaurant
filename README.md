@@ -16,6 +16,25 @@ docker compose up --build
 
 Abra http://localhost:3000. Para encerrar, use `docker compose down`.
 
+A stack sobe três serviços: **PostgreSQL** (porta 55433), a **API** (porta 4000) e o **frontend** (porta 3000). A API aplica as migrações e carrega os dados de demonstração ao subir.
+
+## Os dois modos de operação
+
+O app funciona em dois modos, e a interface sempre mostra em qual deles está:
+
+| Modo | Quando | Onde os dados ficam |
+|---|---|---|
+| **Servidor** | `NEXT_PUBLIC_API_URL` está definida no build | no PostgreSQL, pela API — a equipe inteira vê a mesma comanda |
+| **Navegador** | sem `NEXT_PUBLIC_API_URL` (é o caso da publicação na Vercel) | no `localStorage` deste navegador |
+
+- **API fora do ar**: o app **não** troca de modo sozinho. Aparece uma faixa vermelha com "Tentar de novo" e "Usar o modo local" — quem opera o caixa vê que o servidor não responde.
+- **Dados do navegador para o servidor**: com a API no ar e dados neste navegador, a faixa oferece "Importar meus dados". Mesas e itens que já existem no servidor são reaproveitados, não duplicados, e nada é apagado do navegador.
+- **Para forçar o modo servidor** em um build local, monte a imagem com o argumento:
+
+```bash
+docker compose build --build-arg NEXT_PUBLIC_API_URL=http://localhost:4000/api web
+```
+
 ## Publicar na Vercel
 
 Importe o repositório e defina `apps/web` como **Root Directory**. Não é necessário configurar `NEXT_PUBLIC_API_URL`, `DATABASE_URL` ou outros serviços externos no modo frontend.

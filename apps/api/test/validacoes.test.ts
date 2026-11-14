@@ -61,3 +61,42 @@ describe('validação dos dados de entrada (DTOs)', () => {
     expect(await invalidFields(CreateExpenseDto, { description: 'Gás', amount: -5 })).toEqual(['amount']);
   });
 });
+
+describe('mensagens de validação em pt-BR (SPEC/2026-11-14-frontend-em-modo-api)', () => {
+  async function messagesFor<T extends object>(dto: new () => T, body: Record<string, unknown>) {
+    const errors = await validate(plainToInstance(dto, body), { whitelist: true, forbidNonWhitelisted: true });
+    return errors.flatMap((error) => Object.values(error.constraints ?? {}));
+  }
+
+  it('preço inválido devolve a mensagem do produto', async () => {
+    expect(await messagesFor(CreateMenuItemDto, { name: 'Tacacá', price: 0 })).toContain('Informe um preço válido.');
+    expect(await messagesFor(CreateMenuItemDto, { name: 'Tacacá', price: 10.555 })).toContain('Informe um preço válido.');
+  });
+
+  it('nome vazio devolve a mensagem do produto', async () => {
+    expect(await messagesFor(CreateMenuItemDto, { name: '', price: 10 })).toContain('Informe o nome do item.');
+  });
+
+  it('mesa inválida devolve a mensagem do produto', async () => {
+    expect(await messagesFor(CreateTableDto, { number: 0 })).toContain('Informe um número de mesa válido.');
+    expect(await messagesFor(CreateTableDto, { number: 1, capacity: 0 })).toContain(
+      'Informe uma quantidade de lugares válida.'
+    );
+  });
+
+  it('quantidade fora da faixa devolve a mensagem do produto', async () => {
+    expect(await messagesFor(AddOrderItemDto, { menuItemId: 1, quantity: 501 })).toContain(
+      'Informe uma quantidade entre 1 e 500.'
+    );
+  });
+
+  it('despesa inválida devolve a mensagem do produto', async () => {
+    expect(await messagesFor(CreateExpenseDto, { description: 'Gás', amount: 0 })).toContain('Informe um valor válido.');
+  });
+
+  it('forma de pagamento inválida devolve a mensagem do produto', async () => {
+    expect(await messagesFor(CloseOrderDto, { paymentMethod: 'BOLETO' })).toContain(
+      'Selecione uma forma de pagamento válida.'
+    );
+  });
+});
