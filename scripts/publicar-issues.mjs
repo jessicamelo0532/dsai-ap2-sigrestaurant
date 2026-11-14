@@ -106,6 +106,14 @@ function publish(issue, created, skipped) {
     const url = output.trim().split('\n').pop();
     created.push({ title: issue.title, url });
     console.log(`criada  ${url}`);
+  } catch (error) {
+    if (/issues are disabled|410|Gone/i.test(String(error.message))) {
+      throw new Error(
+        'O GitHub recusou a criacao: as Issues deste repositorio estao desabilitadas. ' +
+          'Habilite em Settings -> General -> Features -> Issues e rode o script de novo.'
+      );
+    }
+    throw error;
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
