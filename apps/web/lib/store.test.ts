@@ -294,3 +294,38 @@ describe('store — lacunas de regra fechadas (SPEC/2026-11-14-cobertura-das-lac
     expect(open).toHaveLength(0);
   });
 });
+
+describe('store — paridade de validação entre os modos (SPEC/2026-11-14-frontend-em-modo-api)', () => {
+  beforeEach(() => {
+    const storage = memoryStorage();
+    vi.stubGlobal('window', { localStorage: storage });
+    storage.setItem(STORAGE_KEY, JSON.stringify({ tables: [], menu: [], orders: [], expenses: [] }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('T-19: preço com mais de duas casas é recusado, como na API', async () => {
+    await expect(
+      storeRequest('/menu-items', {
+        method: 'POST',
+        body: JSON.stringify({ name: 'Tacacá', price: 10.555 }),
+      })
+    ).rejects.toThrow('Informe um preço válido.');
+  });
+
+  it('T-19b: despesa com mais de duas casas é recusada, como na API', async () => {
+    await expect(
+      storeRequest('/expenses', {
+        method: 'POST',
+        body: JSON.stringify({ description: 'Gás', amount: 120.005 }),
+      })
+    ).rejects.toThrow('Informe um valor válido.');
+  });
+
+  it('T-19c: preço válido com duas casas é aceito', async () => {
+    const item = await createMenuItem('Tacacá', 18.5);
+    expect(item.price).toBe('18.50');
+  });
+});

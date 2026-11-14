@@ -1,15 +1,12 @@
-export type OrderItem = { id: number; menuItemId: number | null; nameSnapshot: string; unitPrice: string; quantity: number };
-export type Order = { id: number; tableNumber: number; status: 'OPEN' | 'PAID' | 'CANCELLED'; paymentMethod?: string | null; openedAt: string; paidAt?: string | null; items: OrderItem[] };
-export type Table = { id: number; number: number; capacity: number; order: Order | null };
-export type MenuItem = { id: number; name: string; description: string | null; category: string; price: string; available: boolean };
-export type Expense = { id: number; description: string; amount: string; incurredAt: string };
-export type Report = { paidOrders: number; revenue: string; expenses: string; expenseCount: number; balance: string; payments: Record<string, string> };
+import { localDate, orderTotalCents } from './format';
+import { isValidMoney } from './validacao';
+import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
 
 type StoredTable = Omit<Table, 'order'>;
 type StoredOrder = Order & { tableId: number | null };
 type RestaurantData = { tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[] };
 
-const STORAGE_KEY = 'mesa-clara.data.v1';
+export const STORAGE_KEY = 'mesa-clara.data.v1';
 const PAYMENT_METHODS = ['CASH', 'CREDIT', 'DEBIT', 'PIX'];
 
 function initialData(): RestaurantData {
@@ -66,10 +63,6 @@ function moneyDecimal(cents: number) {
   return (cents / 100).toFixed(2);
 }
 
-function orderTotalCents(order: Order) {
-  return order.items.reduce((total, line) => total + Math.round(Number(line.unitPrice) * 100) * line.quantity, 0);
-}
-
 function dateFilter(date: string, from: string, to: string) {
   const day = localDate(new Date(date));
   return day >= from && day <= to;
@@ -81,8 +74,8 @@ function bodyOf(init?: RequestInit): Record<string, unknown> {
   catch { throw new Error('Os dados enviados são inválidos.'); }
 }
 
-/** Frontend-only data adapter. All state is local to this browser profile. */
-export async function storeRequest<T>(path: string, init?: RequestInit): Promise<T> {
+/** Adaptador local: mesma interface da API, com os dados neste navegador. */
+export async function localRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const url = new URL(path, 'http://mesa-clara.local');
   const method = (init?.method || 'GET').toUpperCase();
   const data = readData();
@@ -119,7 +112,7 @@ export async function storeRequest<T>(path: string, init?: RequestInit): Promise
     const name = String(payload.name ?? '').trim();
     const price = Number(payload.price);
     if (!name) throw new Error('Informe o nome do item.');
-    if (!Number.isFinite(price) || price <= 0) throw new Error('Informe um preço válido.');
+    if (!isValidMoney(price)) throw new Error('Informe um preço válido.');
     const item: MenuItem = {
       id: nextId(data.menu), name, description: String(payload.description ?? '').trim() || null,
       category: String(payload.category ?? 'Geral').trim() || 'Geral', price: price.toFixed(2), available: payload.available !== false,
@@ -136,7 +129,7 @@ export async function storeRequest<T>(path: string, init?: RequestInit): Promise
     if (payload.category !== undefined) item.category = String(payload.category).trim() || 'Geral';
     if (payload.price !== undefined) {
       const price = Number(payload.price);
-      if (!Number.isFinite(price) || price <= 0) throw new Error('Informe um preço válido.');
+      if (!isValidMoney(price)) throw new Error('Informe um preço válido.');
       item.price = price.toFixed(2);
     }
     if (payload.available !== undefined) item.available = Boolean(payload.available);
@@ -206,7 +199,7 @@ export async function storeRequest<T>(path: string, init?: RequestInit): Promise
     const amount = Number(payload.amount);
     const incurredAt = payload.incurredAt ? new Date(String(payload.incurredAt)) : new Date();
     if (!description) throw new Error('Informe a descrição da despesa.');
-    if (!Number.isFinite(amount) || amount <= 0) throw new Error('Informe um valor válido.');
+    if (!isValidMoney(amount)) throw new Error('Informe um valor válido.');
     if (Number.isNaN(incurredAt.getTime())) throw new Error('Data da despesa inválida.');
     const expense = { id: nextId(data.expenses), description, amount: amount.toFixed(2), incurredAt: incurredAt.toISOString() };
     data.expenses.push(expense);
@@ -235,6 +228,7 @@ export async function storeRequest<T>(path: string, init?: RequestInit): Promise
   return result as T;
 }
 
-export const money = (value: string | number) => Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-export const orderTotal = (order: Order | null) => order ? orderTotalCents(order) / 100 : 0;
-export const localDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+/** Le os dados crus do navegador, para a importação para a API. */
+export function readLocalData(): RestaurantData {
+  return readData();
+}
