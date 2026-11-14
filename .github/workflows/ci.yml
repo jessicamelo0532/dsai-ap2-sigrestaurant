@@ -1,0 +1,105 @@
+# Pipeline de integração contínua do Mesa Clara (AP2).
+# Especificação: SPEC/2026-11-12-integracao-continua.md
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-e-testes:
+    name: Build e testes com cobertura
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      - name: Build do frontend
+        run: npm run build
+
+      - name: Testes com cobertura
+        run: npm run test:coverage
+
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: apps/web/coverage/
+          if-no-files-found: ignore
+
+  duplicacao:
+    name: Duplicação de código (jscpd, até 5%)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Medir duplicação
+        run: >
+          npx --yes jscpd@4 apps
+          --min-tokens 50
+          --threshold 5
+          --ignore "**/node_modules/**,**/.next/**,**/coverage/**,**/dist/**"
+          --reporters console
+
+  segredos:
+    name: Segredos no histórico (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código com histórico completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar gitleaks
+        env:
+          GITLEAKS_VERSION: 8.24.3
+        run: |
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar xz gitleaks
+          ./gitleaks version
+
+      - name: Procurar segredos
+        run: ./gitleaks git . --redact --no-banner --exit-code 1
+
+  dependencias:
+    name: Alertas críticos de dependências (npm audit)
+    runs-on: ubuntu-latest
+    # Não bloqueante até a atualização do Next.js (pendência P-1 da SPEC).
+    continue-on-error: true
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Gerar lockfile temporário (não versionado)
+        run: npm install --package-lock-only --no-fund
+
+      - name: Auditar dependências
+        run: npm audit --audit-level=critical
