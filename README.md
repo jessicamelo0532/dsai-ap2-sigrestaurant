@@ -116,6 +116,8 @@ Registrar a compra dá entrada no estoque. Pagar cria a despesa "Compra #N - For
 
 ## Como a dupla trabalha
 
+O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.md): da fila de issues até a entrega.
+
 - **Integração contínua**: o pipeline da branch `jessica/ci-pipeline` roda em todo push e em todo PR para a `main` (build, testes com cobertura, duplicação, segredos e `npm audit`). Ver [`SPEC/2026-11-12-integracao-continua.md`](SPEC/2026-11-12-integracao-continua.md).
 - **Medir as métricas da aula**: `npm run metricas` reproduz localmente as 14 métricas da Aula 09 (volume, duplicação, cobertura, specs, trailers, frequência, sessões, autoria, segurança e URL pública).
 - **Publicar issues**: `node scripts/publicar-issues.mjs` cria as issues a partir de `docs/issues/bodies/`; o script é idempotente e pula as que já existem.
