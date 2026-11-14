@@ -73,6 +73,17 @@ async function report(from?: string, to?: string): Promise<Report> {
   return storeRequest<Report>(`/reports/financial${query}`);
 }
 
+type StoredData = { tables: unknown[]; menu: unknown[]; orders: unknown[]; expenses: unknown[] };
+
+function readStored(): StoredData {
+  const raw = window.localStorage.getItem(STORAGE_KEY) ?? '{}';
+  return JSON.parse(raw) as StoredData;
+}
+
+function writeStored(data: StoredData) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
 describe('store — regras de negócio (SPEC/2026-11-10-infraestrutura-de-testes)', () => {
   beforeEach(() => {
     const storage = memoryStorage();
@@ -199,5 +210,87 @@ describe('store — regras de negócio (SPEC/2026-11-10-infraestrutura-de-testes
     await expect(report('2026-11-10', '2026-11-09')).rejects.toThrow(
       'A data inicial deve ser anterior ou igual à data final.'
     );
+  });
+});
+
+describe('store — lacunas de regra fechadas (SPEC/2026-11-14-cobertura-das-lacunas-de-teste)', () => {
+  beforeEach(() => {
+    const storage = memoryStorage();
+    vi.stubGlobal('window', { localStorage: storage });
+    storage.setItem(STORAGE_KEY, JSON.stringify({ tables: [], menu: [], orders: [], expenses: [] }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('T-07: comanda sem item não pode ser fechada e continua aberta', async () => {
+    const table = await createTable(96);
+    const data = readStored();
+    writeStored({
+      ...data,
+      orders: [
+        {
+          id: 1,
+          tableId: table.id,
+          tableNumber: table.number,
+          status: 'OPEN',
+          openedAt: new Date().toISOString(),
+          items: [],
+        },
+      ],
+    });
+
+    await expect(closeOrder(1)).rejects.toThrow('Adicione pelo menos um item antes de fechar a conta.');
+
+    const stored = readStored();
+    expect((stored.orders[0] as { status: string }).status).toBe('OPEN');
+  });
+
+  it('T-08: comanda não paga não entra no relatório financeiro', async () => {
+    const table = await createTable(97);
+    const item = await createMenuItem('Item em aberto', 40);
+    await addItem(table.id, item.id, 1);
+
+    const today = localDate(new Date());
+    const rep = await report(today, today);
+    expect(rep.paidOrders).toBe(0);
+    expect(rep.revenue).toBe('0.00');
+    expect(Object.values(rep.payments).every((value) => value === '0.00')).toBe(true);
+  });
+
+  it('T-09: despesa com valor negativo ou zero é recusada e nada é gravado', async () => {
+    await expect(
+      storeRequest('/expenses', {
+        method: 'POST',
+        body: JSON.stringify({ description: 'Despesa negativa', amount: -10 }),
+      })
+    ).rejects.toThrow('Informe um valor válido.');
+
+    await expect(
+      storeRequest('/expenses', {
+        method: 'POST',
+        body: JSON.stringify({ description: 'Despesa zero', amount: 0 }),
+      })
+    ).rejects.toThrow('Informe um valor válido.');
+
+    const expenses = await storeRequest<unknown[]>('/expenses');
+    expect(expenses).toHaveLength(0);
+  });
+
+  it('T-10: item pausado não entra na comanda', async () => {
+    const table = await createTable(98);
+    const item = await createMenuItem('Item pausado', 15);
+    await storeRequest(`/menu-items/${item.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ available: false }),
+    });
+
+    await expect(addItem(table.id, item.id, 1)).rejects.toThrow(
+      'Este item não está disponível no cardápio.'
+    );
+
+    const open = await storeRequest<Order[]>('/orders/open');
+    expect(open).toHaveLength(0);
   });
 });
