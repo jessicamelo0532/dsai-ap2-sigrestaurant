@@ -62,5 +62,5 @@ O backend NestJS, as migrações Prisma e a configuração PostgreSQL seguem em 
 
 - Status da publicação: sistema publicado online na Vercel.
 - URL pública: https://dsai-ap1-sigrestaurant.vercel.app/
-- O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e o estado atual da AP2 é de **519 linhas adicionadas** — ainda 0,5% do mínimo exigido. Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
+- O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e o estado atual da AP2 é de **2 490 linhas adicionadas** — 2,5% do mínimo exigido, e **zero linhas de código de produto novo** (179 são TypeScript de teste/configuração; o restante é documentação de governança e auditoria). Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
 - O ambiente não oferece exportação bruta das conversas; as mensagens do usuário foram transcritas no arquivo de sessão.

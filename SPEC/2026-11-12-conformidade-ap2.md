@@ -61,6 +61,7 @@ Medir, com scripts e evidência reproduzível, o quanto o repositório está em 
 - **RNF-02:** nenhum comando destrutivo (sem `push --force`, sem remoção de módulo da AP1).
 - **RNF-03:** a auditoria é reproduzível: os comandos usados estão listados no relatório.
 - **RNF-04:** pt-BR em todos os documentos.
+- **RNF-05:** a contagem de linhas é reportada com a distinção entre linhas de **código de produto** e linhas de **documentação/configuração**, para que a auditoria não atribua volume útil a texto.
 
 ## Regras de negócio
 
@@ -72,7 +73,7 @@ Medir, com scripts e evidência reproduzível, o quanto o repositório está em 
 ## Critérios de aceitação verificáveis
 
 - **CA-01:** `docs/AUDITORIA-AP2.md` existe e contém uma linha por métrica da Aula 09 com estado e valor medido. → verificado por leitura do arquivo.
-- **CA-02:** o volume foi medido por `cloc --diff` contra `d0a6caf` e o resultado (519 linhas) está no relatório. → verificado por execução.
+- **CA-02:** o volume foi medido por `cloc --diff` contra `d0a6caf` e o resultado (2 490 linhas, das quais 179 de teste/configuração e zero de produto) está no relatório. → verificado por execução.
 - **CA-03:** a duplicação foi medida por `jscpd` e o resultado (0,63%) está no relatório. → verificado por execução.
 - **CA-04:** a cobertura foi medida por `vitest --coverage` e o resultado (81,48% de linhas em `store.ts`) está no relatório. → verificado por execução.
 - **CA-05:** `npm audit --omit=dev` foi executado e o alerta crítico de `next` está registrado como pendência P-5, sem correção unilateral. → verificado por execução.

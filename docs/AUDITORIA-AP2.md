@@ -15,9 +15,11 @@ A AP2 está no **estágio inicial de execução**: o repositório está corretam
 
 Estado atual das 14 métricas verificáveis: **4 conformes, 2 parciais, 8 não conformes**.
 
+Do total de 2 490 linhas adicionadas, **179 são TypeScript de teste/configuração e zero são código de produto novo** — o volume útil da AP2 ainda não começou.
+
 | Métrica | Mínimo | Medido | Estado |
 |---|---|---|---|
-| Tamanho (linhas novas no `cloc --diff`) | 100 000 | **519** | ❌ 0,5% do mínimo |
+| Tamanho (linhas novas no `cloc --diff`) | 100 000 | **2 490** | ❌ 2,5% do mínimo |
 | Duplicação (`jscpd`) | ≤ 5% | **0,63%** (linhas) | ✅ |
 | Specs datadas por funcionalidade | 100% | **100%** (1 de 1) | ✅ |
 | Commits com `Agent:`/`Spec:` | 80% | **100%** (3 de 3 da AP2) | ✅ |
@@ -77,24 +79,30 @@ Varredura do histórico completo (`git log -p --all`) por padrões de chave/segr
 
 ## 3. Não conformidades (evidência)
 
-### 3.1 Volume de código — 519 de 100 000 linhas (0,5%)
+### 3.1 Volume de código — 2 490 de 100 000 linhas (2,5%)
 
-`cloc --diff` entre `d0a6caf` e `HEAD` (excluindo lockfiles e gerados):
+`cloc --diff` entre `d0a6caf` e o estado final desta auditoria (excluindo lockfiles e gerados):
 
 | Arquivo | Linhas adicionadas |
 |---|---|
+| `docs/AUDITORIA-AP2.md` | 329 |
+| `SPEC/2026-11-12-conformidade-ap2.md` | 152 |
 | `apps/web/lib/store.test.ts` | 172 |
 | `SPEC/2026-11-10-infraestrutura-de-testes.md` | 130 |
 | `AGENTS.md` | 82 |
+| `prompts/sessoes/2026-11-12-opencode.md` | 61 |
 | `SPEC/TEMPLATE.md` | 63 |
+| `prompts/sessoes/2026-11-10-opencode.md` | 46 |
 | `SPEC/README.md` | 47 |
-| `README.md` | 10 |
+| `README.md` | 15 |
 | `apps/web/vitest.config.ts` | 7 |
 | `apps/web/package.json` | 7 |
 | `package.json` | 1 |
-| **Total** | **519** |
+| **Total** | **2 490** |
 
-O que falta é o grosso do trabalho da AP2: **~99 500 linhas**. Para dimensionar: o código de produto atual (`apps/web`) tem 414 linhas em 2 arquivos. A AP2 precisa construir, em média, **~250 linhas novas por commit** durante ~250 commits, ou функionalidades maiores e menos frequentes.
+*Medição intermediária:* antes dos commits desta auditoria o total era de **519 linhas** (SPECs, governança e o arquivo de testes). O restante vem dos documentos de auditoria e das sessões — **não são código de produto** e não devem ser contados como volume útil. Do total de 2 490, apenas **179 linhas** (7%) são TypeScript de teste/configuração; **zero** linhas de código de produto novo.
+
+O que falta é o grosso do trabalho da AP2: **~97 500 linhas de código de produto**. Para dimensionar: o código de produto atual (`apps/web`) tem 414 linhas em 2 arquivos. A AP2 precisa construir, em média, **~250 linhas novas por commit** durante ~250 commits, ou funcionalidades maiores e menos frequentes.
 
 ### 3.2 Ausência de CI
 
