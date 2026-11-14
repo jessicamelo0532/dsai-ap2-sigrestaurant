@@ -42,9 +42,18 @@ Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/w
 
 Na primeira visita, o app cria dados editáveis de demonstração. Eles permanecem após recarregar a página no mesmo navegador e perfil. `localStorage` não sincroniza dados entre dispositivos, navegadores ou perfis; para isso, será necessário reativar a API e conectar um banco hospedado.
 
-## Código pausado
+## Backend (API NestJS)
 
-O backend NestJS, as migrações Prisma e a configuração PostgreSQL seguem em `apps/api/` e `docker-compose.yml` registra que os serviços estão pausados. Eles não participam do build frontend atual.
+O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele voltou ao workspace, é compilado e testado no CI, mas ainda **não é publicado** e o frontend continua usando `localStorage` (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)). O `docker-compose.yml` segue subindo só o frontend.
+
+Os testes da API são de integração e precisam de um PostgreSQL. Por segurança, só rodam em banco cujo nome termina em `_test`, porque apagam os dados entre os testes:
+
+```bash
+createdb restaurante_test
+DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=public" npm run test:api
+```
+
+`npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
 
 ## Especificações e ferramentas
 

@@ -4,7 +4,7 @@
 - Agente/ferramenta: Claude Code
 - Modelo: claude-opus-5.5
 - Observação: transcrição das mensagens da usuária desta sessão; o ambiente não fornece exportador bruto da conversa.
-- Commits desta sessão: SPEC e pipeline de integração contínua (`SPEC/2026-11-12-integracao-continua.md`).
+- Commits desta sessão: SPEC e pipeline de integração contínua (`SPEC/2026-11-12-integracao-continua.md`); SPEC, testes de integração e job de CI da reativação do backend (`SPEC/2026-11-12-reativacao-backend.md`).
 
 ```text
 Usuária: Acesse meu repositório do Github [dsai-ap2-sigrestaurant](https://github.com/jessicamelo0532/dsai-ap2-sigrestaurant)
@@ -18,4 +18,18 @@ Usuária: Certo, e o que é CI?
 Usuária: Pode preparar
 
 Usuária: Sempre faça commits no meu nome e nunca apareça nos commits
+
+Usuária: Sim
+
+Usuária: Tire essa informação de tokens, eu decidi não informar isso
+
+Usuária: Eu não quero que essa única mudança esteja em commit, pois é um segredo meu
+
+Usuária: E agora o que eu posso fazer pra dar prosseguimento no trabalho sem precisar do Yuri ou sem esbarrar no trabalho dele, pois temos que correr já que precisamos de 100k de linhas
+
+Usuária: O Yuri esta fazendo as primeiras impressões
+
+Usuária: Como eu sei se ele não mandou alguma coisa pra eu aprovar?
+
+Usuária: Não, quero começar algo que realmente seja fazer a tarefa
 ```

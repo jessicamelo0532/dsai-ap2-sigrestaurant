@@ -1,12 +1,15 @@
 {
   "name": "restaurante-mesa-aberta",
   "private": true,
-  "workspaces": ["apps/web"],
+  "workspaces": ["apps/web", "apps/api"],
   "scripts": {
     "dev": "npm --workspace apps/web run dev",
     "build": "npm --workspace apps/web run build",
     "start": "npm --workspace apps/web run start",
     "test": "npm --workspace apps/web run test",
-    "test:coverage": "npm --workspace apps/web run test:coverage"
+    "test:coverage": "npm --workspace apps/web run test:coverage",
+    "build:api": "npm --workspace apps/api run build",
+    "test:api": "npm --workspace apps/api run test",
+    "test:api:coverage": "npm --workspace apps/api run test:coverage"
   }
 }
