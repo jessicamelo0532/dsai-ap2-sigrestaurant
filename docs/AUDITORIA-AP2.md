@@ -210,8 +210,11 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 - A branch de trabalho foi rebased sobre a `main` atualizada, com histórico linear e commits atômicos.
 - **Métricas: 7 de 10 conformes** (`npm run metricas`). Não conformes: volume (2 097 linhas em `d77cd1a`, 2,1% do mínimo), autoria da segunda integrante (18%, mínimo 30%) e o alerta crítico de dependência do `next@14`.
 - Corrigido um falso positivo da própria métrica de segurança: o script de métricas casava com o seu próprio padrão de busca e contava 1 segredo onde não há nenhum (verificado por varredura manual do histórico completo).
+- Os PRs #2 a #5 (reativação do backend, reservas, estoque e compras) foram revisados, aprovados e mesclados na ordem; o PR #49 levou a cadeia inteira para a `main` (`1a32c21`) com CI verde.
+- O conflito entre a cadeia da API e a `main` (workspaces e scripts do `package.json`) foi resolvido com a união dos scripts, e o lockfile foi regerado para incluir o workspace `apps/api`.
+- O fluxo Docker foi verificado depois da reativação: o build do frontend continua funcionando com a raiz declaring dois workspaces.
 
-**Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-4 e P-5 (SPECs de backend e de `next@16`), P-6 e P-7 (URL pública e deploy contínuo).
+**Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-4 (quando e como o frontend passa a usar a API — a SPEC de reativação deixa isso em aberto), P-5 (SPEC de atualização do `next@16`), P-6 e P-7 (URL pública e deploy contínuo).
 
 ---
 

@@ -7,3 +7,6 @@ coverage/
 !.env.example
 apps/api/prisma/*.db
 apps/api/prisma/*.db-journal
+
+# artefato de build do TypeScript da API
+apps/api/tsconfig.build.tsbuildinfo
