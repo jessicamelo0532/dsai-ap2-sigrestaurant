@@ -4,7 +4,7 @@
 - Agente/ferramenta: Claude Code
 - Modelo: claude-opus-5.5
 - Observação: transcrição das mensagens da usuária desta sessão; o ambiente não fornece exportador bruto da conversa.
-- Commits desta sessão: SPEC e pipeline de integração contínua (`SPEC/2026-11-12-integracao-continua.md`); SPEC, testes de integração e job de CI da reativação do backend (`SPEC/2026-11-12-reativacao-backend.md`).
+- Commits desta sessão: SPEC e pipeline de integração contínua (`SPEC/2026-11-12-integracao-continua.md`); SPEC, testes de integração e job de CI da reativação do backend (`SPEC/2026-11-12-reativacao-backend.md`); módulo de reservas de mesa (`SPEC/2026-11-12-reservas-de-mesa.md`).
 
 ```text
 Usuária: Acesse meu repositório do Github [dsai-ap2-sigrestaurant](https://github.com/jessicamelo0532/dsai-ap2-sigrestaurant)
@@ -32,4 +32,16 @@ Usuária: O Yuri esta fazendo as primeiras impressões
 Usuária: Como eu sei se ele não mandou alguma coisa pra eu aprovar?
 
 Usuária: Não, quero começar algo que realmente seja fazer a tarefa
+
+Usuária: Pq eu preciso do PR do Yuri antes de mandar os meus pra aprovação?
+
+Usuária: O que é exatamente isso que estou mandando ele aprovar primeiro?
+
+Usuária: Ótimo, eu quero mandar pra ele aprovar. Isso de aprovar é uma exigência desse trabalho feita pelo professor? Não lembro disso no AP1
+
+Usuária: Agora eu tenho que esperar a aprovação dele antes de fazer outra coisa?
+
+Usuária (resposta à pergunta sobre qual funcionalidade fazer primeiro): O que vc me sugere?
+
+Usuária: Pode começar
 ```
