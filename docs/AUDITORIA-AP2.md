@@ -200,19 +200,32 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 ### Fase 3 — Operação contínua
 13. Sessão diária em `prompts/sessoes/` com custo, 2+ dias/semana de commit, PRs pequenos, alternância de autoria entre os dois integrantes.
 
+### Estado após a sessão de 2026-11-14
+
+**Fatos verificados nesta sessão:**
+
+- O PR #1 (`jessica/ci-pipeline` → `main`) foi aprovado com parecer e merged na `main` (merge commit `4a51c2a`). O pipeline da segunda integrante é o oficial; esta branch não tem mais workflow próprio.
+- As **40 issues** do backlog foram publicadas no fork (`#6` a `#45`) e 15 labels criados. As Issues estavam desabilitadas no fork (`has_issues: false`) e foram habilitadas durante a sessão.
+- O conflito de `package.json` e `apps/web/package.json` entre as duas branches foi reconciliado: a raiz ficou com `test`, `test:coverage`, `coverage` e `metricas`; `apps/web` ficou com `test`, `test:watch`, `test:coverage` e `coverage`.
+- A branch de trabalho foi rebased sobre a `main` atualizada, com histórico linear e commits atômicos.
+- **Métricas: 7 de 10 conformes** (`npm run metricas`). Não conformes: volume (2 074 linhas, 2,1% do mínimo), autoria da segunda integrante (18%, mínimo 30%) e o alerta crítico de dependência do `next@14`.
+- Corrigido um falso positivo da própria métrica de segurança: o script de métricas casava com o seu próprio padrão de busca e contava 1 segredo onde não há nenhum (verificado por varredura manual do histórico completo).
+
+**Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-4 e P-5 (SPECs de backend e de `next@16`), P-6 e P-7 (URL pública e deploy contínuo).
+
 ---
 
 ## 6. Pendências que exigem o humano
 
 | # | Pendência | Por quê |
 |---|---|---|
-| P-1 | `gh auth login` | Sem isso, issues ("Primeiras impressões"), PRs e o pipeline de CI não podem ser criados. |
-| P-2 | Nome/e-mail do segundo integrante da dupla | Métrica de autoria (30% cada) e alternância de commits. |
+| ~~P-1~~ | ~~`gh auth login`~~ | **Resolvida em 2026-11-14.** O `gh` está autenticado; as 40 issues foram publicadas e o PR #1 (pipeline de CI) foi aprovado e merged na `main`. |
+| P-2 | Nome/e-mail do segundo integrante da dupla | Métrica de autoria (30% cada) e alternância de commits. A autoria dos commits da segunda integrante aparece como "Jéssica Lopes Melo" e o nome do segundo integrante da dupla (o terceiro, que aparece como `afonso` na AP1) ainda não foi confirmado. |
 | P-3 | Custo/tokens reais das sessões | O ambiente não exporta esse dado; não pode ser inventado (`AGENTS.md` §8). |
-| P-4 | Aprovação da SPEC de ativação do backend | Muda a estratégia de persistência e a stack ativa — proibido sem SPEC aprovada. |
-| P-5 | Aprovação da SPEC de atualização do `next@16` | Correção do alerta crítico de dependência; breaking change. |
-| P-6 | Confirmação de que a URL pública pode ser a mesma da AP1 ou deve ser uma nova deployment do fork | A métrica exige que a URL sirva o último commit da `main` do fork. |
-| P-7 | Plano de deploy contínuo (Vercel webhook em `main`) | Sem isso, a URL pública fica desatualizada a cada merge. |
+| P-4 | Aprovação da SPEC de ativação do backend | Muda a estratégia de persistência e a stack ativa — proibido sem SPEC aprovada. A segunda integrante abriu o PR #2 com SPEC própria que mantém o frontend no `localStorage`. |
+| P-5 | Aprovação da SPEC de atualização do `next@16` | Correção do alerta crítico de dependência; breaking change. É a issue 1.2 do backlog. |
+| P-6 | Confirmação de que a URL pública pode ser a mesma da AP1 ou deve ser uma nova deployment do fork | A métrica exige que a URL sirva o último commit da `main` do fork. É a issue 0.5 do backlog. |
+| P-7 | Plano de deploy contínuo (Vercel webhook em `main`) | Sem isso, a URL pública fica desatualizada a cada merge. É a issue 1.6 do backlog. |
 
 ---
 
