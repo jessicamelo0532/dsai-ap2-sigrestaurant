@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service';
+import { deductStockForSale } from './stock/stock-sale';
 import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
@@ -29,6 +30,11 @@ export class AppService {
     if (!table) throw new NotFoundException('Mesa não encontrada.');
     const open = await this.prisma.order.findFirst({ where: { tableId: id, status: 'OPEN' } });
     if (open) throw new BadRequestException('Feche a comanda antes de remover esta mesa.');
+    // RN-09 da SPEC/2026-11-12-reservas-de-mesa.md
+    const booked = await this.prisma.reservation.findFirst({
+      where: { tableId: id, status: 'BOOKED', endsAt: { gt: new Date() } },
+    });
+    if (booked) throw new BadRequestException('Esta mesa tem reservas agendadas. Cancele ou remarque antes de remover.');
     await this.prisma.diningTable.delete({ where: { id } });
     return { success: true };
   }
@@ -101,6 +107,8 @@ export class AppService {
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Esta comanda já foi fechada.');
       if (!order.items.length) throw new BadRequestException('Adicione pelo menos um item antes de fechar a conta.');
+      // Baixa de estoque na mesma transação (SPEC/2026-11-13-estoque-de-ingredientes.md, RF-08).
+      await deductStockForSale(tx, order);
       await tx.order.update({ where: { id }, data: { status: 'PAID', paymentMethod: dto.paymentMethod, paidAt: new Date() } });
       return tx.order.findUnique({ where: { id }, include: orderInclude });
     });
@@ -130,6 +138,7 @@ export class AppService {
   async updateExpense(id: number, dto: UpdateExpenseDto) {
     const expense = await this.prisma.expense.findUnique({ where: { id } });
     if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    await this.assertNotFromPurchase(id);
     const incurredAt = dto.incurredAt !== undefined ? new Date(dto.incurredAt) : undefined;
     if (incurredAt && Number.isNaN(incurredAt.getTime())) throw new BadRequestException('Data da despesa inválida.');
     return this.prisma.expense.update({
@@ -145,8 +154,17 @@ export class AppService {
   async deleteExpense(id: number) {
     const expense = await this.prisma.expense.findUnique({ where: { id } });
     if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    await this.assertNotFromPurchase(id);
     await this.prisma.expense.delete({ where: { id } });
     return { success: true };
+  }
+
+  // RN-10 da SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md
+  private async assertNotFromPurchase(expenseId: number) {
+    const purchase = await this.prisma.purchase.findUnique({ where: { expenseId } });
+    if (purchase) {
+      throw new BadRequestException(`Esta despesa veio do pagamento da compra #${purchase.id} e não pode ser alterada aqui.`);
+    }
   }
 
   async report(from: Date, to: Date) {
