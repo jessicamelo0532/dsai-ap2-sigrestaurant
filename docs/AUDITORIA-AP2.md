@@ -157,14 +157,16 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 | M4 | filtro de período ignorado (`return true`) | detectada (1 falha) |
 | M5 | validação `from > to` removida | detectada (1 falha) |
 | M6 | bloqueio de mesa ocupada removido | detectada (1 falha) |
-| M7 | "comanda vazia" passa a ser fechável | **não detectada** |
+| M7 | "comanda vazia" passa a ser fechável | detectada em 2026-11-14 (T-07) |
 | M8 | receita zera o valor por forma de pagamento | detectada (3 falhas) |
 | M9 | total ignora a quantidade | detectada (1 falha) |
-| M10 | relatório conta comanda não paga | **não detectada** |
-| M11 | despesa com valor negativo aceita | **não detectada** |
-| M12 | item indisponível aceito na comanda | **não detectada** |
+| M10 | relatório conta comanda não paga | detectada em 2026-11-14 (T-08) |
+| M11 | despesa com valor negativo aceita | detectada em 2026-11-14 (T-09) |
+| M12 | item indisponível aceito na comanda | detectada em 2026-11-14 (T-10) |
 
-**6 de 10 detectadas.** As 4 sobreviventes são regras de negócio reais e hoje **sem nenhum teste**: comanda vazia, filtro de comandas pagas, valor de despesa negativo e recusa de item pausado. Há uma amostra válida de 5 mutações detectadas (M1, M2, M3, M4, M5) — a métricao pode ser considerada satisfeita com a ressalva de que a suíte tem 4 lacunas conhecidas.
+**6 de 10 detectadas na auditoria de 2026-11-12.** As 4 sobreviventes eram regras de negócio reais e **sem nenhum teste**: comanda vazia, filtro de comandas pagas, valor de despesa negativo e recusa de item pausado.
+
+**Atualização de 2026-11-14 (SPEC `2026-11-14-cobertura-das-lacunas-de-teste.md`): as 4 lacunas foram fechadas** com os casos T-07 a T-10. Revertendo cada regra, o teste correspondente falha (M7 → T-07, M10 → T-08, M11 → T-09, M12 → T-10). A suíte passou de 6 para 10 casos e a taxa de detecção é de **10 de 12 mutações** — as duas restantes são o filtro `status === 'PAID'` do relatório (redundante com o filtro de `paidAt`, já coberto pela mutação M10) e o `order.status` no fecho, detectada por M1.
 
 ---
 
