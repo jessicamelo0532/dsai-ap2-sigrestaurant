@@ -11,7 +11,7 @@ export const controller = new AppController(service);
 
 export async function resetDatabase() {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "StockMovement", "RecipeItem", "Ingredient", "Reservation", "OrderItem", "Order", "MenuItem", "DiningTable", "Expense" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "PurchaseItem", "Purchase", "Supplier", "StockMovement", "RecipeItem", "Ingredient", "Reservation", "OrderItem", "Order", "MenuItem", "DiningTable", "Expense" RESTART IDENTITY CASCADE',
   );
 }
 

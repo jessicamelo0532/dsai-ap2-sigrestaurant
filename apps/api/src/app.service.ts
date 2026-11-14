@@ -138,6 +138,7 @@ export class AppService {
   async updateExpense(id: number, dto: UpdateExpenseDto) {
     const expense = await this.prisma.expense.findUnique({ where: { id } });
     if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    await this.assertNotFromPurchase(id);
     const incurredAt = dto.incurredAt !== undefined ? new Date(dto.incurredAt) : undefined;
     if (incurredAt && Number.isNaN(incurredAt.getTime())) throw new BadRequestException('Data da despesa inválida.');
     return this.prisma.expense.update({
@@ -153,8 +154,17 @@ export class AppService {
   async deleteExpense(id: number) {
     const expense = await this.prisma.expense.findUnique({ where: { id } });
     if (!expense) throw new NotFoundException('Despesa não encontrada.');
+    await this.assertNotFromPurchase(id);
     await this.prisma.expense.delete({ where: { id } });
     return { success: true };
+  }
+
+  // RN-10 da SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md
+  private async assertNotFromPurchase(expenseId: number) {
+    const purchase = await this.prisma.purchase.findUnique({ where: { expenseId } });
+    if (purchase) {
+      throw new BadRequestException(`Esta despesa veio do pagamento da compra #${purchase.id} e não pode ser alterada aqui.`);
+    }
   }
 
   async report(from: Date, to: Date) {

@@ -42,6 +42,12 @@ enum StockMovementType {
   SALE
 }
 
+enum PurchaseStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
 model DiningTable {
   id           Int           @id @default(autoincrement())
   number       Int           @unique
@@ -95,11 +101,12 @@ model OrderItem {
 }
 
 model Expense {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   description String
-  amount      Decimal  @db.Decimal(10, 2)
-  incurredAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
+  amount      Decimal   @db.Decimal(10, 2)
+  incurredAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  purchase    Purchase?
 
   @@index([incurredAt])
 }
@@ -133,6 +140,7 @@ model Ingredient {
   updatedAt       DateTime        @updatedAt
   recipeItems     RecipeItem[]
   movements       StockMovement[]
+  purchaseItems   PurchaseItem[]
 }
 
 model RecipeItem {
@@ -153,11 +161,66 @@ model StockMovement {
   type         StockMovementType
   quantity     Decimal           @db.Decimal(12, 3)
   orderId      Int?
+  purchaseId   Int?
   note         String?
   createdAt    DateTime          @default(now())
   ingredient   Ingredient        @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
   order        Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  purchase     Purchase?         @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
 
   @@index([ingredientId, createdAt])
   @@index([orderId])
+  @@index([purchaseId])
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  document  String?
+  phone     String?
+  email     String?
+  notes     String?
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  purchases Purchase[]
+}
+
+model Purchase {
+  id             Int             @id @default(autoincrement())
+  supplierId     Int
+  invoiceNumber  String?
+  purchasedAt    DateTime        @db.Date
+  dueDate        DateTime        @db.Date
+  total          Decimal         @db.Decimal(10, 2)
+  status         PurchaseStatus  @default(OPEN)
+  paymentMethod  PaymentMethod?
+  paidAt         DateTime?       @db.Date
+  expenseId      Int?            @unique
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  supplier       Supplier        @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  expense        Expense?        @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  items          PurchaseItem[]
+  stockMovements StockMovement[]
+
+  @@index([status, dueDate])
+  @@index([supplierId])
+}
+
+model PurchaseItem {
+  id             Int         @id @default(autoincrement())
+  purchaseId     Int
+  ingredientId   Int?
+  ingredientName String
+  unit           StockUnit
+  quantity       Decimal     @db.Decimal(12, 3)
+  unitCost       Decimal     @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  purchase       Purchase    @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  ingredient     Ingredient? @relation(fields: [ingredientId], references: [id], onDelete: SetNull)
+
+  @@index([purchaseId])
+  @@index([ingredientId])
 }
