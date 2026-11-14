@@ -258,8 +258,14 @@ METRICAS.autoria = () => {
 
 METRICAS.seguranca = () => {
   heading('Seguranca — segredos no historico e alertas de dependencia');
+  // A varredura olha apenas os diffs (--format='' descarta as mensagens de
+  // commit, que citam as palavras do padrao ao explicar a correcao) e
+  // descarta as linhas que definem o proprio padrao, para que o script e o
+  // historico das versoes anteriores dele nao sejam confundidos com um
+  // segredo real. A checagem autoritativa continua sendo o gitleaks do CI.
+  const padrao = ['(BEGIN [A-Z ]*PRIVATE KEY|aws', '_secret_access_key|ghp_', '[A-Za-z0-9]{20,}|sk-', '[A-Za-z0-9]{20,})'].join('');
   const segredos = run('bash', ['-c',
-    "git log -p --all | grep -inE '(BEGIN [A-Z ]*PRIVATE KEY|aws_secret_access_key|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})' | wc -l"]).trim();
+    `P=${JSON.stringify(padrao)}; git log -p --format='' --all | grep -inE "$P" | grep -v "PRIVATE KEY|aws" | wc -l`]).trim();
   const conformidadeSegredos = Number(segredos) === 0;
   resultado('segredos reais no historico', segredos, '= 0', conformidadeSegredos);
 
