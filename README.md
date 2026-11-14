@@ -70,6 +70,22 @@ Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-
 
 A mesma mesa não aceita duas reservas ativas em horários sobrepostos, e mesas com reserva agendada não podem ser removidas. Duração padrão (120 min), antecedência máxima (90 dias) e fuso da agenda (UTC) são provisórios até a resposta do cliente.
 
+### Estoque de ingredientes (somente API)
+
+Rotas em `/api/stock` e `/api/menu-items/:id/recipe` (SPEC [`2026-11-13-estoque-de-ingredientes.md`](SPEC/2026-11-13-estoque-de-ingredientes.md)):
+
+| Método e rota | Uso |
+|---|---|
+| `GET/POST /api/stock/ingredients`, `GET/PATCH/DELETE /api/stock/ingredients/:id` | Ingredientes (nome, unidade `UN`, `KG`, `G`, `L`, `ML`, estoque mínimo) |
+| `POST /api/stock/ingredients/:id/entries` | Entrada (compra) |
+| `POST /api/stock/ingredients/:id/losses` | Perda, com motivo obrigatório |
+| `POST /api/stock/ingredients/:id/count` | Contagem de inventário (grava só a diferença) |
+| `GET /api/stock/ingredients/:id/movements` | Histórico, do mais recente ao mais antigo |
+| `GET /api/stock/alerts` | Ingredientes no mínimo ou abaixo |
+| `GET/PUT /api/menu-items/:id/recipe` | Ficha técnica do prato e porções possíveis |
+
+Ao fechar uma conta, os ingredientes da ficha técnica de cada item vendido saem do estoque automaticamente. A baixa não bloqueia o fechamento: se faltar ingrediente, o estoque fica negativo e aparece nos alertas (provisório até a resposta do cliente).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
