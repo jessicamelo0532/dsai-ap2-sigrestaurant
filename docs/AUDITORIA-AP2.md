@@ -208,7 +208,7 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 - As **40 issues** do backlog foram publicadas no fork (`#6` a `#45`) e 15 labels criados. As Issues estavam desabilitadas no fork (`has_issues: false`) e foram habilitadas durante a sessão.
 - O conflito de `package.json` e `apps/web/package.json` entre as duas branches foi reconciliado: a raiz ficou com `test`, `test:coverage`, `coverage` e `metricas`; `apps/web` ficou com `test`, `test:watch`, `test:coverage` e `coverage`.
 - A branch de trabalho foi rebased sobre a `main` atualizada, com histórico linear e commits atômicos.
-- **Métricas: 7 de 10 conformes** (`npm run metricas`). Não conformes: volume (2 074 linhas, 2,1% do mínimo), autoria da segunda integrante (18%, mínimo 30%) e o alerta crítico de dependência do `next@14`.
+- **Métricas: 7 de 10 conformes** (`npm run metricas`). Não conformes: volume (2 097 linhas em `d77cd1a`, 2,1% do mínimo), autoria da segunda integrante (18%, mínimo 30%) e o alerta crítico de dependência do `next@14`.
 - Corrigido um falso positivo da própria métrica de segurança: o script de métricas casava com o seu próprio padrão de busca e contava 1 segredo onde não há nenhum (verificado por varredura manual do histórico completo).
 
 **Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-4 e P-5 (SPECs de backend e de `next@16`), P-6 e P-7 (URL pública e deploy contínuo).
