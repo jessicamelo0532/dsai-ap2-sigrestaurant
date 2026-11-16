@@ -50,8 +50,8 @@ describe('T-01: envio e fila (CA-01)', () => {
       band: 'NO_PRAZO',
     });
     expect(ticket.items).toEqual([
-      { id: order.items[0].id, name: 'Prato da mesa 3', quantity: 2 },
-      { id: order.items[1].id, name: 'Suco da mesa 3', quantity: 1 },
+      { id: order.items[0].id, name: 'Prato da mesa 3', quantity: 2, addons: [] },
+      { id: order.items[1].id, name: 'Suco da mesa 3', quantity: 1, addons: [] },
     ]);
 
     const queue = await controller.queue();
@@ -129,7 +129,7 @@ describe('T-02: item enviado fica travado (CA-02)', () => {
 
     at('12:05');
     const second = await kitchen.send(order.id);
-    expect(second.items).toEqual([{ id: newItem.id, name: 'Suco da mesa 8', quantity: 3 }]);
+    expect(second.items).toEqual([{ id: newItem.id, name: 'Suco da mesa 8', quantity: 3, addons: [] }]);
 
     const listed = await controller.listForOrder(order.id);
     expect(listed.pendingItems).toBe(0);
