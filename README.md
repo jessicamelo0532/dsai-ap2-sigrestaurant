@@ -139,6 +139,10 @@ Rotas em `/api/closings` (SPEC [`2026-11-16-fechamento-mensal.md`](SPEC/2026-11-
 
 Com o mês fechado, despesas e pagamentos de compra com data naquele mês são recusados até a reabertura.
 
+### Relatório de vendas (somente API)
+
+`GET /api/reports/sales?from=AAAA-MM-DD&to=AAAA-MM-DD&limit=10` (SPEC [`2026-11-16-relatorios-de-vendas.md`](SPEC/2026-11-16-relatorios-de-vendas.md)): contas pagas, receita, itens vendidos, ticket médio, ranking dos itens por quantidade e por receita, receita por categoria, por hora do dia e dia da semana (horário de Belém), por forma de pagamento e categoria × hora. Todas as quebras somam a receita do período, que é a mesma do relatório financeiro.
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).

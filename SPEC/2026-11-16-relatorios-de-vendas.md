@@ -1,7 +1,7 @@
 # Relatórios de vendas: mais vendidos, ticket médio, categoria, horário e pagamento (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issues #34 (backlog 2.17) e #35 (backlog 2.18); usa as mesmas regras de receita de `SPEC/2026-10-01-restaurante.md` (relatório financeiro)  
 **Derroga:** n/a
@@ -105,3 +105,4 @@ Um relatório de vendas por período com o ranking dos itens, o ticket médio e 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | CA-01 a CA-06 verificados na execução 43946632253 do GitHub Actions: 321 testes da API passando contra PostgreSQL 16 (relatórios de vendas com 97,4% das linhas cobertas); receita igual à do relatório financeiro. Dez mutações nas regras puras fizeram testes falharem. P-1 a P-3 seguem abertas | implementada |
