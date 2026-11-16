@@ -1,7 +1,7 @@
 # Visão do salão: mesas, pedidos e contas abertas numa tela só
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova, a partir da entrevista com o cliente (`docs/entrevistas/2026-11-13-cliente.md`, prioridade 3.1)  
 **Derroga:** n/a (acrescenta uma seção ao app; nenhuma regra existente muda)
@@ -114,3 +114,4 @@ Uma tela "Salão" em que, sem clicar em nada, se vê quais mesas estão ocupadas
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, a partir do pedido do cliente | aprovada |
+| 2026-11-16 | CA-01 a CA-06 verificados: 21 testes da lógica (100% das linhas de `salao.ts`, onze mutações detectadas); tela conferida no Chrome headless em 1366 px e 375 px, com relógio controlado para a atualização automática. Prints em `docs/evidencias/2026-11-16-salao-*.jpg`. P-1 e P-2 seguem abertas para o cliente | implementada |
