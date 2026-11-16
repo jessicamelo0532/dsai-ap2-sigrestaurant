@@ -108,6 +108,7 @@ model Order {
   items          OrderItem[]
   stockMovements StockMovement[]
   events         OrderEvent[]
+  kitchenTickets KitchenTicket[]
 
   @@index([status, openedAt])
   @@index([paidAt])
@@ -122,10 +123,13 @@ model OrderItem {
   unitPrice     Decimal  @db.Decimal(10, 2)
   quantity      Int
   createdAt     DateTime @default(now())
+  ticketId      Int?
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem      MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  ticket        KitchenTicket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
+  @@index([ticketId])
 }
 
 model Expense {
@@ -332,4 +336,49 @@ model OrderEvent {
   order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
+}
+
+// Cozinha (SPEC/2026-11-16-cozinha-kds.md)
+enum KitchenTicketStatus {
+  QUEUED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum KitchenPriority {
+  NORMAL
+  HIGH
+}
+
+model KitchenTicket {
+  id              Int                     @id @default(autoincrement())
+  orderId         Int
+  status          KitchenTicketStatus     @default(QUEUED)
+  priority        KitchenPriority         @default(NORMAL)
+  note            String?
+  sentAt          DateTime
+  startedAt       DateTime?
+  readyAt         DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  order           Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  items           OrderItem[]
+  priorityChanges KitchenPriorityChange[]
+
+  @@index([status, sentAt])
+  @@index([orderId])
+}
+
+model KitchenPriorityChange {
+  id        Int             @id @default(autoincrement())
+  ticketId  Int
+  from      KitchenPriority
+  to        KitchenPriority
+  changedBy String
+  changedAt DateTime
+  ticket    KitchenTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
 }
