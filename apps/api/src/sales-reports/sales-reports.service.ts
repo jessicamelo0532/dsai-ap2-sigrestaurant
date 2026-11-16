@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { discountCents, toCents } from '../common/order-total';
+import { deliveryFeeCents, discountCents, toCents } from '../common/order-total';
 import { centsToDecimal } from '../purchasing/purchase-rules';
 import { PrismaService } from '../prisma.service';
 import { buildSalesReport, ItemStat, PaidSale, PaymentMethod, REMOVED_CATEGORY } from './sales-rules';
@@ -19,6 +19,7 @@ export class SalesReportsService {
         paidAt: true,
         paymentMethod: true,
         discount: true,
+        deliveryFee: true,
         items: { select: { menuItemId: true, nameSnapshot: true, quantity: true, unitPrice: true, menuItem: { select: { category: true } } } },
       },
     });
@@ -36,13 +37,15 @@ export class SalesReportsService {
     const report = buildSalesReport(sales, limit);
     // RF-06 da SPEC/2026-11-16-programa-de-fidelidade.md: itens pelo preço cheio, descontos à parte.
     const discounts = orders.reduce((sum, order) => sum + discountCents(order), 0);
+    const deliveryFees = orders.reduce((sum, order) => sum + deliveryFeeCents(order), 0); // RF-06 da SPEC/2026-11-16-delivery.md
     return {
       from: start.toISOString(),
       to: end.toISOString(),
       paidOrders: report.paidOrders,
       revenue: centsToDecimal(report.revenueCents),
       discounts: centsToDecimal(discounts),
-      netRevenue: centsToDecimal(report.revenueCents - discounts),
+      deliveryFees: centsToDecimal(deliveryFees),
+      netRevenue: centsToDecimal(report.revenueCents - discounts + deliveryFees),
       itemsSold: report.itemsSold,
       averageTicket: centsToDecimal(report.averageTicketCents),
       topByQuantity: report.topByQuantity.map(item),

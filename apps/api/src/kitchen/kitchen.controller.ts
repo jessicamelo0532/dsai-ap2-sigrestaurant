@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { KitchenPriorityDto, SendToKitchenDto } from './kitchen.dto';
 import { KitchenService } from './kitchen.service';
 
@@ -15,8 +15,8 @@ export class KitchenController {
     return this.kitchen.listForOrder(id);
   }
 
-  @Get('kitchen/queue') queue() {
-    return this.kitchen.queue();
+  @Get('kitchen/queue') queue(@Query('channel') channel?: string) {
+    return this.kitchen.queue(channel);
   }
 
   @Get('kitchen/tickets/:id') get(@Param('id', ParseIntPipe) id: number) {

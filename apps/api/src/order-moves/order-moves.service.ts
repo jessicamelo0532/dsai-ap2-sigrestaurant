@@ -7,6 +7,7 @@ import { MergeOrderDto, TransferOrderDto } from './order-moves.dto';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 const REASON_MESSAGE = 'Informe o motivo, de 3 a 200 caracteres.';
+const DELIVERY_MESSAGE = 'Pedidos de delivery não mudam de mesa nem são juntados.';
 
 // Transferência e junção de comandas (SPEC/2026-11-16-transferencia-e-juncao-de-comandas.md).
 @Injectable()
@@ -20,6 +21,7 @@ export class OrderMovesService {
       const order = (await this.lockOrders(tx, [orderId])).get(orderId);
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Só comandas abertas podem mudar de mesa.');
+      if (order.channel === 'DELIVERY') throw new BadRequestException(DELIVERY_MESSAGE); // RN-07 da SPEC/2026-11-16-delivery.md
       if (order.tableId === dto.tableId) throw new BadRequestException('A comanda já está nessa mesa.');
       await tx.$queryRaw`SELECT "id" FROM "DiningTable" WHERE "id" = ${dto.tableId} FOR UPDATE`;
       const table = await tx.diningTable.findUnique({ where: { id: dto.tableId } });
@@ -46,6 +48,7 @@ export class OrderMovesService {
       if (target.status !== 'OPEN' || source.status !== 'OPEN') {
         throw new BadRequestException('Só comandas abertas podem ser juntadas.');
       }
+      if (target.channel === 'DELIVERY' || source.channel === 'DELIVERY') throw new BadRequestException(DELIVERY_MESSAGE); // RN-07 da SPEC/2026-11-16-delivery.md
       // RN-09 da SPEC/2026-11-16-programa-de-fidelidade.md
       if (source.loyaltyPoints > 0) throw new BadRequestException('Desfaça o resgate de pontos da comanda de origem antes de juntar.');
       await tx.orderItem.updateMany({ where: { orderId: source.id }, data: { orderId: target.id } });

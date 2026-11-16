@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
-import { discountCents, orderTotalCents, orderTotalSelect, subtotalCents, toCents } from './common/order-total';
+import { deliveryFeeCents, discountCents, orderTotalCents, orderTotalSelect, subtotalCents } from './common/order-total';
+import { revenueByChannel } from './delivery/delivery-rules';
 import { centsToDecimal } from './purchasing/purchase-rules';
 import { PrismaService } from './prisma.service';
 import { deductStockForSale } from './stock/stock-sale';
@@ -10,12 +11,11 @@ import { cancelPendingTickets } from './kitchen/kitchen-guard';
 import { assertItemEditable } from './kitchen/kitchen-rules';
 import { assertItemChangeFits, creditPayment, refundRedemption } from './loyalty/loyalty-ledger';
 import { assertDiscountFits } from './loyalty/loyalty-rules';
-import { isOpenAt, unavailableMessage } from './menu-availability/availability-rules';
+import { isOpenAt } from './menu-availability/availability-rules';
 import { Clock, MENU_CLOCK } from './menu-availability/menu-clock';
 import { resolveCategory } from './menu-categories/category-link';
 import { compareMenu } from './menu-categories/category-rules';
-import { optionsInclude, storedOptions } from './menu-options/menu-options.service';
-import { buildLine } from './menu-options/option-rules';
+import { prepareOrderLine } from './order-lines';
 
 // Linhas com os adicionais escolhidos (SPEC/2026-11-16-variacoes-e-adicionais.md, RF-04).
 const orderInclude = {
@@ -112,25 +112,10 @@ export class AppService {
       await tx.$queryRaw`SELECT "id" FROM "DiningTable" WHERE "id" = ${tableId} FOR UPDATE`;
       const table = await tx.diningTable.findUnique({ where: { id: tableId } });
       if (!table) throw new NotFoundException('Mesa não encontrada.');
-      const item = await tx.menuItem.findFirst({ where: { id: dto.menuItemId, available: true }, include: { availability: true, ...optionsInclude } });
-      if (!item) throw new BadRequestException('Este item não está disponível no cardápio.');
-      // RF-04 e RN-08 da SPEC/2026-11-16-cardapio-por-horario.md
-      if (!isOpenAt(item.availability, this.now())) throw new BadRequestException(unavailableMessage(item.availability, this.now()));
-      // RF-03 e RN-04 a RN-07 da SPEC/2026-11-16-variacoes-e-adicionais.md: cópia de nome, variação, adicionais e preço.
-      const line = buildLine({ name: item.name, priceCents: toCents(item.price) }, storedOptions(item.variants), storedOptions(item.addons), dto);
+      const line = await prepareOrderLine(tx, dto, this.now());
       let order = await tx.order.findFirst({ where: { tableId, status: 'OPEN' }, orderBy: { openedAt: 'desc' } });
       if (!order) order = await tx.order.create({ data: { tableId, tableNumber: table.number } });
-      await tx.orderItem.create({
-        data: {
-          orderId: order.id,
-          menuItemId: item.id,
-          nameSnapshot: line.nameSnapshot,
-          variantName: line.variantName,
-          unitPrice: centsToDecimal(line.unitPriceCents),
-          quantity: dto.quantity,
-          addons: { create: line.addons.map((addon) => ({ nameSnapshot: addon.name, price: centsToDecimal(addon.priceCents) })) },
-        },
-      });
+      await tx.orderItem.create({ data: { orderId: order.id, ...line } });
       return tx.order.findUnique({ where: { id: order.id }, include: orderInclude });
     });
   }
@@ -238,7 +223,7 @@ export class AppService {
       this.prisma.expense.aggregate({ where: { incurredAt: { gte: from, lt: to } }, _sum: { amount: true }, _count: { id: true } }),
       this.prisma.order.findMany({
         where: { status: 'PAID', paidAt: { gte: from, lt: to } },
-        select: { id: true, paymentMethod: true, ...orderTotalSelect },
+        select: { id: true, paymentMethod: true, channel: true, ...orderTotalSelect },
       }),
     ]);
     const paymentTotals: Record<string, Prisma.Decimal> = { CASH: new Prisma.Decimal(0), CREDIT: new Prisma.Decimal(0), DEBIT: new Prisma.Decimal(0), PIX: new Prisma.Decimal(0) };
@@ -256,11 +241,18 @@ export class AppService {
       expenseCount: expenses._count.id,
       balance: revenue.minus(expenseTotal).toFixed(2),
       payments: Object.fromEntries(Object.entries(paymentTotals).map(([method, amount]) => [method, amount.toFixed(2)])),
+      // RF-06 da SPEC/2026-11-16-delivery.md: receita por canal e soma das taxas.
+      byChannel: Object.fromEntries(
+        Object.entries(
+          revenueByChannel(paymentRows.map((order) => ({ channel: order.channel, totalCents: orderTotalCents(order), feeCents: deliveryFeeCents(order) }))),
+        ).map(([key, cents]) => [key, centsToDecimal(cents)]),
+      ),
     };
   }
 
   async listOpenOrders() {
-    return this.prisma.order.findMany({ where: { status: 'OPEN' }, include: orderInclude, orderBy: { openedAt: 'asc' } });
+    // Só o salão; o delivery tem a lista própria (SPEC/2026-11-16-delivery.md, CA-05).
+    return this.prisma.order.findMany({ where: { status: 'OPEN', channel: 'DINE_IN' }, include: orderInclude, orderBy: { openedAt: 'asc' } });
   }
 
   async getOrder(id: number) {
@@ -271,6 +263,7 @@ export class AppService {
       ...order,
       subtotal: centsToDecimal(subtotalCents(order)),
       discount: centsToDecimal(discountCents(order)),
+      deliveryFee: centsToDecimal(deliveryFeeCents(order)),
       total: centsToDecimal(orderTotalCents(order)),
     };
   }
