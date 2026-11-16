@@ -62,7 +62,7 @@ Cadastrar as categorias do cardápio, definir a ordem em que aparecem e fazer a 
 - **RN-04:** categoria com itens não é apagada. Mensagem: "Esta categoria tem N item(ns). Mova os itens antes de apagá-la."
 - **RN-05:** ao criar ou editar item, se o texto `category` bater (sem maiúsculas e acentos) com uma categoria cadastrada, o item é ligado a ela e o texto fica igual ao nome cadastrado; se não bater, o item fica sem categoria cadastrada, com o texto digitado.
 - **RN-06:** ligar item a uma categoria troca o texto `category` pelo nome dela; desligar mantém o texto.
-- **RN-07:** a importação agrupa os textos sem maiúsculas e acentos, usa a primeira grafia em ordem alfabética, cria as que faltam no fim da ordem (em ordem alfabética) e liga também os itens cujos textos batem com categorias que já existiam.
+- **RN-07:** a importação agrupa os textos sem maiúsculas e acentos, usa a grafia que vem primeiro na ordem dos caracteres (maiúscula antes de minúscula, então "Bebidas" vence "bebidas"), cria as que faltam no fim da ordem (em ordem alfabética) e liga também os itens cujos textos batem com categorias que já existiam.
 
 ## Critérios de aceitação verificáveis
 
