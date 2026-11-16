@@ -89,6 +89,7 @@ model MenuItem {
   updatedAt   DateTime     @updatedAt
   orderItems  OrderItem[]
   recipeItems RecipeItem[]
+  availability MenuAvailability[]
 }
 
 model Order {
@@ -433,4 +434,16 @@ model LoyaltyEntry {
 
   @@index([customerId, createdAt])
   @@index([orderId])
+}
+
+// Disponibilidade por horário (SPEC/2026-11-16-cardapio-por-horario.md)
+model MenuAvailability {
+  id          Int      @id @default(autoincrement())
+  menuItemId  Int
+  weekday     Int
+  startMinute Int
+  endMinute   Int
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
 }
