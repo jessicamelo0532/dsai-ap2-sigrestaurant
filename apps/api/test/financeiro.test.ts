@@ -95,6 +95,8 @@ describe('relatório financeiro', () => {
       expenseCount: 2,
       balance: '75.50',
       payments: { CASH: '45.50', CREDIT: '0.00', DEBIT: '0.00', PIX: '60.00' },
+      // Receita por canal (SPEC/2026-11-16-delivery.md, RF-06): sem delivery, tudo é salão.
+      byChannel: { DINE_IN: '105.50', DELIVERY: '0.00', deliveryFees: '0.00' },
     });
   });
 
