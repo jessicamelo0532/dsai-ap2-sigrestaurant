@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
+import { discountCents, orderTotalCents, orderTotalSelect, subtotalCents } from './common/order-total';
+import { centsToDecimal } from './purchasing/purchase-rules';
 import { PrismaService } from './prisma.service';
 import { deductStockForSale } from './stock/stock-sale';
 import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
@@ -182,12 +184,12 @@ export class AppService {
       this.prisma.expense.aggregate({ where: { incurredAt: { gte: from, lt: to } }, _sum: { amount: true }, _count: { id: true } }),
       this.prisma.order.findMany({
         where: { status: 'PAID', paidAt: { gte: from, lt: to } },
-        select: { id: true, paymentMethod: true, items: { select: { quantity: true, unitPrice: true } } },
+        select: { id: true, paymentMethod: true, ...orderTotalSelect },
       }),
     ]);
     const paymentTotals: Record<string, Prisma.Decimal> = { CASH: new Prisma.Decimal(0), CREDIT: new Prisma.Decimal(0), DEBIT: new Prisma.Decimal(0), PIX: new Prisma.Decimal(0) };
     for (const order of paymentRows) {
-      const total = order.items.reduce((sum, line) => sum.plus(line.unitPrice.mul(line.quantity)), new Prisma.Decimal(0));
+      const total = new Prisma.Decimal(centsToDecimal(orderTotalCents(order)));
       if (order.paymentMethod) paymentTotals[order.paymentMethod] = paymentTotals[order.paymentMethod].plus(total);
     }
     const revenue = Object.values(paymentTotals).reduce((sum, amount) => sum.plus(amount), new Prisma.Decimal(0));
@@ -210,8 +212,13 @@ export class AppService {
   async getOrder(id: number) {
     const order = await this.prisma.order.findUnique({ where: { id }, include: orderInclude });
     if (!order) throw new NotFoundException('Comanda não encontrada.');
-    const total = order.items.reduce((sum, item) => sum.plus(item.unitPrice.mul(item.quantity)), new Prisma.Decimal(0));
-    return { ...order, total: total.toFixed(2) };
+    // RF-05 da SPEC/2026-11-16-programa-de-fidelidade.md
+    return {
+      ...order,
+      subtotal: centsToDecimal(subtotalCents(order)),
+      discount: centsToDecimal(discountCents(order)),
+      total: centsToDecimal(orderTotalCents(order)),
+    };
   }
 
   private async requireMenuItem(id: number) {

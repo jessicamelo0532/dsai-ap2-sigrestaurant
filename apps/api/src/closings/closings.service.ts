@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { MonthlyClosing, Prisma } from '@prisma/client';
+import { orderTotalCents, orderTotalSelect, toCents } from '../common/order-total';
 import { PrismaService } from '../prisma.service';
 import { centsToDecimal } from '../purchasing/purchase-rules';
 import { CloseMonthDto, ReopenMonthDto } from './closings.dto';
@@ -22,7 +23,6 @@ export type Clock = () => Date;
 type Db = Pick<Prisma.TransactionClient, 'order' | 'expense'>;
 type Method = keyof Dre['paymentsCents'];
 
-const toCents = (value: Prisma.Decimal) => Math.round(Number(value.toString()) * 100);
 
 // Valores da DRE em texto com 2 casas, como o restante da API devolve dinheiro.
 function present(dre: Dre) {
@@ -166,7 +166,7 @@ export class ClosingsService {
     const [orders, expenses] = await Promise.all([
       db.order.findMany({
         where: { status: 'PAID', paidAt: { gte: range.start, lt: range.end }, paymentMethod: { not: null } },
-        select: { paymentMethod: true, items: { select: { quantity: true, unitPrice: true } } },
+        select: { paymentMethod: true, ...orderTotalSelect },
       }),
       db.expense.findMany({
         where: { incurredAt: { gte: range.start, lt: range.end } },
@@ -176,7 +176,7 @@ export class ClosingsService {
     return buildDre(
       orders.map((order) => ({
         paymentMethod: order.paymentMethod as Method,
-        totalCents: order.items.reduce((total, line) => total + toCents(line.unitPrice) * line.quantity, 0),
+        totalCents: orderTotalCents(order),
       })),
       expenses.map((expense) => ({ amountCents: toCents(expense.amount), fromPurchase: expense.purchase !== null })),
     );

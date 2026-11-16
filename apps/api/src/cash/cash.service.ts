@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { CashMovement, CashSession, Prisma } from '@prisma/client';
+import { orderTotalCents, orderTotalSelect, toCents } from '../common/order-total';
 import { PrismaService } from '../prisma.service';
 import { centsToDecimal } from '../purchasing/purchase-rules';
 import { CashMovementDto, CloseCashDto, OpenCashDto } from './cash.dto';
@@ -24,7 +25,6 @@ export type Clock = () => Date;
 type Db = Pick<Prisma.TransactionClient, 'order'>;
 type SessionWithMovements = CashSession & { movements: CashMovement[] };
 
-const toCents = (value: Prisma.Decimal | null) => (value === null ? 0 : Math.round(Number(value.toString()) * 100));
 const decimals = (values: ByMethod) => Object.fromEntries(METHODS.map((method) => [method, centsToDecimal(values[method])]));
 const NO_SESSION = 'Não há turno de caixa aberto.';
 
@@ -148,12 +148,12 @@ export class CashService {
   private async sales(db: Db, session: CashSession, until: Date): Promise<ByMethod> {
     const orders = await db.order.findMany({
       where: { status: 'PAID', paidAt: { gte: session.openedAt, lt: until }, paymentMethod: { not: null } },
-      select: { paymentMethod: true, items: { select: { quantity: true, unitPrice: true } } },
+      select: { paymentMethod: true, ...orderTotalSelect },
     });
     return salesByMethod(
       orders.map((order) => ({
         method: order.paymentMethod as Method,
-        cents: order.items.reduce((total, line) => total + toCents(line.unitPrice) * line.quantity, 0),
+        cents: orderTotalCents(order),
       })),
     );
   }

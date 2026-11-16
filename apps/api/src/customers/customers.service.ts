@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Customer, Prisma } from '@prisma/client';
+import { orderTotalCents } from '../common/order-total';
 import { dateRange } from '../common/period';
 import { PrismaService } from '../prisma.service';
 import { AssignCustomerDto, CreateCustomerDto, UpdateCustomerDto } from './customers.dto';
@@ -14,7 +15,6 @@ import {
   searchTerms,
 } from './customer-rules';
 
-const toCents = (value: Prisma.Decimal) => Math.round(Number(value.toString()) * 100);
 const NOT_FOUND = 'Cliente não encontrado.';
 
 // Cadastro de clientes e histórico de consumo (SPEC/2026-11-16-clientes-e-historico.md).
@@ -91,13 +91,13 @@ export class CustomersService {
     const range = from === undefined && to === undefined ? null : dateRange(from, to);
     const orders = await this.prisma.order.findMany({
       where: { customerId: id, status: 'PAID', ...(range ? { paidAt: { gte: range[0], lt: range[1] } } : {}) },
-      select: { id: true, paidAt: true, tableNumber: true, items: { select: { nameSnapshot: true, quantity: true, unitPrice: true } } },
+      select: { id: true, paidAt: true, tableNumber: true, discount: true, items: { select: { nameSnapshot: true, quantity: true, unitPrice: true } } },
     });
     const paid = orders.map((order) => ({
       id: order.id,
       paidAt: order.paidAt!,
       tableNumber: order.tableNumber,
-      totalCents: order.items.reduce((sum, line) => sum + toCents(line.unitPrice) * line.quantity, 0),
+      totalCents: orderTotalCents(order),
       items: order.items.map((line) => ({ name: line.nameSnapshot, quantity: line.quantity })),
     }));
     return { customer, period: range ? { from, to } : null, ...customerHistory(paid) };

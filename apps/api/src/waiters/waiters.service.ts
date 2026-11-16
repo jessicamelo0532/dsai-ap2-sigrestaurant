@@ -1,11 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { orderTotalCents, orderTotalSelect } from '../common/order-total';
 import { PrismaService } from '../prisma.service';
 import { centsToDecimal } from '../purchasing/purchase-rules';
 import { AssignWaiterDto, CreateWaiterDto, UpdateWaiterDto } from './waiters.dto';
 import { basisPointsToDecimal, DEFAULT_COMMISSION, rateBasisPoints, waiterReport } from './waiter-rules';
-
-const toCents = (value: Prisma.Decimal) => Math.round(Number(value.toString()) * 100);
 
 // Garçons, garçom da comanda e comissão (SPEC/2026-11-16-garcons-e-comissao.md).
 @Injectable()
@@ -72,12 +70,12 @@ export class WaitersService {
   async report(start: Date, end: Date) {
     const orders = await this.prisma.order.findMany({
       where: { status: 'PAID', paidAt: { gte: start, lt: end } },
-      select: { waiterId: true, waiterName: true, commissionRate: true, items: { select: { quantity: true, unitPrice: true } } },
+      select: { waiterId: true, waiterName: true, commissionRate: true, ...orderTotalSelect },
     });
     const report = waiterReport(orders.map((order) => ({
       waiterId: order.waiterId,
       waiterName: order.waiterName,
-      revenueCents: order.items.reduce((total, line) => total + toCents(line.unitPrice) * line.quantity, 0),
+      revenueCents: orderTotalCents(order), // P-2 da SPEC/2026-11-16-programa-de-fidelidade.md
       basisPoints: order.commissionRate === null ? 0 : rateBasisPoints(order.commissionRate),
     })));
     return {
