@@ -93,12 +93,17 @@ model Order {
   paymentMethod  PaymentMethod?
   openedAt       DateTime        @default(now())
   paidAt         DateTime?
+  waiterId       Int?
+  waiterName     String?
+  commissionRate Decimal?        @db.Decimal(5, 2)
   table          DiningTable?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  waiter         Waiter?         @relation(fields: [waiterId], references: [id], onDelete: SetNull)
   items          OrderItem[]
   stockMovements StockMovement[]
 
   @@index([status, openedAt])
   @@index([paidAt])
+  @@index([waiterId])
 }
 
 model OrderItem {
@@ -295,4 +300,14 @@ model CashMovement {
   session   CashSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+}
+
+model Waiter {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique
+  commissionRate Decimal  @default(10) @db.Decimal(5, 2)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  orders         Order[]
 }
