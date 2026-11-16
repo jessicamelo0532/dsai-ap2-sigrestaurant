@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentMethod } from '@prisma/client';
 import { IsMoney } from './validators';
@@ -59,6 +59,10 @@ export class AddOrderItemDto {
   @Min(1, { message: 'Informe uma quantidade entre 1 e 500.' })
   @Max(500, { message: 'Informe uma quantidade entre 1 e 500.' })
   quantity: number;
+
+  // SPEC/2026-11-16-variacoes-e-adicionais.md (RF-03)
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) variantId?: number;
+  @IsOptional() @IsArray() @ArrayMaxSize(10) @IsInt({ each: true }) addonIds?: number[];
 }
 
 export class UpdateOrderItemDto {

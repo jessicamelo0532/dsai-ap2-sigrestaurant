@@ -22,10 +22,10 @@ export const KITCHEN_CLOCK = 'KITCHEN_CLOCK';
 export type Clock = () => Date;
 
 const ticketInclude = {
-  items: { orderBy: [{ createdAt: 'asc' as const }, { id: 'asc' as const }] },
+  items: { orderBy: [{ createdAt: 'asc' as const }, { id: 'asc' as const }], include: { addons: { orderBy: { id: 'asc' as const } } } },
   order: { select: { tableNumber: true, waiterName: true } },
 };
-type TicketRow = KitchenTicket & { items: OrderItem[]; order: { tableNumber: number; waiterName: string | null } };
+type TicketRow = KitchenTicket & { items: (OrderItem & { addons: { nameSnapshot: string }[] })[]; order: { tableNumber: number; waiterName: string | null } };
 
 const NOT_FOUND = 'Pedido de cozinha não encontrado.';
 
@@ -140,7 +140,8 @@ export class KitchenService {
       cancelledAt: ticket.cancelledAt,
       waitingMinutes: minutes,
       band: delayBand(minutes),
-      items: ticket.items.map((item) => ({ id: item.id, name: item.nameSnapshot, quantity: item.quantity })),
+      // RF-04 da SPEC/2026-11-16-variacoes-e-adicionais.md: a cozinha vê os adicionais.
+      items: ticket.items.map((item) => ({ id: item.id, name: item.nameSnapshot, quantity: item.quantity, addons: item.addons.map((addon) => addon.nameSnapshot) })),
     };
   }
 }
