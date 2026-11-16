@@ -4,6 +4,8 @@ import { assertMonthsOpen } from './closings/closing-guard';
 import { PrismaService } from './prisma.service';
 import { deductStockForSale } from './stock/stock-sale';
 import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
+import { cancelPendingTickets } from './kitchen/kitchen-guard';
+import { assertItemEditable } from './kitchen/kitchen-rules';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 
@@ -88,6 +90,7 @@ export class AppService {
     const line = await this.prisma.orderItem.findFirst({ where: { id: itemId, orderId }, include: { order: true } });
     if (!line) throw new NotFoundException('Item da comanda não encontrado.');
     if (line.order.status !== 'OPEN') throw new BadRequestException('A comanda não está aberta.');
+    assertItemEditable(line); // RN-03 da SPEC/2026-11-16-cozinha-kds.md
     await this.prisma.orderItem.update({ where: { id: itemId }, data: { quantity: dto.quantity } });
     return this.prisma.order.findUnique({ where: { id: orderId }, include: orderInclude });
   }
@@ -96,6 +99,7 @@ export class AppService {
     const line = await this.prisma.orderItem.findFirst({ where: { id: itemId, orderId }, include: { order: true } });
     if (!line) throw new NotFoundException('Item da comanda não encontrado.');
     if (line.order.status !== 'OPEN') throw new BadRequestException('A comanda não está aberta.');
+    assertItemEditable(line); // RN-03 da SPEC/2026-11-16-cozinha-kds.md
     await this.prisma.orderItem.delete({ where: { id: itemId } });
     const remaining = await this.prisma.orderItem.count({ where: { orderId } });
     if (!remaining) await this.prisma.order.delete({ where: { id: orderId } });
@@ -120,6 +124,8 @@ export class AppService {
       const order = await tx.order.findUnique({ where: { id } });
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Apenas comandas abertas podem ser canceladas.');
+      // RN-08 da SPEC/2026-11-16-cozinha-kds.md
+      await cancelPendingTickets(tx, id, new Date());
       return tx.order.update({ where: { id }, data: { status: 'CANCELLED' }, include: orderInclude });
     });
   }

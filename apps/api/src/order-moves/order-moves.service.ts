@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { text } from '../cash/cash-rules';
+import { moveTickets } from '../kitchen/kitchen-guard';
 import { PrismaService } from '../prisma.service';
 import { MergeOrderDto, TransferOrderDto } from './order-moves.dto';
 
@@ -46,6 +47,7 @@ export class OrderMovesService {
         throw new BadRequestException('Só comandas abertas podem ser juntadas.');
       }
       await tx.orderItem.updateMany({ where: { orderId: source.id }, data: { orderId: target.id } });
+      await moveTickets(tx, source.id, target.id); // RN-09 da SPEC/2026-11-16-cozinha-kds.md
       await tx.order.update({ where: { id: source.id }, data: { status: 'MERGED', mergedIntoId: target.id } });
       const event = { type: 'MERGE' as const, fromTableNumber: source.tableNumber, toTableNumber: target.tableNumber, sourceOrderId: source.id, reason };
       await tx.orderEvent.createMany({ data: [{ orderId: target.id, ...event }, { orderId: source.id, ...event }] });
