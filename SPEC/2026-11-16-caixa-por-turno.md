@@ -1,7 +1,7 @@
 # Caixa por turno: abertura, sangria, reforço e fechamento com conferência (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #32 (backlog 2.15), lacuna apontada na issue #6 ("Primeiras impressões")  
 **Derroga:** n/a (não muda o fechamento de contas nem o relatório financeiro)
@@ -106,3 +106,4 @@ Controlar cada turno de caixa do início ao fim e, no fechamento, comparar o esp
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | CA-01 a CA-06 verificados na execução 43947517534 do GitHub Actions: 352 testes da API passando contra PostgreSQL 16 (caixa com 98,3% das linhas cobertas) e checagem de migrações sem diferença. Oito de nove mutações nas regras puras fizeram testes falharem; a nona é equivalente. P-1 a P-3 seguem abertas | implementada |
