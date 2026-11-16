@@ -1,7 +1,7 @@
 # Garçons, garçom da comanda e comissão (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #25 (backlog 2.8); completa a pergunta P-3 de `SPEC/2026-11-16-relatorios-de-vendas.md` (ticket médio por garçom)  
 **Derroga:** n/a (a comanda ganha um campo opcional; nenhuma regra existente muda)
@@ -98,3 +98,4 @@ Cadastrar garçons, atribuir o garçom à comanda e saber, por período, quantas
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | CA-01 a CA-04 verificados na execução 43948342536 do GitHub Actions: 378 testes da API passando contra PostgreSQL 16 (garçons com 96,3% das linhas cobertas); receita do relatório por garçom igual à do relatório financeiro; checagem de migrações sem diferença. Oito mutações nas regras puras fizeram testes falharem. P-1 a P-3 seguem abertas | implementada |
