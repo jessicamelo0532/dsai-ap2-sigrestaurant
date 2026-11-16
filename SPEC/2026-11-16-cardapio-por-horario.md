@@ -1,7 +1,7 @@
 # Disponibilidade do cardápio por dia da semana e horário (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #28 (backlog 2.11)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md`, no ponto em que a disponibilidade do item é só o interruptor `available`. Item com janelas cadastradas passa a depender também do dia e da hora. Item sem janela continua como hoje.
@@ -103,3 +103,4 @@ Cadastrar, por item, as janelas de dia e horário em que ele é servido, mostrar
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 e P-2 | aprovada |
+| 2026-11-16 | CA-01 a CA-05 verificados na execução 43955102280 do GitHub Actions: 580 testes da API passando contra PostgreSQL 16, módulo com 97,2% das linhas cobertas e regras com 100%; checagem de migrações sem diferença. Mutações nas regras mortas pelos testes (duas sobreviventes ganharam casos novos). P-1 e P-2 seguem abertas | implementada |
