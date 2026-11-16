@@ -1,7 +1,7 @@
 # Cadastro de clientes e histórico de consumo (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #38 (backlog 2.21)  
 **Derroga:** nenhuma. A comanda ganha um vínculo opcional com cliente; quem não usa o cadastro continua igual.
@@ -110,3 +110,4 @@ Cadastrar clientes, ligar o cliente à comanda e ver o histórico de cada um: vi
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | CA-01 a CA-06 verificados na execução 43953015347 do GitHub Actions: 485 testes da API passando contra PostgreSQL 16, módulo com 97% das linhas cobertas e regras com 100%; checagem de migrações sem diferença. Mutações nas regras mortas pelos testes (duas sobreviventes ganharam casos novos: DDD 55 e nome com acento). P-1 a P-3 seguem abertas | implementada |
