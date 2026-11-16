@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
-  CreditCard, LayoutDashboard, Menu as MenuIcon, MoreHorizontal, Plus, ReceiptText,
+  CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
 import {
@@ -11,8 +11,10 @@ import {
   storeRequest, subscribeMode, Table,
 } from '@/lib/store';
 import { hasLocalData, importLocalData } from '@/lib/import-local';
+import { SalaoPanel } from './salao-panel';
 
-type Section = 'operacao' | 'cardapio' | 'financeiro';
+type Section = 'operacao' | 'salao' | 'cardapio' | 'financeiro';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cardapio: 'Cardápio', financeiro: 'Financeiro' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -57,6 +59,9 @@ export default function Home() {
   }, [period]);
 
   useEffect(() => {
+    refresh().catch((error: Error) => setMessage(error.message));
+  }, [refresh]);
+  const refreshQuietly = useCallback(() => {
     refresh().catch((error: Error) => setMessage(error.message));
   }, [refresh]);
   useEffect(() => {
@@ -138,6 +143,7 @@ export default function Home() {
         <div className="side-label menu-label">MENU</div>
         <nav className="side-nav">
           <button className={section === 'operacao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('operacao')}><LayoutDashboard size={18} />Visão geral</button>
+          <button className={section === 'salao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('salao')}><LayoutGrid size={18} />Salão</button>
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
         </nav>
@@ -145,7 +151,7 @@ export default function Home() {
       </aside>
 
       <section className="main-area">
-        <header className="topbar"><div className="breadcrumb"><span>Restaurante</span><span className="crumb-slash">/</span><strong>{section === 'operacao' ? 'Visão geral' : section === 'cardapio' ? 'Cardápio' : 'Financeiro'}</strong></div><div className="top-actions"><span className="open-status"><i />Operação aberta</span><span className="date-chip"><Clock3 size={15} />{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}</span></div></header>
+        <header className="topbar"><div className="breadcrumb"><span>Restaurante</span><span className="crumb-slash">/</span><strong>{sectionLabels[section]}</strong></div><div className="top-actions"><span className="open-status"><i />Operação aberta</span><span className="date-chip"><Clock3 size={15} />{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}</span></div></header>
         <div className="content">
           <ModeBar
             mode={mode}
@@ -159,6 +165,7 @@ export default function Home() {
             onImport={runImport}
           />
           {message && <div className={message.startsWith('Pronto') ? 'notice success' : 'notice'} role="status">{message}<button onClick={() => setMessage('')} aria-label="Fechar aviso"><X size={15} /></button></div>}
+          {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
