@@ -1,7 +1,7 @@
 # Metas de vendas e comparativo com o período anterior (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #37 (backlog 2.20)  
 **Derroga:** nenhuma. Funcionalidade nova, que só lê comandas pagas.
@@ -102,3 +102,4 @@ Cadastrar metas por mês, acompanhar quanto já foi atingido e comparar qualquer
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 e P-2 | aprovada |
+| 2026-11-16 | CA-01 a CA-04 verificados na execução 43957913222 do GitHub Actions: 663 testes da API passando contra PostgreSQL 16, módulo com 97,5% das linhas cobertas e regras com 100%; checagem de migrações sem diferença. Mutações nas regras mortas pelos testes. P-1 e P-2 seguem abertas | implementada |
