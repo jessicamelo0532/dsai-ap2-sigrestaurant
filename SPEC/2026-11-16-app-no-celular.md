@@ -1,7 +1,7 @@
 # App inteiro utilizável no celular
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** nova, a partir da entrevista com o cliente (`docs/entrevistas/2026-11-13-cliente.md`, prioridade 3.3); complementa `SPEC/2026-11-16-visao-do-salao.md`  
 **Derroga:** n/a (só muda a apresentação em telas de até 650 px; nenhuma regra de negócio muda)
@@ -97,3 +97,4 @@ Em telas de até 650 px, todo o app pode ser usado com o dedo, sem ampliar a tel
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, a partir do pedido do cliente | aprovada |
+| 2026-11-16 | CA-01 a CA-03 verificados: `npm run e2e:celular` passa nas nove telas (eram 75 problemas só na Visão geral); rótulo de 13 px de propósito reprova o script; prints de 1366 px iguais antes e depois, exceto o horário da comanda. Prints do celular antes e depois em `docs/evidencias/` | implementada |
