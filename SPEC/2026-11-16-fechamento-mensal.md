@@ -1,7 +1,7 @@
 # Fechamento mensal com DRE simplificada (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #36 (backlog 2.19) e entrevista com o cliente (`docs/entrevistas/2026-11-13-cliente.md`, prioridade 3.2); usa dados de `SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md`  
 **Derroga:** n/a. Acrescenta uma regra às despesas e ao pagamento de compras (RN-07): lançamentos com data num mês fechado são recusados.
@@ -115,3 +115,4 @@ Ver o resultado de qualquer mês numa DRE simplificada e fechar o mês, guardand
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com regras provisórias P-1 a P-4 | aprovada |
+| 2026-11-16 | CA-01 a CA-06 verificados na execução 43945882793 do GitHub Actions: 294 testes da API passando contra PostgreSQL 16 (módulo de fechamento com 97,7% das linhas cobertas; regras e bloqueio com 100%); DRE de outubro igual ao relatório financeiro do mesmo período; checagem de migrações sem diferença. Nove mutações nas regras puras fizeram testes falharem. O CI pegou a leitura do retorno `void` da trava, corrigida com `executeRaw`. P-1 a P-4 seguem abertas para o cliente | implementada |
