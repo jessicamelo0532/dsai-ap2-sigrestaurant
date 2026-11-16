@@ -131,7 +131,7 @@ export class ClosingsService {
     const range = parseMonth(dto.month);
     assertMonthEnded(range, this.now());
     const closing = await this.prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${range.month}))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${range.month}))`;
       const existing = await tx.monthlyClosing.findUnique({ where: { month: range.month } });
       if (existing?.status === 'CLOSED') throw new BadRequestException(`O mês ${range.label} já está fechado.`);
       const values = toColumns(await this.compute(tx, range));
