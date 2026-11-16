@@ -60,9 +60,10 @@ export function deliveryTimestamp(action: DeliveryAction) {
   return action === 'dispatch' ? 'dispatchedAt' : 'deliveredAt';
 }
 
-// RN-05 e P-3
+// RN-05 e P-3: só pedido aberto e ainda não saído (pago também não muda, para o total pago não mudar).
 export function assertDeliveryEditable(orderStatus: string, deliveryStatus: DeliveryStatus) {
   if (orderStatus === 'CANCELLED') throw new BadRequestException('Este pedido está cancelado e não pode mudar.');
+  if (orderStatus !== 'OPEN') throw new BadRequestException('Este pedido já foi pago e não pode mudar.');
   if (deliveryStatus !== 'RECEIVED') throw new BadRequestException('O pedido já saiu para entrega e não pode mudar.');
 }
 

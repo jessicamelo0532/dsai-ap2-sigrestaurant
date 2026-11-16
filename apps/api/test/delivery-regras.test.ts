@@ -69,9 +69,9 @@ describe('RN-04: situação da entrega', () => {
 describe('RN-05: edição', () => {
   it('só muda antes de sair e se não estiver cancelado (P-3)', () => {
     expect(() => assertDeliveryEditable('OPEN', 'RECEIVED')).not.toThrow();
-    expect(() => assertDeliveryEditable('PAID', 'RECEIVED')).not.toThrow();
+    expect(() => assertDeliveryEditable('PAID', 'RECEIVED')).toThrow('Este pedido já foi pago e não pode mudar.');
     expect(() => assertDeliveryEditable('OPEN', 'OUT_FOR_DELIVERY')).toThrow('O pedido já saiu para entrega e não pode mudar.');
-    expect(() => assertDeliveryEditable('PAID', 'DELIVERED')).toThrow('O pedido já saiu para entrega e não pode mudar.');
+    expect(() => assertDeliveryEditable('OPEN', 'DELIVERED')).toThrow('O pedido já saiu para entrega e não pode mudar.');
     expect(() => assertDeliveryEditable('CANCELLED', 'RECEIVED')).toThrow('Este pedido está cancelado e não pode mudar.');
   });
 });
