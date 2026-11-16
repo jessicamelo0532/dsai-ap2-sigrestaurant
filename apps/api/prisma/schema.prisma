@@ -11,6 +11,12 @@ enum OrderStatus {
   OPEN
   PAID
   CANCELLED
+  MERGED
+}
+
+enum OrderEventType {
+  TRANSFER
+  MERGE
 }
 
 enum PaymentMethod {
@@ -96,10 +102,12 @@ model Order {
   waiterId       Int?
   waiterName     String?
   commissionRate Decimal?        @db.Decimal(5, 2)
+  mergedIntoId   Int?
   table          DiningTable?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
   waiter         Waiter?         @relation(fields: [waiterId], references: [id], onDelete: SetNull)
   items          OrderItem[]
   stockMovements StockMovement[]
+  events         OrderEvent[]
 
   @@index([status, openedAt])
   @@index([paidAt])
@@ -310,4 +318,18 @@ model Waiter {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   orders         Order[]
+}
+
+model OrderEvent {
+  id              Int            @id @default(autoincrement())
+  orderId         Int
+  type            OrderEventType
+  fromTableNumber Int?
+  toTableNumber   Int?
+  sourceOrderId   Int?
+  reason          String
+  createdAt       DateTime       @default(now())
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
