@@ -497,3 +497,13 @@ model OrderItemAddon {
 
   @@index([orderItemId])
 }
+
+// Metas de vendas (SPEC/2026-11-16-metas-de-vendas.md)
+model SalesGoal {
+  id            Int      @id @default(autoincrement())
+  month         String   @unique
+  revenue       Decimal? @db.Decimal(12, 2)
+  orders        Int?
+  averageTicket Decimal? @db.Decimal(10, 2)
+  updatedAt     DateTime @updatedAt
+}
