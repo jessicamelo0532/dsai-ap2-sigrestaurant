@@ -1,7 +1,7 @@
 # Atualizar o Next.js para a v16 e zerar os alertas críticos
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #13 (backlog 1.2)  
 **Derroga:** nenhuma. Muda só versões de dependências do frontend e torna bloqueante o job de auditoria do CI.
@@ -87,3 +87,4 @@ Subir o frontend para `next@16` com React 19, sem mudar nenhuma tela, e deixar o
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 | aprovada |
+| 2026-11-16 | CA-01 a CA-03 verificados localmente (`npm audit --audit-level=critical` com código 0, build com a página `/` estática, 48 testes do frontend, 9 telas a 375 px dentro dos limites) e CA-04 na execução 43950985446 do GitHub Actions, com o job de auditoria já bloqueante e verde. P-1 segue aberta | implementada |
