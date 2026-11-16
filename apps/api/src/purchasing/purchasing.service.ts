@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { assertMonthsOpen } from '../closings/closing-guard';
 import { PrismaService } from '../prisma.service';
 import { parseDay } from '../reservations/reservation-rules';
 import { recordMovement } from '../stock/stock-ledger';
@@ -188,6 +189,7 @@ export class PurchasingService {
       if (!purchase) throw new NotFoundException('Compra não encontrada.');
       assertOpen(purchase.status);
       assertPaymentDate(paidAt, purchase.purchasedAt, today);
+      await assertMonthsOpen(tx, paidAt);
 
       const expense = await tx.expense.create({
         data: {
