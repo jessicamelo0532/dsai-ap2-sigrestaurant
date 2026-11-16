@@ -36,3 +36,27 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .floor .eyebrow,.floor .page-heading p{font-size:14px}
 @media(max-width:950px){.floor-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.floor-grid{grid-template-columns:1fr}.floor-stat strong{font-size:20px}.floor-card.busy .floor-action{width:100%}}
+/* App no celular (SPEC/2026-11-16-app-no-celular.md): até 650 px, texto de 14 px ou mais, toque de 44 px ou mais,
+   campos com 16 px (o celular não amplia a tela) e navegação numa barra fixa no rodapé. */
+@media(max-width:650px){
+.add-items-title span,.add-items-title strong,.availability,.breadcrumb,.breadcrumb strong,.button,.category-chip,.count-pill,.empty-order-copy,.empty-state span,.empty-state strong,.expense-copy small,.expense-copy strong,.expense-row>b,.eyebrow,.finance-card>small,.finance-card>span:last-child,.legend button,.legend>span,.line-copy small,.line-copy strong,.live-count,.managed-menu-row,.managed-menu-row>strong,.managed-name small,.menu-table-head,.menu-toolbar p,.modal-form label,.mode-actions .button,.mode-copy p,.mode-copy strong,.nav-item,.no-menu,.notice,.open-status,.order-badge,.order-empty p,.order-empty strong,.order-line>b,.order-meta,.order-total,.page-heading p,.panel-heading p,.payment-form>p,.payment-option,.payment-row,.payment-row strong,.payment-total,.period-bar label,.period-bar>span,.price-edit,.quantity-picker,.quick-item small,.quick-item strong,.quick-item>b,.stat-card>small,.stat-label,.table-bottom,.table-bottom b,.table-status,.table-top,.text-link,.welcome-card>strong small,.crumb-slash,.workspace-icon,.table-bottom>span,.order-meta>span{font-size:14px}
+input,select,textarea,.menu-search input,.quantity-picker input,.period-bar input,.modal-form input,.modal-form textarea{font-size:16px;min-height:44px}
+.sidebar{inset:auto 0 0 0;width:100%;flex-basis:auto;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(34,37,52,.06);z-index:6}
+.sidebar .brand,.sidebar .side-label,.sidebar .workspace,.sidebar-bottom{display:none}
+.side-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:100%;margin:0}
+.nav-item{height:auto;min-height:56px;flex-direction:column;justify-content:center;gap:4px;padding:4px 2px;text-align:center;line-height:1.1}
+.main-area{margin-left:0;padding-bottom:84px}
+.button,.text-link,.legend button,.icon-button,.payment-option,.availability,.price-edit,.managed-name-button,.quick-item,.notice button{min-height:44px}
+.icon-button,.line-remove,.notice button{min-width:44px;min-height:44px}
+.line-remove{width:44px;height:44px}
+.text-link,.legend button{padding:0 6px}
+.table-more{padding:12px;margin:-12px -10px -12px auto}
+.table-card{min-height:124px}
+.quick-item{padding:10px 12px}
+.quantity-picker input{width:64px}
+.order-lines{max-height:none}
+.modal-backdrop{align-items:flex-end;padding:0 0 76px}
+.modal-card{width:100%;max-width:none;max-height:calc(100vh - 92px);overflow:auto;border-radius:16px 16px 0 0}
+.page-heading h1{font-size:24px}
+.live-count{white-space:nowrap}
+}
