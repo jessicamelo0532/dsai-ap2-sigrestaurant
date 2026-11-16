@@ -1,7 +1,7 @@
 # Transferir comanda de mesa e juntar contas (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #19 (backlog 2.2)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md`, no ponto em que uma comanda pertence à mesa em que foi aberta: passa a poder mudar de mesa. A comanda ganha a situação `MERGED` (juntada), que não entra em nenhum relatório de receita.
@@ -95,3 +95,4 @@ Mudar a comanda de mesa e juntar duas comandas abertas numa só, mantendo os ite
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 e P-2 | aprovada |
+| 2026-11-16 | CA-01 a CA-04 verificados na execução 43949593556 do GitHub Actions: 386 testes da API passando contra PostgreSQL 16 (módulo com 96,1% das linhas cobertas); relatório financeiro com uma conta só depois da junção; checagem de migrações sem diferença. P-1 e P-2 seguem abertas | implementada |
