@@ -1,7 +1,7 @@
 # Variações e adicionais dos itens do cardápio (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #27 (backlog 2.10)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md`, no ponto em que o preço da linha da comanda é sempre o preço do item. Com variação, vale o preço da variação; com adicionais, o preço deles é somado. Item sem variação e sem adicional continua igual.
@@ -102,3 +102,4 @@ Cadastrar variações e adicionais por item, lançar na comanda com a escolha e 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 e P-2 | aprovada |
+| 2026-11-16 | CA-01 a CA-05 verificados na execução 43957049686 do GitHub Actions: 635 testes da API passando contra PostgreSQL 16, módulo com 97,3% das linhas cobertas e regras com 100%; checagem de migrações sem diferença; relatório de vendas mostra a variação como linha própria. Mutações nas regras mortas pelos testes. P-1 e P-2 seguem abertas | implementada |

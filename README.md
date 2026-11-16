@@ -175,6 +175,10 @@ O cliente ligado à comanda ganha pontos quando ela é paga (padrão: 1 ponto po
 
 Rotas `/api/menu-categories` (criar, renomear, apagar sem itens, `PUT order` com `{ ids }` para a ordem de exibição e `POST import` para criar categorias a partir dos textos que os itens já têm) e `PUT /api/menu-items/:id/category` (`{ categoryId }` ou `null`). Ao criar ou editar item, o texto da categoria liga o item à categoria cadastrada com o mesmo nome, sem diferenciar maiúsculas e acentos. O cardápio sai na ordem das categorias cadastradas; itens sem categoria cadastrada vêm depois. SPEC [`2026-11-16-categorias-do-cardapio.md`](SPEC/2026-11-16-categorias-do-cardapio.md).
 
+### Variações e adicionais (somente API)
+
+`PUT /api/menu-items/:id/options` (`{ variants: [{ name, price }], addons: [{ name, price }] }`) troca as variações (por exemplo 300 ml e 500 ml, cada uma com seu preço) e os adicionais (valor fixo, pode ser R$ 0,00) do item; `GET` mostra as listas. Ao lançar (`POST /api/tables/:id/items`), `variantId` e `addonIds` são opcionais; item com variações exige uma. A linha guarda o nome com a variação, os adicionais e o preço somado, e não muda se o cardápio mudar depois. A cozinha vê os adicionais de cada linha. SPEC [`2026-11-16-variacoes-e-adicionais.md`](SPEC/2026-11-16-variacoes-e-adicionais.md).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
