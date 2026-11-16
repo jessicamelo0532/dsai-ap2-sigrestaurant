@@ -5,6 +5,7 @@ import {
   deliveryAddress,
   deliveryTimestamp,
   nextDeliveryStatus,
+  parseChannel,
   parseDeliveryFee,
   recipientName,
   revenueByChannel,
@@ -86,5 +87,15 @@ describe('RF-06: receita por canal (CA-02)', () => {
       ]),
     ).toEqual({ DINE_IN: 10000, DELIVERY: 6750, deliveryFees: 750 });
     expect(revenueByChannel([])).toEqual({ DINE_IN: 0, DELIVERY: 0, deliveryFees: 0 });
+  });
+});
+
+describe('RF-07: filtro de canal da cozinha', () => {
+  it('aceita os dois canais e vazio', () => {
+    expect(parseChannel('DELIVERY')).toBe('DELIVERY');
+    expect(parseChannel('DINE_IN')).toBe('DINE_IN');
+    expect(parseChannel(undefined)).toBeNull();
+    expect(parseChannel('')).toBeNull();
+    expect(() => parseChannel('delivery')).toThrow('Informe o canal: DINE_IN ou DELIVERY.');
   });
 });

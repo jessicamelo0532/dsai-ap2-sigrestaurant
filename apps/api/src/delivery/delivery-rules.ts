@@ -67,6 +67,13 @@ export function assertDeliveryEditable(orderStatus: string, deliveryStatus: Deli
   if (deliveryStatus !== 'RECEIVED') throw new BadRequestException('O pedido já saiu para entrega e não pode mudar.');
 }
 
+// RF-07: canal do filtro da cozinha; vazio, sem filtro.
+export function parseChannel(value: unknown): Channel | null {
+  if (value === undefined || value === null || value === '') return null;
+  if (value === 'DINE_IN' || value === 'DELIVERY') return value;
+  throw new BadRequestException('Informe o canal: DINE_IN ou DELIVERY.');
+}
+
 // RF-06: receita do período separada por canal, com a soma das taxas.
 export function revenueByChannel(orders: readonly { channel: Channel; totalCents: number; feeCents: number }[]) {
   const result = { DINE_IN: 0, DELIVERY: 0, deliveryFees: 0 };
