@@ -11,7 +11,7 @@ describe('cliente HTTP da API (SPEC/2026-11-14-frontend-em-modo-api)', () => {
   });
 
   it('T-11: monta a URL com a base, envia JSON no corpo e devolve a resposta', async () => {
-    const fetchMock = vi.fn(async () => jsonResponse([{ id: 1, number: 1 }]));
+    const fetchMock = vi.fn<typeof fetch>(async () => jsonResponse([{ id: 1, number: 1 }]));
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await apiRequest<{ id: number }[]>('http://localhost:4000/api', '/tables');
@@ -19,14 +19,14 @@ describe('cliente HTTP da API (SPEC/2026-11-14-frontend-em-modo-api)', () => {
 
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('http://localhost:4000/api/tables');
-    expect(init.headers.get('Content-Type')).toBeNull();
+    expect(new Headers(init?.headers).get('Content-Type')).toBeNull();
 
     await apiRequest('http://localhost:4000/api', '/menu-items', {
       method: 'POST',
       body: JSON.stringify({ name: 'Tacacá', price: 18.5 }),
     });
     const [, initWithBody] = fetchMock.mock.calls[1];
-    expect(initWithBody.headers.get('Content-Type')).toBe('application/json');
+    expect(new Headers(initWithBody?.headers).get('Content-Type')).toBe('application/json');
   });
 
   it('T-12: erro do Nest vira erro com a mensagem em pt-BR', async () => {
