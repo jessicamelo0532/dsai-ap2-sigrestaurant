@@ -8,6 +8,8 @@ import { deductStockForSale } from './stock/stock-sale';
 import { AddOrderItemDto, CloseOrderDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto, UpdateOrderItemDto } from './dto';
 import { cancelPendingTickets } from './kitchen/kitchen-guard';
 import { assertItemEditable } from './kitchen/kitchen-rules';
+import { assertItemChangeFits, creditPayment, refundRedemption } from './loyalty/loyalty-ledger';
+import { assertDiscountFits } from './loyalty/loyalty-rules';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 
@@ -93,6 +95,7 @@ export class AppService {
     if (!line) throw new NotFoundException('Item da comanda não encontrado.');
     if (line.order.status !== 'OPEN') throw new BadRequestException('A comanda não está aberta.');
     assertItemEditable(line); // RN-03 da SPEC/2026-11-16-cozinha-kds.md
+    await assertItemChangeFits(this.prisma, line.order, itemId, dto.quantity); // RN-07 da SPEC/2026-11-16-programa-de-fidelidade.md
     await this.prisma.orderItem.update({ where: { id: itemId }, data: { quantity: dto.quantity } });
     return this.prisma.order.findUnique({ where: { id: orderId }, include: orderInclude });
   }
@@ -102,6 +105,7 @@ export class AppService {
     if (!line) throw new NotFoundException('Item da comanda não encontrado.');
     if (line.order.status !== 'OPEN') throw new BadRequestException('A comanda não está aberta.');
     assertItemEditable(line); // RN-03 da SPEC/2026-11-16-cozinha-kds.md
+    await assertItemChangeFits(this.prisma, line.order, itemId, 0); // RN-07 da SPEC/2026-11-16-programa-de-fidelidade.md
     await this.prisma.orderItem.delete({ where: { id: itemId } });
     const remaining = await this.prisma.orderItem.count({ where: { orderId } });
     if (!remaining) await this.prisma.order.delete({ where: { id: orderId } });
@@ -110,13 +114,17 @@ export class AppService {
 
   async closeOrder(id: number, dto: CloseOrderDto) {
     return this.prisma.$transaction(async (tx) => {
+      // Trava a comanda para um resgate de pontos não mudar o desconto no meio do pagamento (SPEC/2026-11-16-programa-de-fidelidade.md, RNF-01).
+      await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${id} FOR UPDATE`;
       const order = await tx.order.findUnique({ where: { id }, include: orderInclude });
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Esta comanda já foi fechada.');
       if (!order.items.length) throw new BadRequestException('Adicione pelo menos um item antes de fechar a conta.');
+      assertDiscountFits(subtotalCents(order), discountCents(order)); // RN-10 da SPEC/2026-11-16-programa-de-fidelidade.md
       // Baixa de estoque na mesma transação (SPEC/2026-11-13-estoque-de-ingredientes.md, RF-08).
       await deductStockForSale(tx, order);
       await tx.order.update({ where: { id }, data: { status: 'PAID', paymentMethod: dto.paymentMethod, paidAt: new Date() } });
+      await creditPayment(tx, order); // RF-02 da SPEC/2026-11-16-programa-de-fidelidade.md
       return tx.order.findUnique({ where: { id }, include: orderInclude });
     });
   }
@@ -128,6 +136,7 @@ export class AppService {
       if (order.status !== 'OPEN') throw new BadRequestException('Apenas comandas abertas podem ser canceladas.');
       // RN-08 da SPEC/2026-11-16-cozinha-kds.md
       await cancelPendingTickets(tx, id, new Date());
+      await refundRedemption(tx, order); // RN-08 da SPEC/2026-11-16-programa-de-fidelidade.md
       return tx.order.update({ where: { id }, data: { status: 'CANCELLED' }, include: orderInclude });
     });
   }

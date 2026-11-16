@@ -72,6 +72,10 @@ export class CustomersService {
       const order = await tx.order.findUnique({ where: { id: orderId } });
       if (!order) throw new NotFoundException('Comanda não encontrada.');
       if (order.status !== 'OPEN') throw new BadRequestException('Só comandas abertas podem mudar de cliente.');
+      // RN-09 da SPEC/2026-11-16-programa-de-fidelidade.md
+      if (order.loyaltyPoints > 0 && order.customerId !== dto.customerId) {
+        throw new BadRequestException('Desfaça o resgate de pontos antes de trocar o cliente.');
+      }
       if (dto.customerId !== null) {
         const customer = await tx.customer.findUnique({ where: { id: dto.customerId } });
         if (!customer) throw new NotFoundException(NOT_FOUND);
