@@ -1,7 +1,7 @@
 # Categorias do cardápio com ordem de exibição (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #26 (backlog 2.9)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md`, no ponto em que a categoria é só um texto livre e o cardápio sai em ordem alfabética de categoria. Itens ligados a categorias cadastradas passam a sair na ordem do cadastro. O texto `category` continua existindo e sendo devolvido, para a tela atual não quebrar.
@@ -59,7 +59,7 @@ Cadastrar as categorias do cardápio, definir a ordem em que aparecem e fazer a 
 - **RN-01:** nome de 2 a 50 caracteres, com espaços repetidos reduzidos a um. Mensagem: "Informe o nome da categoria, de 2 a 50 caracteres."
 - **RN-02:** não pode haver duas categorias com o mesmo nome, sem diferenciar maiúsculas e acentos. Mensagem: "Já existe uma categoria com esse nome."
 - **RN-03:** a nova ordem precisa ter todas as categorias, uma vez cada. Mensagem: "Informe todas as categorias, uma vez cada, na nova ordem."
-- **RN-04:** categoria com itens não é apagada. Mensagem: "Esta categoria tem N item(ns). Mova os itens antes de apagá-la."
+- **RN-04:** categoria com itens não é apagada. Mensagem: "Esta categoria tem N itens. Mova os itens antes de apagá-la." (com "1 item" no singular)
 - **RN-05:** ao criar ou editar item, se o texto `category` bater (sem maiúsculas e acentos) com uma categoria cadastrada, o item é ligado a ela e o texto fica igual ao nome cadastrado; se não bater, o item fica sem categoria cadastrada, com o texto digitado.
 - **RN-06:** ligar item a uma categoria troca o texto `category` pelo nome dela; desligar mantém o texto.
 - **RN-07:** a importação agrupa os textos sem maiúsculas e acentos, usa a grafia que vem primeiro na ordem dos caracteres (maiúscula antes de minúscula, então "Bebidas" vence "bebidas"), cria as que faltam no fim da ordem (em ordem alfabética) e liga também os itens cujos textos batem com categorias que já existiam.
@@ -109,3 +109,4 @@ Cadastrar as categorias do cardápio, definir a ordem em que aparecem e fazer a 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 e P-2 | aprovada |
+| 2026-11-16 | RN-07 passa a dizer qual grafia vence (maiúscula antes) e RN-04 ganha o singular. CA-01, CA-03, CA-04 e CA-05 verificados na execução 43956087082 do GitHub Actions: 609 testes da API passando contra PostgreSQL 16, regras com 100% de cobertura; checagem de migrações sem diferença. CA-02 verificado na parte da API; a tela de adição de item fica para o frontend. Mutações nas regras mortas pelos testes. P-1 e P-2 seguem abertas | implementada |

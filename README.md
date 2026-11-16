@@ -171,6 +171,10 @@ O cliente ligado à comanda ganha pontos quando ela é paga (padrão: 1 ponto po
 
 `PUT /api/menu-items/:id/availability` (`{ windows: [{ weekday, start, end }] }`, dia de 0 a 6 e horário `HH:MM`) troca as janelas em que o item é servido; lista vazia volta o item para "sempre disponível". `GET` mostra as janelas e se o item está disponível agora. A lista do cardápio (`GET /api/menu-items`) esconde o item fora da janela, e lançar na comanda é recusado dizendo quando ele volta. Vale o horário de Belém. Item sem janela continua como antes. SPEC [`2026-11-16-cardapio-por-horario.md`](SPEC/2026-11-16-cardapio-por-horario.md).
 
+### Categorias do cardápio (somente API)
+
+Rotas `/api/menu-categories` (criar, renomear, apagar sem itens, `PUT order` com `{ ids }` para a ordem de exibição e `POST import` para criar categorias a partir dos textos que os itens já têm) e `PUT /api/menu-items/:id/category` (`{ categoryId }` ou `null`). Ao criar ou editar item, o texto da categoria liga o item à categoria cadastrada com o mesmo nome, sem diferenciar maiúsculas e acentos. O cardápio sai na ordem das categorias cadastradas; itens sem categoria cadastrada vêm depois. SPEC [`2026-11-16-categorias-do-cardapio.md`](SPEC/2026-11-16-categorias-do-cardapio.md).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
