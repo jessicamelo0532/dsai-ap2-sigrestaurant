@@ -109,10 +109,13 @@ model Order {
   stockMovements StockMovement[]
   events         OrderEvent[]
   kitchenTickets KitchenTicket[]
+  customerId     Int?
+  customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   @@index([status, openedAt])
   @@index([paidAt])
   @@index([waiterId])
+  @@index([customerId])
 }
 
 model OrderItem {
@@ -381,4 +384,20 @@ model KitchenPriorityChange {
   ticket    KitchenTicket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId])
+}
+
+// Clientes (SPEC/2026-11-16-clientes-e-historico.md)
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  nameKey   String
+  phone     String?
+  notes     String?
+  dedupeKey String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@index([nameKey])
 }
