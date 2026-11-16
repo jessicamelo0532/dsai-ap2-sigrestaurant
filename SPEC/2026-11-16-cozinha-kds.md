@@ -1,7 +1,7 @@
 # Envio para a cozinha, fila de produção, tempo de espera e prioridade (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issues #21 e #22 (backlog 2.4 e 2.5)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md`, no ponto em que qualquer item de comanda aberta pode ter a quantidade mudada ou ser removido: item já enviado para a cozinha fica travado.
@@ -63,7 +63,7 @@ O garçom envia os itens da comanda para a cozinha, a cozinha vê a fila na orde
 - **RN-04:** o tempo de espera conta do envio até o pedido ficar pronto; depois de pronto, o tempo para. Arredonda para baixo, em minutos inteiros.
 - **RN-05:** faixas de atraso (P-2): `NO_PRAZO` abaixo de 10 minutos, `ATENCAO` de 10 a menos de 20, `ATRASADO` de 20 em diante.
 - **RN-06:** transições fora da ordem são recusadas com a mensagem "Este pedido está <situação> e não pode <ação>.", por exemplo "Este pedido está entregue e não pode ficar pronto."
-- **RN-07:** a prioridade é `NORMAL` ou `ALTA`; mudar para a mesma é recusado ("O pedido já está com essa prioridade."). Só pedidos na fila mudam de prioridade ("Só pedidos na fila podem mudar de prioridade."). Quem mudou é obrigatório, de 2 a 80 caracteres ("Informe quem mudou a prioridade, de 2 a 80 caracteres.").
+- **RN-07:** a prioridade é normal ou alta (`NORMAL` ou `HIGH` na API); mudar para a mesma é recusado ("O pedido já está com essa prioridade."). Só pedidos na fila mudam de prioridade ("Só pedidos na fila podem mudar de prioridade."). Quem mudou é obrigatório, de 2 a 80 caracteres ("Informe quem mudou a prioridade, de 2 a 80 caracteres.").
 - **RN-08:** ao cancelar a comanda, os pedidos de cozinha não entregues ficam cancelados e saem da fila (P-3).
 - **RN-09:** ao juntar comandas, os pedidos de cozinha da origem passam para a comanda de destino; a fila mostra a mesa do destino.
 - **RN-10:** a mesa mostrada na fila é sempre a mesa atual da comanda, então uma transferência aparece na hora para a cozinha.
@@ -115,3 +115,4 @@ O garçom envia os itens da comanda para a cozinha, a cozinha vê a fila na orde
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | RN-07 passa a dizer os valores da API (`NORMAL` e `HIGH`). CA-01 a CA-06 verificados na execução 43951980090 do GitHub Actions: 440 testes da API passando contra PostgreSQL 16 (54 da cozinha), módulo com 98,3% das linhas cobertas e regras com 100%; checagem de migrações sem diferença. Mutações nas regras mortas pelos testes, menos uma equivalente que foi removida do código. P-1 a P-3 seguem abertas | implementada |
