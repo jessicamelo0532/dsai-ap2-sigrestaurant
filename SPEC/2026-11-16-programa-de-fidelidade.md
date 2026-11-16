@@ -1,7 +1,7 @@
 # Programa de fidelidade com pontos e resgate como desconto (API)
 
 **Data:** 2026-11-16  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #39 (backlog 2.22)  
 **Derroga:** em parte `SPEC/2026-10-01-restaurante.md` e as SPECs de 2026-11-16 de fechamento mensal, relatórios de vendas, caixa por turno e garçons, no ponto em que o total da comanda é a soma dos itens. O total passa a ser a soma dos itens menos o desconto de fidelidade. Quem não usa a fidelidade não vê diferença, porque o desconto é zero.
@@ -67,6 +67,7 @@ Creditar pontos ao cliente quando a comanda é paga, mostrar o saldo e o extrato
 - **RN-07:** com resgate, alterar ou remover item que deixe o subtotal menor que o desconto é recusado. Mensagem: "Desfaça o resgate de pontos antes: o desconto passaria do total da comanda."
 - **RN-08:** cancelar a comanda devolve os pontos resgatados nela.
 - **RN-09:** com resgate, trocar o cliente da comanda é recusado ("Desfaça o resgate de pontos antes de trocar o cliente.") e a comanda não pode ser juntada a outra como origem ("Desfaça o resgate de pontos da comanda de origem antes de juntar.").
+- **RN-09b:** desfazer exige um resgate na comanda. Mensagem: "Esta comanda não tem resgate de pontos."
 - **RN-10:** o total nunca é negativo; pagar uma comanda com desconto maior que o subtotal é recusado com a mensagem de RN-07.
 
 ## Critérios de aceitação verificáveis
@@ -117,3 +118,4 @@ Creditar pontos ao cliente quando a comanda é paga, mostrar o saldo e o extrato
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-16 | Criação e aprovação por Jéssica Lopes Melo, com P-1 a P-3 | aprovada |
+| 2026-11-16 | Inclui RN-09b (mensagem ao desfazer sem resgate) e a trava da comanda no pagamento, para um resgate não mudar o desconto no meio. CA-01 a CA-06 verificados na execução 43954202674 do GitHub Actions: 536 testes da API passando contra PostgreSQL 16, módulo com 97,8% das linhas cobertas, regras e conta do total com 100%; checagem de migrações sem diferença. Mutações nas regras mortas pelos testes. P-1 a P-3 seguem abertas | implementada |
