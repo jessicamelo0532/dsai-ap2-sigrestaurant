@@ -183,6 +183,10 @@ Rotas `/api/menu-categories` (criar, renomear, apagar sem itens, `PUT order` com
 
 `PUT /api/goals/:month` (`{ revenue, orders, averageTicket }`, cada um opcional, pelo menos um) cadastra a meta do mês; `GET /api/goals?year=` lista e `DELETE` apaga. `GET /api/goals/:month/progress` mostra o realizado até agora (receita com desconto, comandas pagas e ticket médio), o atingimento de cada meta e o comparativo com o mesmo pedaço do mês anterior (dia 1 a 16 contra dia 1 a 16). `GET /api/reports/compare?from&to` compara qualquer período com o anterior de mesmo tamanho. SPEC [`2026-11-16-metas-de-vendas.md`](SPEC/2026-11-16-metas-de-vendas.md).
 
+### Delivery (somente API)
+
+Rotas `/api/delivery-orders`: `POST` abre o pedido (`{ recipient, address, phone?, fee, customerId? }`, taxa de R$ 0,00 a R$ 100,00), `POST :id/items` lança itens com as mesmas regras da mesa (horário, variação e adicionais), `PATCH :id` muda os dados enquanto o pedido está aberto e não saiu, `POST :id/dispatch` e `:id/delivered` acompanham a entrega, e `GET` lista os ativos ou filtra por situação. Pagar, cancelar, enviar à cozinha, ligar cliente e resgatar pontos usam as rotas da comanda. O total soma a taxa; o relatório financeiro separa a receita do salão e a do delivery (`byChannel`) e o de vendas mostra as taxas. A fila da cozinha mostra o canal e aceita `?channel=DELIVERY`. O pedido de delivery não aparece nas mesas nem em `GET /api/orders/open`. SPEC [`2026-11-16-delivery.md`](SPEC/2026-11-16-delivery.md).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
