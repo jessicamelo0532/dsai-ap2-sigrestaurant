@@ -7,6 +7,7 @@ import { CustomersModule } from './customers/customers.module';
 import { KitchenModule } from './kitchen/kitchen.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { MenuAvailabilityModule } from './menu-availability/menu-availability.module';
+import { MenuCategoriesModule } from './menu-categories/menu-categories.module';
 import { OrderMovesModule } from './order-moves/order-moves.module';
 import { PrismaModule } from './prisma.module';
 import { PurchasingModule } from './purchasing/purchasing.module';
@@ -16,7 +17,7 @@ import { StockModule } from './stock/stock.module';
 import { WaitersModule } from './waiters/waiters.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule],
   controllers: [AppController],
   providers: [AppService],
 })

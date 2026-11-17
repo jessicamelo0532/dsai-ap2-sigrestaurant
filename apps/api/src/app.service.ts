@@ -12,6 +12,8 @@ import { assertItemChangeFits, creditPayment, refundRedemption } from './loyalty
 import { assertDiscountFits } from './loyalty/loyalty-rules';
 import { isOpenAt, unavailableMessage } from './menu-availability/availability-rules';
 import { Clock, MENU_CLOCK } from './menu-availability/menu-clock';
+import { resolveCategory } from './menu-categories/category-link';
+import { compareMenu } from './menu-categories/category-rules';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 
@@ -56,26 +58,41 @@ export class AppService {
   }
 
   async listMenu(includeUnavailable = false) {
-    const order = [{ category: 'asc' as const }, { name: 'asc' as const }];
-    if (includeUnavailable) return this.prisma.menuItem.findMany({ orderBy: order });
-    // RF-03 da SPEC/2026-11-16-cardapio-por-horario.md: fora da janela, o item some da lista.
-    const items = await this.prisma.menuItem.findMany({ where: { available: true }, orderBy: order, include: { availability: true } });
+    const items = await this.prisma.menuItem.findMany({
+      where: includeUnavailable ? undefined : { available: true },
+      include: { availability: true, menuCategory: { select: { sortOrder: true } } },
+    });
     const now = this.now();
-    return items.filter((item) => isOpenAt(item.availability, now)).map(({ availability: _windows, ...item }) => item);
+    return items
+      // RF-03 da SPEC/2026-11-16-cardapio-por-horario.md: fora da janela, o item some da lista.
+      .filter((item) => includeUnavailable || isOpenAt(item.availability, now))
+      // RF-08 da SPEC/2026-11-16-categorias-do-cardapio.md: ordem das categorias cadastradas.
+      .sort((a, b) => compareMenu(
+        { name: a.name, category: a.category, categoryOrder: a.menuCategory?.sortOrder ?? null },
+        { name: b.name, category: b.category, categoryOrder: b.menuCategory?.sortOrder ?? null },
+      ))
+      .map(({ availability: _windows, menuCategory: _category, ...item }) => item);
   }
 
   getMenuItem(id: number) {
     return this.requireMenuItem(id);
   }
 
-  createMenuItem(dto: CreateMenuItemDto) {
-    return this.prisma.menuItem.create({ data: { ...dto, price: new Prisma.Decimal(dto.price), category: dto.category || 'Geral' } });
+  async createMenuItem(dto: CreateMenuItemDto) {
+    // RN-05 da SPEC/2026-11-16-categorias-do-cardapio.md: o texto liga o item à categoria cadastrada.
+    const link = await resolveCategory(this.prisma, dto.category || 'Geral');
+    return this.prisma.menuItem.create({ data: { ...dto, price: new Prisma.Decimal(dto.price), ...link } });
   }
 
   async updateMenuItem(id: number, dto: UpdateMenuItemDto) {
     await this.requireMenuItem(id);
     return this.prisma.menuItem.update({
-      where: { id }, data: { ...dto, ...(dto.price !== undefined ? { price: new Prisma.Decimal(dto.price) } : {}) },
+      where: { id },
+      data: {
+        ...dto,
+        ...(dto.price !== undefined ? { price: new Prisma.Decimal(dto.price) } : {}),
+        ...(dto.category !== undefined ? await resolveCategory(this.prisma, dto.category || 'Geral') : {}), // RN-05 da SPEC/2026-11-16-categorias-do-cardapio.md
+      },
     });
   }
 

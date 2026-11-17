@@ -90,6 +90,10 @@ model MenuItem {
   orderItems  OrderItem[]
   recipeItems RecipeItem[]
   availability MenuAvailability[]
+  categoryId   Int?
+  menuCategory MenuCategory?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
 }
 
 model Order {
@@ -446,4 +450,14 @@ model MenuAvailability {
   menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   @@index([menuItemId])
+}
+
+// Categorias do cardápio (SPEC/2026-11-16-categorias-do-cardapio.md)
+model MenuCategory {
+  id        Int        @id @default(autoincrement())
+  name      String
+  nameKey   String     @unique
+  sortOrder Int
+  createdAt DateTime   @default(now())
+  items     MenuItem[]
 }
