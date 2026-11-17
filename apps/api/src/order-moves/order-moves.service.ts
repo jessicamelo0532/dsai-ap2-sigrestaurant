@@ -49,6 +49,10 @@ export class OrderMovesService {
       await tx.orderItem.updateMany({ where: { orderId: source.id }, data: { orderId: target.id } });
       await moveTickets(tx, source.id, target.id); // RN-09 da SPEC/2026-11-16-cozinha-kds.md
       await tx.order.update({ where: { id: source.id }, data: { status: 'MERGED', mergedIntoId: target.id } });
+      // RN-09 da SPEC/2026-11-16-clientes-e-historico.md: o destino sem cliente herda o da origem.
+      if (target.customerId === null && source.customerId !== null) {
+        await tx.order.update({ where: { id: target.id }, data: { customerId: source.customerId } });
+      }
       const event = { type: 'MERGE' as const, fromTableNumber: source.tableNumber, toTableNumber: target.tableNumber, sourceOrderId: source.id, reason };
       await tx.orderEvent.createMany({ data: [{ orderId: target.id, ...event }, { orderId: source.id, ...event }] });
       return tx.order.findUniqueOrThrow({ where: { id: target.id }, include: orderInclude });

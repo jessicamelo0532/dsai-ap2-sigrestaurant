@@ -159,6 +159,10 @@ Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/w
 
 `POST /api/orders/:id/kitchen` (`{ note? }`) envia à cozinha os itens da comanda ainda não enviados; cada envio vira um pedido de cozinha, e os itens enviados não podem mais ser alterados nem removidos. `GET /api/kitchen/queue` traz a fila (prioridade alta primeiro, depois ordem de chegada) com a mesa atual, os itens, os minutos de espera e a faixa de atraso (no prazo até 10 min, atenção até 20, atrasado a partir de 20), além de um resumo. `POST /api/kitchen/tickets/:id/start`, `/ready` e `/deliver` mudam a situação; `PUT /api/kitchen/tickets/:id/priority` (`{ priority: NORMAL | HIGH, changedBy }`) muda a prioridade e grava quem mudou. Cancelar a comanda tira os pedidos dela da fila. SPEC [`2026-11-16-cozinha-kds.md`](SPEC/2026-11-16-cozinha-kds.md).
 
+### Clientes e histórico de consumo (somente API)
+
+Rotas `/api/customers` (cadastro com nome, telefone com DDD e observação; busca por parte do nome, sem acento, ou do telefone; edição e desativação), `PUT /api/orders/:id/customer` (`{ customerId }` ou `null`, só em comanda aberta) e `GET /api/customers/:id/history?from&to` (visitas, total gasto, ticket médio, primeira e última visita, 3 itens mais pedidos e as comandas pagas). Nome e telefone não se repetem, mesmo com outra grafia. SPEC [`2026-11-16-clientes-e-historico.md`](SPEC/2026-11-16-clientes-e-historico.md).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
