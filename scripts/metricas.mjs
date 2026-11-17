@@ -312,7 +312,7 @@ METRICAS.seguranca = () => {
 
 METRICAS.url = async () => {
   heading('Producao — URL publica no ar');
-  const url = (process.env.PUBLIC_URL || 'https://dsai-ap1-sigrestaurant.vercel.app/').trim();
+  const url = (process.env.PUBLIC_URL || 'https://dsai-ap2-sigrestaurant.vercel.app/').trim();
   let status = 0;
   try {
     const resposta = await fetch(url, { redirect: 'follow' });
