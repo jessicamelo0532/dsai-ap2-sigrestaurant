@@ -70,6 +70,8 @@ async function main() {
 
   await go('Salão');
   await check('Salão');
+  await go('Cozinha');
+  await check('Cozinha');
   await go('Cardápio');
   await check('Cardápio');
   await page.getByRole('button', { name: /Adicionar item/ }).click();

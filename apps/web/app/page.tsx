@@ -12,9 +12,11 @@ import {
 } from '@/lib/store';
 import { hasLocalData, importLocalData } from '@/lib/import-local';
 import { SalaoPanel } from './salao-panel';
+import { CozinhaPanel } from './cozinha-panel';
+import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cardapio' | 'financeiro';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cardapio: 'Cardápio', financeiro: 'Financeiro' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'cardapio' | 'financeiro';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', cardapio: 'Cardápio', financeiro: 'Financeiro' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -36,6 +38,7 @@ export default function Home() {
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
+  const [kitchenNote, setKitchenNote] = useState('');
   const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
   const [apiState, setApiState] = useState<'idle' | 'online' | 'offline'>('idle');
   const [localDataAvailable, setLocalDataAvailable] = useState(false);
@@ -144,6 +147,7 @@ export default function Home() {
         <nav className="side-nav">
           <button className={section === 'operacao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('operacao')}><LayoutDashboard size={18} />Visão geral</button>
           <button className={section === 'salao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('salao')}><LayoutGrid size={18} />Salão</button>
+          <button className={section === 'cozinha' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cozinha')}><ChefHat size={18} />Cozinha</button>
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
         </nav>
@@ -165,6 +169,8 @@ export default function Home() {
             onImport={runImport}
           />
           {message && <div className={message.startsWith('Pronto') ? 'notice success' : 'notice'} role="status">{message}<button onClick={() => setMessage('')} aria-label="Fechar aviso"><X size={15} /></button></div>}
+          {section === 'cozinha' && <CozinhaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
+
           {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
@@ -187,6 +193,7 @@ export default function Home() {
                   <div className="order-lines">{selected.order?.items.map((line) => <div className="order-line" key={line.id}><div className="line-copy"><strong>{line.nameSnapshot}</strong><small>{line.quantity} × {money(line.unitPrice)}</small></div><b>{money(Number(line.unitPrice) * line.quantity)}</b><button className="line-remove" aria-label="Remover item" onClick={() => run(() => storeRequest(`/orders/${selected.order!.id}/items/${line.id}`, { method: 'DELETE' }))}><X size={14} /></button></div>)}{!selected.order?.items.length && <div className="empty-order-copy">Nenhum item nesta comanda ainda.<br />Escolha algo gostoso no cardápio.</div>}</div>
                   <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => run(() => storeRequest(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
                   <div className="order-total"><span>Total da comanda</span><strong>{money(orderTotal(selected.order))}</strong></div>
+                  {selected.order && mode === 'api' && <div className="send-kitchen"><input value={kitchenNote} onChange={(event) => setKitchenNote(event.target.value)} maxLength={201} placeholder="Observação para a cozinha (opcional)" /><button className="button button-light" disabled={busy} onClick={() => { const invalid = validateNote(kitchenNote); if (invalid) { setMessage(invalid); return; } void run(async () => { await storeRequest(`/orders/${selected.order!.id}/kitchen`, { method: 'POST', body: JSON.stringify({ ...(kitchenNote.trim() ? { note: kitchenNote.trim() } : {}) }) }); setKitchenNote(''); }, 'Pedido enviado para a cozinha.'); }}><ChefHat size={16} />Enviar para a cozinha</button></div>}
                   {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
               </div>

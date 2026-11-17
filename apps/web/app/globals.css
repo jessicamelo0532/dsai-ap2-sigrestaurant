@@ -60,3 +60,63 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .page-heading h1{font-size:24px}
 .live-count{white-space:nowrap}
 }
+
+/* Cozinha (SPEC/2026-11-17-tela-da-cozinha.md) */
+.kitchen-heading-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.kitchen-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.kitchen-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:5px;min-width:0;box-shadow:var(--shadow)}
+.kitchen-card small{font-size:14px;color:#6f7584;font-weight:600}
+.kitchen-card strong{font:700 24px Manrope,sans-serif;letter-spacing:-.5px}
+.kitchen-card>span:last-child{font-size:14px;color:#8a8f9c}
+.kitchen-card.total-card{border-top:3px solid var(--purple)}
+.kitchen-card.ready-card{border-top:3px solid #44b588}
+.kitchen-card.late-card{border-top:3px solid #c9ccd4}
+.kitchen-card.late-card.has-late{border-top-color:#d0574f;background:#fff7f6}
+.kitchen-card.late-card.has-late strong{color:#b8443c}
+.kitchen-card.high-card{border-top:3px solid #e4a558}
+.kitchen-error,.kitchen-message{display:flex;align-items:center;gap:9px;border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:14px}
+.kitchen-error{background:#fff2f1;border:1px solid #f3d3d0;color:#a8463f}
+.kitchen-message{background:var(--green-soft);border:1px solid #cdeade;color:var(--green)}
+.kitchen-queue{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start}
+.kitchen-ticket{background:#fff;border:1px solid var(--line);border-left:4px solid #44b588;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);min-width:0}
+.kitchen-ticket.band-atencao{border-left-color:#e4a558}
+.kitchen-ticket.band-atrasado{border-left-color:#d0574f}
+.kitchen-ticket.high{box-shadow:0 0 0 2px #f6d9b4,var(--shadow)}
+.ticket-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ticket-id{font-size:14px;font-weight:700;color:#8a8f9c;letter-spacing:.4px}
+.ticket-head h2{font:700 20px Manrope,sans-serif;margin:2px 0 4px;letter-spacing:-.4px}
+.ticket-head p{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;color:#6f7584;flex-wrap:wrap}
+.channel-tag{font-size:14px;font-weight:700;color:#5a49bf;background:var(--purple-soft);border-radius:6px;padding:3px 7px}
+.channel-tag.delivery{color:#9a5a17;background:#fff3e3}
+.ticket-badges{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.status-badge,.band-badge,.priority-badge{font-size:14px;font-weight:700;border-radius:6px;padding:4px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.status-badge.status-queued{background:#f2f2f5;color:#555b69}
+.status-badge.status-preparing{background:#fff3e3;color:#9a5a17}
+.status-badge.status-ready{background:var(--green-soft);color:var(--green)}
+.band-badge.band-no-prazo{background:var(--green-soft);color:var(--green)}
+.band-badge.band-atencao{background:#fff3e3;color:#9a5a17}
+.band-badge.band-atrasado{background:#fff2f1;color:#b8443c}
+.priority-badge{background:#fdf0dd;color:#9a5a17}
+.ticket-time{display:flex;align-items:center;gap:7px;font-size:14px;color:#6f7584;background:#fafafd;border-radius:8px;padding:9px 11px}
+.ticket-time strong{color:var(--ink);font-size:14px}
+.ticket-items{list-style:none;margin:0;padding:0;border-top:1px solid #f0f0f3}
+.ticket-items li{display:flex;align-items:baseline;gap:9px;padding:8px 0;border-bottom:1px solid #f4f4f6;font-size:14px}
+.ticket-items li b{color:#5a49bf;flex:none}
+.ticket-items li span{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+.ticket-items li small{color:#8a8f9c;font-size:14px}
+.ticket-note{margin:0;font-size:14px;color:#9a5a17;background:#fff8ec;border-radius:8px;padding:9px 11px}
+.ticket-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ticket-actions .button{min-height:44px;font-size:14px}
+.button-ghost{background:transparent;border:1px dashed #e0e1e7;color:#6f7584}
+.kitchen-empty{margin-top:6px}
+.kitchen-offline{align-items:flex-start;gap:12px;padding:24px;max-width:640px}
+.kitchen-offline-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:#f2f2f5;color:#6f7584}
+.kitchen-offline strong{font:700 18px Manrope,sans-serif}
+.kitchen-offline p{margin:0;font-size:14px;color:#6f7584;line-height:1.55}
+.kitchen-offline small{font-size:14px;color:#8a8f9c}
+.send-kitchen{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.send-kitchen input{flex:1;min-width:180px;border:1px solid #e7e7ec;border-radius:8px;padding:10px 11px;font-size:16px;min-height:44px;background:#fff}
+.send-kitchen .button{min-height:44px;font-size:14px;flex:none}
+.form-error{margin:0;font-size:14px;color:#b8443c;background:#fff2f1;border:1px solid #f3d3d0;border-radius:8px;padding:9px 11px}
+@media(max-width:1100px){.kitchen-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.kitchen-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.kitchen-queue{grid-template-columns:1fr}.ticket-actions .button{flex:1}.kitchen-heading-actions{width:100%}.send-kitchen input{min-width:0;width:100%}.send-kitchen .button{width:100%}}
