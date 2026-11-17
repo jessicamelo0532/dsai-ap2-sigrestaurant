@@ -37,6 +37,10 @@ jobs:
       - name: Testes com cobertura
         run: npm run test:coverage
 
+      - name: Testes dos scripts do repositório
+        # SPEC: SPEC/2026-11-17-cobertura-do-codigo-novo.md
+        run: npm run test:scripts
+
       - name: Publicar relatório de cobertura
         if: always()
         uses: actions/upload-artifact@v4
@@ -106,6 +110,43 @@ jobs:
           name: cobertura-api
           path: apps/api/coverage/
           if-no-files-found: ignore
+
+  cobertura-diff:
+    name: Cobertura do código novo (diff, mínimo 70%)
+    # SPEC: SPEC/2026-11-17-cobertura-do-codigo-novo.md (métrica "Testes" da Aula 09)
+    needs: [build-e-testes, api]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código com histórico completo
+        uses: actions/checkout@v4
+        with:
+          # O diff parte do último commit da AP1 (d0a6caf).
+          fetch-depth: 0
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Baixar a cobertura do frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: cobertura
+          path: apps/web/coverage
+
+      - name: Baixar a cobertura da API
+        uses: actions/download-artifact@v4
+        with:
+          name: cobertura-api
+          path: apps/api/coverage
+
+      - name: Medir a cobertura das linhas novas
+        run: >
+          node scripts/cobertura-diff.mjs
+          --base d0a6caf
+          --lcov apps/web/coverage/lcov.info:apps/web
+          --lcov apps/api/coverage/lcov.info:apps/api
+          --min 70
 
   celular:
     name: Uso no celular (375 px)
