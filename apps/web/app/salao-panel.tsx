@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Clock3, Plus } from 'lucide-react';
+import { ArrowUpRight, Clock3, Plus, QrCode } from 'lucide-react';
 import { money } from '@/lib/store';
 import {
   buildFloor, filterCounts, filterFloor, FLOOR_REFRESH_MS, formatElapsed, summarizeFloor,
   type FloorFilter, type FloorTable,
 } from '@/lib/salao';
 import type { Table } from '@/lib/types';
+import { QrMesas } from './qr-mesas';
 
 // Visão do salão (SPEC/2026-11-16-visao-do-salao.md). Só desenha: a lógica está em lib/salao.ts.
 
@@ -32,6 +33,7 @@ type SalaoPanelProps = {
 export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) {
   const [filter, setFilter] = useState<FloorFilter>('todas');
   const [now, setNow] = useState(() => new Date());
+  const [showQr, setShowQr] = useState(false);
 
   // RF-09: atualiza os dados e o relógio enquanto a tela está aberta.
   useEffect(() => {
@@ -55,7 +57,10 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
           <h1>Salão</h1>
           <p>Mesas ocupadas, o que cada uma pediu e as contas em aberto.</p>
         </div>
-        <span className="floor-live"><i />Atualiza sozinho a cada {FLOOR_REFRESH_MS / 1000} s</span>
+        <div className="floor-heading-actions">
+          <span className="floor-live"><i />Atualiza sozinho a cada {FLOOR_REFRESH_MS / 1000} s</span>
+          {!!tables.length && <button className="button button-light" onClick={() => setShowQr(true)}><QrCode size={16} />QR das mesas</button>}
+        </div>
       </div>
 
       <div className="floor-summary">
@@ -88,6 +93,8 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
           </div>
         )}
       </div>
+
+      {showQr && <QrMesas tables={tables} origin={window.location.origin} onClose={() => setShowQr(false)} />}
     </section>
   );
 }

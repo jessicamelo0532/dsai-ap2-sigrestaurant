@@ -163,3 +163,13 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* QR das mesas e impressão dos cartões (SPEC/2026-11-17-pwa-e-qr-das-mesas.md) */
+.floor-heading-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.qr-modal{width:min(100%,760px);max-height:90vh;overflow-y:auto;display:grid;gap:12px}
+.qr-hint{display:flex;gap:7px;align-items:center;margin:0;color:#626776;font-size:14px}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.qr-card{display:grid;justify-items:center;gap:4px;padding:12px;border:1px dashed #cfd1d8;border-radius:12px;text-align:center;break-inside:avoid}
+.qr-card svg{width:150px;height:150px}.qr-card strong{font-size:18px}.qr-card span{font-size:14px;color:#4a4f5c}.qr-card small{font-size:14px;color:#8a8e99;word-break:break-all}
+@media print{body *{visibility:hidden}.qr-print,.qr-print *{visibility:visible}.qr-print{position:absolute;inset:0;background:#fff;display:block;padding:0}.qr-print .modal-card{box-shadow:none;max-height:none;width:100%}.qr-no-print{display:none!important}.qr-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.floor-heading-actions{width:100%}.qr-grid{grid-template-columns:1fr 1fr}.qr-card svg{width:120px;height:120px}}

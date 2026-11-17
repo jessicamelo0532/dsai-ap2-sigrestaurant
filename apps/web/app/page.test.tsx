@@ -254,3 +254,35 @@ describe('modo navegador (RF-08)', () => {
     expect(calls).toHaveLength(0);
   });
 });
+
+describe('link por mesa e QR (SPEC/2026-11-17-pwa-e-qr-das-mesas.md)', () => {
+  afterEach(() => { window.history.replaceState(null, '', '/'); });
+
+  it('abre a mesa do link ?mesa=3 e limpa o endereço (CA-03)', async () => {
+    setMode('local');
+    window.history.replaceState(null, '', '/?mesa=3');
+    render(<Home />);
+
+    expect(await screen.findByRole('heading', { name: 'Mesa 03' })).toBeTruthy();
+    expect(window.location.search).toBe('');
+  });
+
+  it('avisa quando a mesa do link não existe (CA-03)', async () => {
+    setMode('local');
+    window.history.replaceState(null, '', '/?mesa=99');
+    render(<Home />);
+
+    expect(await screen.findByText('A mesa 99 não existe neste salão.')).toBeTruthy();
+  });
+
+  it('o Salão abre os cartões com QR (CA-04)', async () => {
+    setMode('local');
+    render(<Home />);
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Salão/ })[0]);
+    fireEvent.click(await screen.findByRole('button', { name: /QR das mesas/ }));
+    expect(screen.getAllByRole('article', { name: /^QR da Mesa/ })).toHaveLength(5);
+  });
+});
+

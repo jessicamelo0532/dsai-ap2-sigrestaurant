@@ -16,6 +16,7 @@ import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
 import { ReservasPanel } from './reservas-panel';
+import { resolveTableLink, tableNumberFromSearch, withoutTableParam } from '@/lib/link-mesa';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
@@ -72,6 +73,19 @@ export default function Home() {
   useEffect(() => {
     refresh().catch((error: Error) => setMessage(error.message));
   }, [refresh]);
+
+  // Link por mesa (SPEC/2026-11-17-pwa-e-qr-das-mesas.md, RF-03): ?mesa=N abre a comanda da mesa N.
+  const [tableLinkDone, setTableLinkDone] = useState(false);
+  useEffect(() => {
+    if (tableLinkDone || !tables.length || typeof window === 'undefined') return;
+    setTableLinkDone(true);
+    const number = tableNumberFromSearch(window.location.search);
+    if (number === null) return;
+    const result = resolveTableLink(tables, number);
+    if ('tableId' in result) { setSelectedTable(result.tableId); setSection('operacao'); }
+    else setMessage(result.error);
+    window.history.replaceState(null, '', withoutTableParam(window.location.pathname, window.location.search));
+  }, [tables, tableLinkDone]);
   const refreshQuietly = useCallback(() => {
     refresh().catch((error: Error) => setMessage(error.message));
   }, [refresh]);

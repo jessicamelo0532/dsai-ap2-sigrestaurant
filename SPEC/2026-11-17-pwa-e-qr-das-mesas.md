@@ -1,7 +1,7 @@
 # App instalável e offline (PWA) e QR code das mesas
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #24 (backlog 2.7)  
 **Derroga:** n/a (acrescenta manifesto, service worker, link por mesa e cartões com QR; nada existente muda)
@@ -78,7 +78,7 @@ Deixar o app instalável e capaz de abrir sem rede, e imprimir, para cada mesa, 
 
 ## Impactos na arquitetura
 
-- **Camadas tocadas:** `apps/web/lib/qrcode.ts`, `apps/web/lib/qrcode.fixtures.json`, `apps/web/lib/offline.ts`, `apps/web/app/manifest.ts`, `apps/web/app/icon.svg`, `apps/web/public/sw.js`, `apps/web/app/registrar-offline.tsx`, `apps/web/app/qr-mesas.tsx` (novos); `apps/web/app/layout.tsx`, `apps/web/app/page.tsx`, `apps/web/app/salao-panel.tsx`, `globals.css`.
+- **Camadas tocadas:** `apps/web/lib/qrcode.ts`, `apps/web/lib/qrcode.fixtures.json`, `apps/web/app/manifest.ts`, `apps/web/app/icon.svg`, `apps/web/public/sw.js`, `apps/web/app/registrar-offline.tsx`, `apps/web/app/qr-mesas.tsx` (novos); `apps/web/app/layout.tsx`, `apps/web/app/page.tsx`, `apps/web/app/salao-panel.tsx`, `globals.css`.
 - **Persistência:** não muda (o cache do service worker é do navegador e guarda só arquivos do app).
 - **Backend:** não muda.
 - **Deploy/Vercel:** o build passa a publicar `/manifest.webmanifest`, `/icon.svg` e `/sw.js`.
@@ -102,3 +102,4 @@ Deixar o app instalável e capaz de abrir sem rede, e imprimir, para cada mesa, 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia, com P-1 decidida pela dupla | aprovada |
+| 2026-11-17 | Implementação: a lógica de cache ficou no próprio `public/sw.js` (testado num ambiente simulado), sem `lib/offline.ts`. CA-01 a CA-05 verificados por 23 testes do gerador (matriz igual à do segno 1.6.6 nas versões 1, 2, 4 e 8 e nas 8 máscaras), 9 do service worker, manifesto e registro, 3 do link por mesa, 3 dos cartões e 3 novos na tela principal; suíte do frontend com 219 testes | implementada |
