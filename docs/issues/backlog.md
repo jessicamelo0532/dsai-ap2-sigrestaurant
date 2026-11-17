@@ -77,3 +77,24 @@ O texto completo de cada issue está em [`bodies/`](bodies/) — um arquivo por 
 | 2.26 | Módulos NestJS para despesas, relatórios e caixa | 2.15 |
 | 2.27 | Módulos NestJS para estoque, clientes e reservas | 2.13, 2.21 |
 | 2.28 | Testes de integração da API contra PostgreSQL | 2.25 |
+
+## Estado em 2026-11-17
+
+Os PRs #54 a #70 levaram para a `main` a maior parte da Fase 2. Issues **fechadas** com evidência no GitHub:
+
+| Fase | Fechadas |
+|---|---|
+| 0 | 0.1 (#7), 0.2 (#8) e a #6 (primeiras impressões) |
+| 1 | 1.1 (#12), 1.2 (#13) e 1.5 (#16) |
+| 2 | 2.2 (#19), 2.4 (#21), 2.5 (#22), 2.8 (#25), 2.10 (#27), 2.11 (#28), 2.13 (#30), 2.14 (#31), 2.15 (#32), 2.17 (#34), 2.18 (#35), 2.19 (#36), 2.20 (#37), 2.21 (#38), 2.22 (#39), 2.24 (#41), 2.27 (#44) e 2.28 (#45) |
+
+**Abertas por estarem parciais** (o que falta está no comentário de cada issue):
+
+- 2.9 (#26): API de categorias pronta; falta a tela de adição de item usar a ordem.
+- 2.12 (#29): ingredientes, receita e custo prontos na API; falta a margem no cardápio administrativo.
+- 2.16 (#33): contas a pagar prontas; contas a receber não.
+- 2.23 (#40): reservas prontas; falta converter reserva em comanda.
+- 2.25 (#42) e 2.26 (#43): mesas, comandas, cardápio, despesas e relatórios ainda vivem no `AppService`, sem módulo próprio.
+- 1.3 (#14): E2E de celular existe; falta Testing Library e o diff coverage da 1.4.
+
+**Pendentes de decisão ou credencial:** 0.3 (#9, custo/tokens), 0.4 (#10, autoria — a primeira integrante estava em 29% antes dos commits de documentação de 2026-11-17), 0.5 (#11) e 1.6 (#17) (publicação e deploy contínuo).

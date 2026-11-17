@@ -53,7 +53,9 @@ O comando delega ao workspace `apps/web` e executa a suíte Vitest uma única ve
 npm --workspace apps/web run test:watch
 ```
 
-Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node`, sem rede, banco ou serviços externos.
+Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node`, sem rede, banco ou serviços externos — hoje são **48 testes**.
+
+Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
 
 ## Funcionalidades disponíveis
 
@@ -69,7 +71,11 @@ Na primeira visita, o app cria dados editáveis de demonstração. Eles permanec
 
 ## Backend (API NestJS)
 
-O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele voltou ao workspace, é compilado e testado no CI, mas ainda **não é publicado** e o frontend continua usando `localStorage` (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)). O `docker-compose.yml` segue subindo só o frontend.
+O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele está no workspace, é compilado e testado no CI (698 testes) e o `docker compose up` sobe **PostgreSQL, API e frontend** juntos (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)).
+
+O frontend fala com a API quando o build recebe `NEXT_PUBLIC_API_URL` (modo servidor); sem a variável — como na publicação da Vercel — ele usa o `localStorage` (modo navegador). A interface mostra sempre em qual modo está; ver [Os dois modos de operação](#os-dois-modos-de-operação) e a SPEC [`2026-11-14-frontend-em-modo-api.md`](SPEC/2026-11-14-frontend-em-modo-api.md).
+
+**Importante:** a API ainda não tem autenticação. Ela não deve ser publicada na internet antes de uma SPEC de autenticação.
 
 Os testes da API são de integração e precisam de um PostgreSQL. Por segurança, só rodam em banco cujo nome termina em `_test`, porque apagam os dados entre os testes:
 
@@ -201,7 +207,7 @@ Rotas `/api/delivery-orders`: `POST` abre o pedido (`{ recipient, address, phone
 O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.md): da fila de issues até a entrega.
 
 - **Integração contínua**: o pipeline da branch `jessica/ci-pipeline` roda em todo push e em todo PR para a `main` (build, testes com cobertura, duplicação, segredos e `npm audit`). Ver [`SPEC/2026-11-12-integracao-continua.md`](SPEC/2026-11-12-integracao-continua.md).
-- **Medir as métricas da aula**: `npm run metricas` reproduz localmente as 14 métricas da Aula 09 (volume, duplicação, cobertura, specs, trailers, frequência, sessões, autoria, segurança e URL pública).
+- **Medir as métricas da aula**: `npm run metricas` reproduz localmente as 10 métricas verificáveis da Aula 09 (volume, duplicação, cobertura, specs, trailers, frequência, sessões, autoria, segurança e URL pública).
 - **Publicar issues**: `node scripts/publicar-issues.mjs` cria as issues a partir de `docs/issues/bodies/`; o script é idempotente e pula as que já existem.
 - **SPEC antes do código**: toda funcionalidade nova tem SPEC datada em `SPEC/` antes do primeiro commit de código.
 
@@ -209,5 +215,5 @@ O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.m
 
 - Status da publicação: sistema publicado online na Vercel.
 - URL pública: https://dsai-ap1-sigrestaurant.vercel.app/ — ainda serve a deployment da AP1; falta publicar o fork (issue 0.5).
-- O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e o estado atual da AP2 é de **2 097 linhas adicionadas** (medido em `d77cd1a`; `npm run metricas` refaz a conta) — 2,1% do mínimo exigido, das quais **582 são código** (testes, scripts de métrica e publicação de issues) e o restante é documentação e configuração. Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
+- O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e a `main` após os PRs #54–#70 (`3b32ef7`) é de **15 996 linhas adicionadas** — 16% do mínimo, das quais **12 199 são código de produto** (`npm run metricas` refaz a conta). Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
 - O ambiente não oferece exportação bruta das conversas; as mensagens do usuário foram transcritas no arquivo de sessão.
