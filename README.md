@@ -191,9 +191,11 @@ Rotas `/api/menu-categories` (criar, renomear, apagar sem itens, `PUT order` com
 
 `PUT /api/menu-items/:id/options` (`{ variants: [{ name, price }], addons: [{ name, price }] }`) troca as variações (por exemplo 300 ml e 500 ml, cada uma com seu preço) e os adicionais (valor fixo, pode ser R$ 0,00) do item; `GET` mostra as listas. Ao lançar (`POST /api/tables/:id/items`), `variantId` e `addonIds` são opcionais; item com variações exige uma. A linha guarda o nome com a variação, os adicionais e o preço somado, e não muda se o cardápio mudar depois. A cozinha vê os adicionais de cada linha. SPEC [`2026-11-16-variacoes-e-adicionais.md`](SPEC/2026-11-16-variacoes-e-adicionais.md).
 
-### Metas de vendas e comparativo (somente API)
+### Metas de vendas e comparativo
 
 `PUT /api/goals/:month` (`{ revenue, orders, averageTicket }`, cada um opcional, pelo menos um) cadastra a meta do mês; `GET /api/goals?year=` lista e `DELETE` apaga. `GET /api/goals/:month/progress` mostra o realizado até agora (receita com desconto, comandas pagas e ticket médio), o atingimento de cada meta e o comparativo com o mesmo pedaço do mês anterior (dia 1 a 16 contra dia 1 a 16). `GET /api/reports/compare?from&to` compara qualquer período com o anterior de mesmo tamanho. SPEC [`2026-11-16-metas-de-vendas.md`](SPEC/2026-11-16-metas-de-vendas.md).
+
+Na interface, a seção **Metas** (modo servidor) mostra, para o mês escolhido, o realizado, a meta, o atingimento com barra de progresso e a variação contra o mês anterior em receita, comandas e ticket médio; define, altera e remove a meta; lista as metas do ano e compara dois períodos. SPEC [`2026-11-17-tela-de-metas.md`](SPEC/2026-11-17-tela-de-metas.md).
 
 ### Delivery (somente API)
 

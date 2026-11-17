@@ -1,7 +1,7 @@
 # Tela de metas de vendas e comparativo
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-metas-de-vendas.md` (API), issue #39  
 **Derroga:** n/a (só consome a API existente; nenhuma regra muda)
@@ -111,3 +111,4 @@ As regras são as da SPEC da API, que continua sendo a fonte final. A tela repet
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-07 verificados por 23 testes de `lib/metas.test.ts` e 12 de `app/metas-panel.test.tsx`; `tsc --noEmit` sem erros e os 11 testes de `page.test.tsx` passando. O build completo e o E2E de celular (T-08) ficam com o CI | implementada |
