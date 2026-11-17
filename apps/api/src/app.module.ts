@@ -19,8 +19,10 @@ import { SalesReportsModule } from './sales-reports/sales-reports.module';
 import { StockModule } from './stock/stock.module';
 import { WaitersModule } from './waiters/waiters.module';
 
+import { ReceivablesModule } from './receivables/receivables.module';
+
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, ReceivablesModule],
   controllers: [AppController],
   providers: [AppService],
 })
