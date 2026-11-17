@@ -48,6 +48,11 @@ enum PurchaseStatus {
   CANCELLED
 }
 
+enum ClosingStatus {
+  CLOSED
+  REOPENED
+}
+
 model DiningTable {
   id           Int           @id @default(autoincrement())
   number       Int           @unique
@@ -223,4 +228,26 @@ model PurchaseItem {
 
   @@index([purchaseId])
   @@index([ingredientId])
+}
+
+model MonthlyClosing {
+  id            Int           @id @default(autoincrement())
+  month         String        @unique
+  status        ClosingStatus @default(CLOSED)
+  revision      Int           @default(1)
+  revenue       Decimal       @db.Decimal(12, 2)
+  cash          Decimal       @db.Decimal(12, 2)
+  credit        Decimal       @db.Decimal(12, 2)
+  debit         Decimal       @db.Decimal(12, 2)
+  pix           Decimal       @db.Decimal(12, 2)
+  purchases     Decimal       @db.Decimal(12, 2)
+  otherExpenses Decimal       @db.Decimal(12, 2)
+  result        Decimal       @db.Decimal(12, 2)
+  paidOrders    Int
+  averageTicket Decimal       @db.Decimal(12, 2)
+  notes         String?
+  closedAt      DateTime      @default(now())
+  reopenedAt    DateTime?
+  reopenReason  String?
+  updatedAt     DateTime      @updatedAt
 }

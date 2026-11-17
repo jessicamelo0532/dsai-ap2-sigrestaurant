@@ -126,6 +126,19 @@ Rotas em `/api/suppliers`, `/api/purchases` e `/api/payables` (SPEC [`2026-11-13
 
 Registrar a compra dá entrada no estoque. Pagar cria a despesa "Compra #N - Fornecedor" na data do pagamento, que só pode ser mudada pela própria compra. Cancelar só é possível se o estoque ainda tiver tudo o que entrou.
 
+### Fechamento mensal (somente API)
+
+Rotas em `/api/closings` (SPEC [`2026-11-16-fechamento-mensal.md`](SPEC/2026-11-16-fechamento-mensal.md)):
+
+| Método e rota | Uso |
+|---|---|
+| `GET /api/closings/AAAA-MM` | DRE do mês: receita por forma de pagamento, compras de insumos, outras despesas, resultado, ticket médio, mês anterior, variação e, se fechado, valores guardados e divergências |
+| `POST /api/closings` | Fechar um mês já encerrado (`{ month, notes? }`) |
+| `POST /api/closings/AAAA-MM/reopen` | Reabrir com motivo (`{ reason }`) |
+| `GET /api/closings` | Fechamentos, do mais recente para o mais antigo |
+
+Com o mês fechado, despesas e pagamentos de compra com data naquele mês são recusados até a reabertura.
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
