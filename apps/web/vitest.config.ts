@@ -1,6 +1,11 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Mesmo alias @/ do tsconfig (Next); sem ele os componentes não resolvem nos testes.
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('.', import.meta.url)) },
+  },
   test: {
     environment: 'node',
     include: ['**/*.test.{ts,tsx}'],

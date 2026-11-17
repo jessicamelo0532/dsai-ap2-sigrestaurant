@@ -16,6 +16,12 @@
     "e2e:celular": "npm --workspace apps/web run e2e:celular"
   },
   "devDependencies": {
-    "jscpd": "^4.0.5"
+    "jscpd": "^4.0.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "overrides": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   }
 }
