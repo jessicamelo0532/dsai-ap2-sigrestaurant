@@ -88,12 +88,12 @@ export function GarconsPanel({ mode, canConnect, onConnect }: Props) {
 
       <div className="panel garcom-panel">
         <div className="garcom-head"><UserRound size={18} /><strong>Equipe</strong><span className="count-pill">{counts.active} ativos · {counts.inactive} inativos</span></div>
-        {!waiters.length && !error && <span className="caixa-muted">Nenhum garçom cadastrado.</span>}
+        {!waiters.length && !error && <span className="garcom-muted">Nenhum garçom cadastrado.</span>}
         <ul className="garcom-list">
           {sortWaiters(waiters).map((waiter) => (
             <li key={waiter.id} className={`garcom-row${waiter.active ? '' : ' inactive'}`}>
               <div><strong>{waiter.name}</strong><span>Comissão {rateLabel(waiter.commissionRate)}</span></div>
-              <span className={`status-badge ${waiter.active ? 'status-open' : 'status-closed'}`}>{waiter.active ? 'Ativo' : 'Inativo'}</span>
+              <span className={`status-badge ${waiter.active ? 'status-active' : 'status-inactive'}`}>{waiter.active ? 'Ativo' : 'Inativo'}</span>
               <div className="ticket-actions">
                 <button className="button button-light" disabled={busy} onClick={() => { setMessage(''); setEditing(waiter); }} aria-label={`Editar ${waiter.name}`}><Pencil size={15} />Editar</button>
                 <button className="button button-light" disabled={busy} onClick={() => void toggle(waiter)} aria-label={`${waiter.active ? 'Desativar' : 'Ativar'} ${waiter.name}`}><Power size={15} />{waiter.active ? 'Desativar' : 'Ativar'}</button>
@@ -187,9 +187,9 @@ function CommissionReport() {
         <button className="button button-light" onClick={() => void load(period)}><RefreshCw size={16} />Ver período</button>
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
-      {report && !report.waiters.length && <span className="caixa-muted">Nenhuma conta paga no período.</span>}
+      {report && !report.waiters.length && <span className="garcom-muted">Nenhuma conta paga no período.</span>}
       {report && !!report.waiters.length && (
-        <table className="caixa-table" aria-label="Vendas e comissão por garçom">
+        <table className="garcom-table" aria-label="Vendas e comissão por garçom">
           <thead><tr><th>Garçom</th><th>Contas</th><th>Receita</th><th>Ticket médio</th><th>Comissão</th></tr></thead>
           <tbody>
             {report.waiters.map((row) => (
