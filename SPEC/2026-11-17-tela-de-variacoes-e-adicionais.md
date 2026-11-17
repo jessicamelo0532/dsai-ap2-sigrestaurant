@@ -1,7 +1,7 @@
 # Tela de variações e adicionais: cadastro no cardápio e escolha ao lançar
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-variacoes-e-adicionais.md` (API), issue #38  
 **Derroga:** n/a (só consome a API existente)
@@ -104,3 +104,4 @@ As da SPEC da API, repetidas na tela antes de enviar, com as mesmas mensagens:
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-06 verificados por 19 testes de `lib/opcoes.test.ts`, 9 de `app/opcoes.test.tsx` e 1 novo em `app/page.test.tsx` (item sem opções lançado direto pela tela principal); `tsc --noEmit` sem erros | implementada |
