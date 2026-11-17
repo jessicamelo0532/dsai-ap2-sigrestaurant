@@ -1,7 +1,7 @@
 # Tela de horários do cardápio
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-cardapio-por-horario.md` (API), issue #41  
 **Derroga:** n/a (só consome a API existente)
@@ -95,3 +95,4 @@ As da SPEC da API, repetidas na tela antes de enviar, com as mesmas mensagens:
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-06 verificados por 17 testes de `lib/horarios.test.ts` e 7 de `app/horarios-panel.test.tsx`; `tsc --noEmit` sem erros e `page.test.tsx` passando | implementada |

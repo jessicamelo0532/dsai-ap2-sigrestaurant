@@ -179,9 +179,11 @@ Rotas `/api/customers` (cadastro com nome, telefone com DDD e observação; busc
 
 O cliente ligado à comanda ganha pontos quando ela é paga (padrão: 1 ponto por real; `GET`/`PUT /api/loyalty/settings` mudam a regra). `GET /api/customers/:id/loyalty` mostra saldo, quanto ele vale e o extrato. `POST /api/orders/:id/loyalty` (`{ points }`) troca pontos por desconto na comanda aberta (padrão: 100 pontos = R$ 5,00, mínimo de 100) e `DELETE` desfaz; cancelar a comanda também devolve os pontos. O desconto nunca passa do total. O total da comanda (itens menos desconto) é calculado num lugar só (`apps/api/src/common/order-total.ts`) e vale para o relatório financeiro, o caixa, os garçons, o fechamento mensal e o histórico do cliente; o relatório de vendas mostra os descontos à parte. SPEC [`2026-11-16-programa-de-fidelidade.md`](SPEC/2026-11-16-programa-de-fidelidade.md).
 
-### Cardápio por dia e horário (somente API)
+### Cardápio por dia e horário
 
 `PUT /api/menu-items/:id/availability` (`{ windows: [{ weekday, start, end }] }`, dia de 0 a 6 e horário `HH:MM`) troca as janelas em que o item é servido; lista vazia volta o item para "sempre disponível". `GET` mostra as janelas e se o item está disponível agora. A lista do cardápio (`GET /api/menu-items`) esconde o item fora da janela, e lançar na comanda é recusado dizendo quando ele volta. Vale o horário de Belém. Item sem janela continua como antes. SPEC [`2026-11-16-cardapio-por-horario.md`](SPEC/2026-11-16-cardapio-por-horario.md).
+
+Na interface (modo servidor), a aba **Horários** do Cardápio mostra se o item está disponível agora e edita as janelas de dia e horário, com atalho para repetir uma janela nos dias úteis e para voltar a "sempre disponível". SPEC [`2026-11-17-tela-de-horarios-do-cardapio.md`](SPEC/2026-11-17-tela-de-horarios-do-cardapio.md).
 
 ### Categorias do cardápio (somente API)
 
