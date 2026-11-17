@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
-  CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
+  CalendarDays, CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
 import {
@@ -15,12 +15,13 @@ import { SalaoPanel } from './salao-panel';
 import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
+import { ReservasPanel } from './reservas-panel';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'cardapio' | 'financeiro';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', cardapio: 'Cardápio', financeiro: 'Financeiro' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'cardapio' | 'financeiro';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', cardapio: 'Cardápio', financeiro: 'Financeiro' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -164,6 +165,7 @@ export default function Home() {
           <button className={section === 'operacao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('operacao')}><LayoutDashboard size={18} />Visão geral</button>
           <button className={section === 'salao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('salao')}><LayoutGrid size={18} />Salão</button>
           <button className={section === 'cozinha' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cozinha')}><ChefHat size={18} />Cozinha</button>
+          <button className={section === 'reservas' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('reservas')}><CalendarDays size={18} />Reservas</button>
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
         </nav>
@@ -188,6 +190,7 @@ export default function Home() {
           {section === 'cozinha' && <CozinhaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
 
           {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
+          {section === 'reservas' && <ReservasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onOpenTable={(tableNumber) => { const table = tables.find((entry) => entry.number === tableNumber); if (table) setSelectedTable(table.id); setSection('operacao'); }} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
