@@ -1,7 +1,7 @@
 # Tela do caixa por turno
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-caixa-por-turno.md` (API), issue #32  
 **Derroga:** n/a (só consome a API existente; nenhuma regra muda)
@@ -116,3 +116,4 @@ O limite da sangria (RN-05 da API) não é repetido na tela: ele depende do dinh
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-08 verificados por 35 testes de `lib/caixa.test.ts` e 12 de `app/caixa-panel.test.tsx`; suíte do frontend com 225 testes passando; `npm run build` verde; cobertura de `caixa.ts` 100% e de `caixa-panel.tsx` 94,8% das linhas. T-08 (celular 375 px) fica com o job do CI | implementada |
