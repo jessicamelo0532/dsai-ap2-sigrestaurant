@@ -163,3 +163,15 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* Tela de fidelidade (SPEC/2026-11-17-tela-de-fidelidade.md) */
+.fidelidade-rule,.fidelidade-lookup{display:grid;gap:12px;margin-bottom:16px;font-size:15px}
+.fidelidade-head{display:flex;gap:8px;align-items:center}
+.fidelidade-facts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.fidelidade-facts li{display:grid;gap:4px;background:var(--purple-soft);border-radius:10px;padding:12px}.fidelidade-facts span{color:#626776;font-size:14px}
+.fidelidade-example,.fidelidade-preview{margin:0;color:#4a4f5c;line-height:1.5}.fidelidade-preview{background:#f7f7f9;border-radius:8px;padding:10px;font-size:14px}
+.fidelidade-search{display:flex;gap:8px}.fidelidade-search input{flex:1;border:1px solid #e7e7ec;border-radius:8px;padding:9px 11px}
+.fidelidade-options{list-style:none;margin:0;padding:0;display:grid;gap:6px}.fidelidade-options .button{width:100%;justify-content:flex-start}
+.fidelidade-muted{color:#7a7f8c;font-size:14px}
+.fidelidade-balance{display:grid;gap:10px}.fidelidade-balance-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.fidelidade-balance-head>div{display:grid;gap:3px}.fidelidade-balance-head span,.fidelidade-balance-head small{color:#7a7f8c;font-size:14px}.fidelidade-balance-head strong{font-size:22px}
+.fidelidade-entries{list-style:none;margin:0;padding:0;display:grid;gap:6px}.fidelidade-entries li{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:#f7f7f9}.fidelidade-entries li.in strong{color:var(--green)}.fidelidade-entries li.out strong{color:#b4373b}
+@media(max-width:650px){.fidelidade-facts{grid-template-columns:1fr}.fidelidade-entries li{grid-template-columns:1fr auto}.fidelidade-search .button{flex:none}}
