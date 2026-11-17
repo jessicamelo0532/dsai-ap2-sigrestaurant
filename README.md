@@ -147,6 +147,10 @@ Com o mês fechado, despesas e pagamentos de compra com data naquele mês são r
 
 Rotas em `/api/cash` (SPEC [`2026-11-16-caixa-por-turno.md`](SPEC/2026-11-16-caixa-por-turno.md)): `POST open` (operador e troco), `POST withdrawals` (sangria) e `POST deposits` (reforço) com motivo, `GET current` (vendas, movimentações e esperado por forma de pagamento), `POST close` (valores conferidos em dinheiro, crédito, débito e Pix; com diferença, a observação é obrigatória), `GET sessions?from&to` e `GET sessions/:id`. Um turno aberto por vez; a sangria não passa do dinheiro na gaveta.
 
+### Garçons e comissão (somente API)
+
+Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/waiter` (atribui ou troca o garçom de uma comanda aberta, guardando nome e taxa daquele momento) e `GET /api/reports/waiters?from&to` (contas, receita, ticket médio e comissão por garçom, com "Sem garçom" e os totais). Comissão padrão de 10%, de 0 a 30% por garçom. SPEC [`2026-11-16-garcons-e-comissao.md`](SPEC/2026-11-16-garcons-e-comissao.md).
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).
