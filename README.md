@@ -105,6 +105,8 @@ Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-
 
 A mesma mesa não aceita duas reservas ativas em horários sobrepostos, e mesas com reserva agendada não podem ser removidas. Duração padrão (120 min), antecedência máxima (90 dias) e fuso da agenda (UTC) são provisórios até a resposta do cliente.
 
+Horário de funcionamento: `GET/PUT /api/opening-hours` cadastra as janelas da casa por dia da semana (mesmas regras do cardápio por horário). Com horário cadastrado, criar, remarcar e buscar mesas livres recusam a reserva que não cabe inteira numa janela do dia ("A casa não abre sábado." ou "A reserva fica fora do horário de funcionamento de sexta-feira: das 18:00 às 23:00."); sem horário, tudo segue como antes. Na tela, o botão **Horário de funcionamento** fica na seção Reservas. SPEC [`2026-11-17-horario-de-funcionamento.md`](SPEC/2026-11-17-horario-de-funcionamento.md).
+
 ### Estoque de ingredientes (somente API)
 
 Rotas em `/api/stock` e `/api/menu-items/:id/recipe` (SPEC [`2026-11-13-estoque-de-ingredientes.md`](SPEC/2026-11-13-estoque-de-ingredientes.md)):

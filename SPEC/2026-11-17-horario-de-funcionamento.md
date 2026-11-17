@@ -1,7 +1,7 @@
 # Horário de funcionamento e reservas dentro do expediente
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #40 (backlog 2.23), `SPEC/2026-11-12-reservas-de-mesa.md`, P-1 de `SPEC/2026-11-17-tela-de-reservas.md`  
 **Derroga:** `SPEC/2026-11-12-reservas-de-mesa.md`, só no ponto em que a reserva era aceita em qualquer horário: com horário de funcionamento cadastrado, a reserva precisa caber nele.
@@ -95,3 +95,4 @@ Cadastrar o horário de funcionamento da casa por dia da semana e recusar reserv
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia, com P-1 e P-2 decididas pela dupla | aprovada |
+| 2026-11-17 | CA-01 a CA-05 verificados por 7 testes de regras e 7 de integração num PostgreSQL 16 local (suíte da API com 711 de 712 passando; a falha foi tempo esgotado em `fechamento.test.ts` na máquina local, que passa sozinho); `prisma migrate diff` sem diferença. CA-06 por 6 testes de componente; os 8 testes da tela de reservas continuam passando. O editor de janelas foi extraído para `janelas-editor.tsx` e é usado também pela aba Horários | implementada |
