@@ -53,7 +53,7 @@ Calcular, a cada push, a cobertura das linhas novas de código (frontend e API) 
 
 - **RN-01:** Contam arquivos `.ts` e `.tsx` de `apps/web` e `apps/api`. Ficam de fora: testes (`*.test.ts(x)`, pasta `test/`), `e2e/`, `*.d.ts`, arquivos de configuração (`*.config.*`), `apps/api/prisma/` e `apps/api/src/main.ts` (já excluído da cobertura da API).
 - **RN-02:** Para um arquivo com relatório, contam só as linhas novas que o lcov marca como executáveis (`DA:`); a linha está coberta se o número de execuções for maior que zero.
-- **RN-03:** Um arquivo que conta mas não aparece em nenhum relatório (nenhum teste o carregou) entra como **descoberto**: todas as suas linhas novas que não são vazias nem só comentário contam como não cobertas. É a escolha conservadora: não melhora o número escondendo código sem teste.
+- **RN-03:** Um arquivo que conta mas não aparece em nenhum relatório (nenhum teste o carregou) entra como **descoberto**: todas as suas linhas novas que não são vazias nem só comentário contam como não cobertas. É a escolha conservadora: não melhora o número escondendo código sem teste. Exceção: arquivo só de tipos (`type`, `interface`, `import type`), que não tem nada que rode e por isso nunca aparece no lcov, não entra na conta.
 - **RN-04:** Percentual = cobertas ÷ medidas × 100, com uma casa. Sem linhas medidas, o resultado é 100% com o aviso "nenhuma linha nova de código".
 
 ## Critérios de aceitação verificáveis
@@ -62,7 +62,7 @@ Calcular, a cada push, a cobertura das linhas novas de código (frontend e API) 
 - **CA-02:** Dado um lcov com `SF:` relativo com `\` ou absoluto, então o caminho vira `apps/<app>/...` com `/`.
 - **CA-03:** Dados arquivos de teste, de configuração e de código, então só os de código contam (RN-01).
 - **CA-04:** Dadas linhas novas executáveis com e sem execução, então o percentual segue RN-02 e RN-04.
-- **CA-05:** Dado um arquivo de código sem relatório, então suas linhas novas não vazias e que não são só comentário contam como não cobertas (RN-03).
+- **CA-05:** Dado um arquivo de código sem relatório, então suas linhas novas não vazias e que não são só comentário contam como não cobertas; um arquivo só de tipos sem relatório não conta (RN-03).
 - **CA-06:** Dado percentual abaixo do mínimo, então o comando sai com código 1; acima, com 0.
 - **CA-07:** Dado o CI, então o job novo roda depois dos jobs de frontend e API e escreve o resultado no resumo.
 
@@ -106,3 +106,4 @@ Calcular, a cada push, a cobertura das linhas novas de código (frontend e API) 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | RN-03 e CA-05: arquivo só de tipos não entra na conta (encontrado ao rodar T-05: `apps/web/lib/types.ts` aparecia como descoberto) | aprovada |

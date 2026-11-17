@@ -89,8 +89,17 @@ export function isCodeLine(text) {
   return !(line.startsWith('//') || line.startsWith('/*') || line.startsWith('*') || line.startsWith('*/'));
 }
 
-// CA-04 e CA-05: cobertura das linhas novas. `readLine(file, n)` dá o texto da linha (RN-03).
-export function diffCoverage(added, lcov, readLine) {
+// RN-03: arquivo só de tipos (type, interface, import type) não tem nada que rode e não entra na conta.
+export function hasRuntimeCode(lines) {
+  const code = lines
+    .filter(isCodeLine)
+    .filter((line) => !/^\s*import\s+type\b/.test(line))
+    .join('\n');
+  return /\b(function|class|const|let|var|return|new|if|for|while|switch|throw|enum)\b|=>/.test(code);
+}
+
+// CA-04 e CA-05: cobertura das linhas novas. `readLines(file)` dá as linhas do arquivo atual (RN-03).
+export function diffCoverage(added, lcov, readLines) {
   const files = [];
   const missing = [];
   for (const [file, lines] of added) {
@@ -105,7 +114,9 @@ export function diffCoverage(added, lcov, readLine) {
         if (report.get(line) > 0) covered += 1;
       }
     } else {
-      for (const line of lines) if (isCodeLine(readLine(file, line))) total += 1;
+      const content = readLines(file);
+      if (!hasRuntimeCode(content)) continue;
+      for (const line of lines) if (isCodeLine(content[line - 1])) total += 1;
       if (total) missing.push(file);
     }
     if (total) files.push({ file, total, covered, uncovered: total - covered });

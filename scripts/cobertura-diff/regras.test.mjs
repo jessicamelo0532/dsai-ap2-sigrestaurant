@@ -3,7 +3,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  diffCoverage, isCodeLine, isMeasured, mergeLcov, normalizeLcovPath, parseAddedLines, parseLcov, percent,
+  diffCoverage, hasRuntimeCode, isCodeLine, isMeasured, mergeLcov, normalizeLcovPath, parseAddedLines, parseLcov, percent,
   summaryMarkdown, worstFiles,
 } from './regras.mjs';
 
@@ -105,10 +105,10 @@ describe('cálculo (CA-04, CA-05)', () => {
   ]);
   const lcov = new Map([['apps/web/lib/a.ts', new Map([[1, 5], [2, 0], [4, 1]])]]);
   const source = { 'apps/api/src/sem-teste.ts': ['export const x = 1;', '', '// comentário', 'export const y = 2;'] };
-  const readLine = (file, line) => source[file]?.[line - 1] ?? '';
+  const readLines = (file) => source[file] ?? [];
 
   it('conta só linhas executáveis e marca arquivo sem relatório como descoberto', () => {
-    const result = diffCoverage(added, lcov, readLine);
+    const result = diffCoverage(added, lcov, readLines);
     assert.deepEqual(result.files, [
       { file: 'apps/web/lib/a.ts', total: 3, covered: 2, uncovered: 1 },
       { file: 'apps/api/src/sem-teste.ts', total: 2, covered: 0, uncovered: 2 },
@@ -117,6 +117,21 @@ describe('cálculo (CA-04, CA-05)', () => {
     assert.equal(result.covered, 2);
     assert.equal(result.percent, 40);
     assert.deepEqual(result.missing, ['apps/api/src/sem-teste.ts']);
+  });
+
+  it('arquivo só de tipos sem relatório não conta', () => {
+    const onlyTypes = new Map([['apps/web/lib/types.ts', new Set([1, 2, 3])]]);
+    const lines = ["import type { A } from './a';", 'export type B = { a: A;', '  b?: number | null; };'];
+    const result = diffCoverage(onlyTypes, new Map(), () => lines);
+    assert.equal(result.total, 0);
+    assert.deepEqual(result.missing, []);
+  });
+
+  it('reconhece código que roda', () => {
+    assert.equal(hasRuntimeCode(['export type A = { a: number };', 'interface B { b: string }']), false);
+    assert.equal(hasRuntimeCode(['// const comentada', 'export type A = string;']), false);
+    assert.equal(hasRuntimeCode(['export const a = 1;']), true);
+    assert.equal(hasRuntimeCode(['export default (x: number) => x;']), true);
   });
 
   it('percentual com uma casa e 100% sem linhas', () => {
@@ -133,7 +148,7 @@ describe('cálculo (CA-04, CA-05)', () => {
   });
 
   it('piores arquivos e resumo', () => {
-    const result = diffCoverage(added, lcov, readLine);
+    const result = diffCoverage(added, lcov, readLines);
     assert.deepEqual(worstFiles(result).map((entry) => entry.file), ['apps/api/src/sem-teste.ts', 'apps/web/lib/a.ts']);
     const markdown = summaryMarkdown(result, 70, 'd0a6caf');
     assert.match(markdown, /\*\*40,0%\*\* \(2 de 5 linhas novas cobertas\)\. Mínimo: 70%\. Abaixo do mínimo\./);
