@@ -143,6 +143,10 @@ Com o mês fechado, despesas e pagamentos de compra com data naquele mês são r
 
 `GET /api/reports/sales?from=AAAA-MM-DD&to=AAAA-MM-DD&limit=10` (SPEC [`2026-11-16-relatorios-de-vendas.md`](SPEC/2026-11-16-relatorios-de-vendas.md)): contas pagas, receita, itens vendidos, ticket médio, ranking dos itens por quantidade e por receita, receita por categoria, por hora do dia e dia da semana (horário de Belém), por forma de pagamento e categoria × hora. Todas as quebras somam a receita do período, que é a mesma do relatório financeiro.
 
+### Caixa por turno (somente API)
+
+Rotas em `/api/cash` (SPEC [`2026-11-16-caixa-por-turno.md`](SPEC/2026-11-16-caixa-por-turno.md)): `POST open` (operador e troco), `POST withdrawals` (sangria) e `POST deposits` (reforço) com motivo, `GET current` (vendas, movimentações e esperado por forma de pagamento), `POST close` (valores conferidos em dinheiro, crédito, débito e Pix; com diferença, a observação é obrigatória), `GET sessions?from&to` e `GET sessions/:id`. Um turno aberto por vez; a sangria não passa do dinheiro na gaveta.
+
 ## Especificações e ferramentas
 
 - Especificação inicial: [`SPEC/2026-10-01-restaurante.md`](SPEC/2026-10-01-restaurante.md).

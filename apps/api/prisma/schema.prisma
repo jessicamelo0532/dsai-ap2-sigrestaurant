@@ -53,6 +53,16 @@ enum ClosingStatus {
   REOPENED
 }
 
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum CashMovementType {
+  WITHDRAWAL
+  DEPOSIT
+}
+
 model DiningTable {
   id           Int           @id @default(autoincrement())
   number       Int           @unique
@@ -250,4 +260,39 @@ model MonthlyClosing {
   reopenedAt    DateTime?
   reopenReason  String?
   updatedAt     DateTime      @updatedAt
+}
+
+model CashSession {
+  id             Int               @id @default(autoincrement())
+  status         CashSessionStatus @default(OPEN)
+  openedBy       String
+  openingAmount  Decimal           @db.Decimal(10, 2)
+  openedAt       DateTime
+  closedBy       String?
+  closedAt       DateTime?
+  expectedCash   Decimal?          @db.Decimal(10, 2)
+  expectedCredit Decimal?          @db.Decimal(10, 2)
+  expectedDebit  Decimal?          @db.Decimal(10, 2)
+  expectedPix    Decimal?          @db.Decimal(10, 2)
+  countedCash    Decimal?          @db.Decimal(10, 2)
+  countedCredit  Decimal?          @db.Decimal(10, 2)
+  countedDebit   Decimal?          @db.Decimal(10, 2)
+  countedPix     Decimal?          @db.Decimal(10, 2)
+  notes          String?
+  movements      CashMovement[]
+
+  @@index([status])
+  @@index([openedAt])
+}
+
+model CashMovement {
+  id        Int              @id @default(autoincrement())
+  sessionId Int
+  type      CashMovementType
+  amount    Decimal          @db.Decimal(10, 2)
+  reason    String
+  createdAt DateTime
+  session   CashSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
 }
