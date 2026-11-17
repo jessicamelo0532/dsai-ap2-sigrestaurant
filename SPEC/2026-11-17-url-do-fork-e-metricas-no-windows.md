@@ -37,6 +37,7 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 - Calcular `ROOT` com `fileURLToPath`.
 - Executar `npm` e `npx` por shell somente quando `process.platform === 'win32'`.
 - Gravar os relatórios temporários em `os.tmpdir()`.
+- Medir a duplicação com o mesmo alvo e as mesmas exclusões do job do CI (`apps`, ignorando `node_modules`, `.next`, `coverage` e `dist`). Sem as exclusões, a medição local entrava nas pastas geradas e dava 7,13% contra os 2,78% reais.
 - Atualizar o README: seção "Publicar na Vercel" e status da publicação.
 
 ## Fora do escopo
@@ -50,6 +51,7 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 - **RF-01:** Sem `PUBLIC_URL`, a métrica `url` mede `https://dsai-ap2-sigrestaurant.vercel.app/`.
 - **RF-02:** No Windows, as métricas `specs`, `commits`, `frequencia`, `sessoes`, `autoria`, `seguranca` e `url` produzem resultado em vez de `erro na medicao`.
 - **RF-03:** No Windows, `duplicacao` e `cobertura` executam `npx` e produzem resultado.
+- **RF-05:** A duplicação local mede o mesmo conjunto de arquivos que o job `duplicacao` do CI.
 - **RF-04:** O README indica a URL do fork como URL pública e registra que a Vercel publica cada push na `main`.
 
 ## Requisitos não funcionais
@@ -64,7 +66,7 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 ## Critérios de aceitação verificáveis
 
 - **CA-01:** Dado o Windows com Git Bash, quando rodo `npm run metricas specs commits frequencia sessoes autoria seguranca url`, então nenhuma dessas linhas termina em `erro na medicao`.
-- **CA-02:** Dado o Windows, quando rodo `npm run metricas duplicacao cobertura`, então as duas métricas imprimem um percentual.
+- **CA-02:** Dado o Windows, quando rodo `npm run metricas duplicacao`, então a métrica imprime um percentual medido sobre os mesmos arquivos do CI.
 - **CA-03:** Dado nenhum `PUBLIC_URL`, quando rodo `npm run metricas url`, então a linha mostra `https://dsai-ap2-sigrestaurant.vercel.app/` e `HTTP 200`.
 - **CA-04:** Dado o PR aberto, quando o CI roda, então todos os jobs ficam verdes.
 
@@ -73,7 +75,7 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 | # | Pré-condição | Passos | Resultado esperado |
 |---|---|---|---|
 | T-01 | Windows 11, Node 24, Git Bash | `npm run metricas specs commits frequencia sessoes autoria seguranca url` | sete resultados, nenhum `erro na medicao` |
-| T-02 | Windows 11, dependências instaladas | `npm run metricas duplicacao cobertura` | percentual de duplicação e de cobertura |
+| T-02 | Windows 11, dependências instaladas | `npm run metricas duplicacao` | percentual de duplicação, sem `node_modules`, `.next` e `coverage` |
 | T-03 | sem `PUBLIC_URL` | `npm run metricas url` | `HTTP 200 em https://dsai-ap2-sigrestaurant.vercel.app/` |
 
 - **Camada de teste:** script de medição (`scripts/`), fora das suítes de `apps/web` e `apps/api`.
@@ -91,6 +93,7 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 ## Dependências e riscos
 
 - **Dependências:** projeto da Vercel criado pela dupla em 2026-11-17.
+- **Pendência conhecida:** nesta máquina Windows o Vitest encerra com `Timeout terminating forks worker` em parte dos arquivos de teste (também em `npm test`), e a métrica `cobertura` não acha o relatório. É um problema do ambiente local do Vitest, fora do escopo; a cobertura autoritativa continua sendo a do CI (Linux).
 - **Riscos:** usar shell no Windows poderia mudar a forma como os argumentos são interpretados.
 - **Mitigações:** o shell é usado somente no Windows e somente para `npm` e `npx`, cujos argumentos neste script não têm espaços.
 
@@ -108,3 +111,4 @@ Fazer a URL do fork ser a URL pública documentada e medida, e fazer `npm run me
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | Inclui o alinhamento da duplicação com o CI; cobertura no Windows registrada como pendência do ambiente | aprovada |
