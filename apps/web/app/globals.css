@@ -163,3 +163,19 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* Tela do caixa por turno (SPEC/2026-11-17-tela-do-caixa.md) */
+.caixa-open,.caixa-current,.caixa-history{display:grid;gap:14px;margin-bottom:16px}
+.caixa-open-copy{display:flex;gap:12px;align-items:flex-start}.caixa-open-copy div{display:grid;gap:4px}.caixa-open-copy span,.caixa-muted{color:#7a7f8c;font-size:14px}
+.caixa-open .form-row label{display:grid;gap:6px;flex:1;font-weight:600;color:#626776}
+.caixa-open .form-row input{width:100%;border:1px solid #e7e7ec;border-radius:8px;padding:10px 11px}
+.caixa-current-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.caixa-current-head>div:first-child{display:grid;gap:5px}.caixa-current-head small{color:#7a7f8c;font-size:14px}
+.caixa-table{width:100%;border-collapse:collapse;font-size:15px}.caixa-table th,.caixa-table td{text-align:left;padding:9px 6px;border-bottom:1px solid #f0f0f2}.caixa-table th:not(:first-child),.caixa-table td:not(:first-child){text-align:right}.caixa-table tfoot td{font-weight:700;border-bottom:0}
+.caixa-movements,.caixa-history{font-size:15px}.caixa-movements ul,.caixa-history ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+.caixa-movement{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:#f7f7f9}.caixa-movement.withdrawal strong{color:#b4373b}.caixa-movement.deposit strong{color:var(--green)}.caixa-reason{color:#626776;overflow-wrap:anywhere}
+.caixa-history-head{display:flex;gap:8px;align-items:center}
+.caixa-session{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:10px;border:1px solid #f0f0f2;border-radius:10px}.caixa-session>div{display:grid;gap:3px}.caixa-session span{color:#7a7f8c;font-size:14px}.caixa-session.divergent{border-color:#f3d3d4}.caixa-diffs{grid-column:1/-1;color:#b4373b;font-size:14px}
+.status-badge.status-open{background:var(--green-soft);color:var(--green)}.status-badge.status-closed{background:#f2f2f5;color:#555b69}.status-badge.status-divergent{background:#fdecec;color:#b4373b}
+.caixa-count{display:grid;gap:10px}.caixa-count label{display:grid;grid-template-columns:1fr 130px;gap:4px 10px;align-items:center}.caixa-count small{font-weight:400;color:#8a8e99}.caixa-count em{grid-column:1/-1;font-style:normal;font-size:14px}
+.diff-ok{color:var(--green)}.diff-over{color:#9a5a17}.diff-short{color:#b4373b}
+@media(max-width:650px){.caixa-current-head .ticket-actions{width:100%}.caixa-current-head .ticket-actions .button{flex:1}.caixa-movement{grid-template-columns:1fr auto}.caixa-reason{grid-column:1/-1}.caixa-count label{grid-template-columns:1fr}}
