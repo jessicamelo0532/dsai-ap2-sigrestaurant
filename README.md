@@ -90,6 +90,10 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 
 `npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
 
+### Atendimento na comanda (modo servidor)
+
+Com uma comanda aberta no modo servidor, o painel da mesa mostra o bloco **Atendimento**: escolher o garçom entre os ativos (é o que alimenta o relatório de comissão), ligar ou tirar o cliente (histórico e pontos) e usar os pontos de fidelidade do cliente como desconto, com prévia do valor e opção de desfazer. O resumo da comanda passa a mostrar subtotal, desconto dos pontos e total a pagar. SPEC [`2026-11-17-atendimento-na-comanda.md`](SPEC/2026-11-17-atendimento-na-comanda.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

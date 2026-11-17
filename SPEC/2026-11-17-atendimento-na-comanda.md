@@ -1,7 +1,7 @@
 # Atendimento na comanda: garçom, cliente e pontos de fidelidade
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-garcons-e-comissao.md` (RF-02), `SPEC/2026-11-16-clientes-e-historico.md` (RF-04), `SPEC/2026-11-16-programa-de-fidelidade.md` (RF-04, RF-05); issues #34, #35 e #36  
 **Derroga:** n/a (só consome rotas existentes; nenhuma regra muda)
@@ -119,3 +119,4 @@ As regras são as das SPECs da API, que continuam sendo a fonte final. A tela re
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-08 verificados por 12 testes de `lib/comanda.test.ts`, 12 de `app/comanda-atendimento.test.tsx` e 3 novos em `app/page.test.tsx` (14 passando); `tsc --noEmit` sem erros. O build completo e o E2E de celular ficam com o CI | implementada |
