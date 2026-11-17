@@ -39,6 +39,8 @@ docker compose build --build-arg NEXT_PUBLIC_API_URL=http://localhost:4000/api w
 
 Importe o repositório e defina `apps/web` como **Root Directory**. Não é necessário configurar `NEXT_PUBLIC_API_URL`, `DATABASE_URL` ou outros serviços externos no modo frontend.
 
+O fork está publicado em **https://dsai-ap2-sigrestaurant.vercel.app/** (projeto `dsai-ap2-sigrestaurant` da Vercel, Root Directory `apps/web`). A Vercel publica cada push na `main` e registra o resultado no status `Vercel` do commit, então a URL serve sempre o último commit da `main`.
+
 ## Executar os testes
 
 Com as dependências instaladas, na raiz do repositório:
@@ -219,7 +221,7 @@ O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.m
 
 ## Itens de entrega do PDF ainda pendentes
 
-- Status da publicação: sistema publicado online na Vercel.
-- URL pública: https://dsai-ap1-sigrestaurant.vercel.app/ — ainda serve a deployment da AP1; falta publicar o fork (issue 0.5).
+- Status da publicação: fork publicado na Vercel com deploy a cada push na `main` (issues 0.5 e 1.6).
+- URL pública: https://dsai-ap2-sigrestaurant.vercel.app/ (a URL da AP1, https://dsai-ap1-sigrestaurant.vercel.app/, continua servindo a versão da AP1).
 - O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e a `main` após os PRs #54–#70 (`3b32ef7`) é de **15 996 linhas adicionadas** — 16% do mínimo, das quais **12 199 são código de produto** (`npm run metricas` refaz a conta). Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
 - O ambiente não oferece exportação bruta das conversas; as mensagens do usuário foram transcritas no arquivo de sessão.
