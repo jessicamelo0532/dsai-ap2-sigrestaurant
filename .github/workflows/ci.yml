@@ -180,8 +180,8 @@ jobs:
   dependencias:
     name: Alertas críticos de dependências (npm audit)
     runs-on: ubuntu-latest
-    # Não bloqueante até a atualização do Next.js (pendência P-1 da SPEC).
-    continue-on-error: true
+    # Bloqueante desde a atualização para o Next.js 16
+    # (SPEC/2026-11-16-next-16-sem-alerta-critico.md, CA-04).
     steps:
       - name: Baixar o código
         uses: actions/checkout@v4
