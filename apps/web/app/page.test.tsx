@@ -72,6 +72,7 @@ function serverRoutes(): Record<string, Route> {
     'GET /menu-items': () => ({ body: menuItems }),
     'GET /reports/financial': () => ({ body: report }),
     'GET /expenses': () => ({ body: expenses }),
+    'GET /waiters': () => ({ body: [{ id: 1, name: 'Rui', active: true }] }),
     'GET /kitchen/queue': () => ({ body: { generatedAt: new Date().toISOString(), summary: { total: 0, byStatus: { QUEUED: 0, PREPARING: 0, READY: 0 }, byBand: { NO_PRAZO: 0, ATENCAO: 0, ATRASADO: 0 }, highPriority: 0 }, tickets: [] } }),
   };
 }
@@ -251,6 +252,46 @@ describe('modo navegador (RF-08)', () => {
     expect(await screen.findByText('Dados só neste navegador')).toBeTruthy();
     await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
     expect(screen.getAllByText('Bruschetta da casa').length).toBeGreaterThan(0);
+    expect(calls).toHaveLength(0);
+  });
+});
+
+describe('atendimento na comanda (SPEC/2026-11-17-atendimento-na-comanda.md)', () => {
+  it('mostra o bloco no modo servidor e o total com o desconto dos pontos (CA-07)', async () => {
+    const withDiscount: Table[] = [{ ...tables[0], order: { ...tables[0].order!, customerId: 5, discount: '10.00', loyaltyPoints: 200 } }, tables[1]];
+    stubApi({
+      ...serverRoutes(),
+      'GET /tables': () => ({ body: withDiscount }),
+      'GET /customers/5': () => ({ body: { id: 5, name: 'Ana Souza', phone: null } }),
+      'GET /customers/5/loyalty': () => ({ body: { customerId: 5, balance: 50, balanceValue: '2.50', entries: [] } }),
+      'GET /loyalty/settings': () => ({ body: { pointsPerReal: 1, centsPerPoint: 5, minRedeemPoints: 100 } }),
+    });
+    render(<Home />);
+
+    expect(await screen.findByRole('region', { name: 'Atendimento' })).toBeTruthy();
+    expect(await screen.findByText('Ana Souza')).toBeTruthy();
+    expect(screen.getByText('Desconto (pontos)')).toBeTruthy();
+    expect(screen.getByText('Total a pagar')).toBeTruthy();
+    expect(screen.getAllByText('R$ 26,00').length).toBeGreaterThan(0);
+  });
+
+  it('sem desconto mantém o total da comanda', async () => {
+    stubApi(serverRoutes());
+    render(<Home />);
+
+    expect(await screen.findByRole('region', { name: 'Atendimento' })).toBeTruthy();
+    expect(screen.getByText('Total da comanda')).toBeTruthy();
+    expect(screen.queryByText('Desconto (pontos)')).toBeNull();
+  });
+
+  it('não aparece no modo navegador (CA-01)', async () => {
+    const calls = stubApi(serverRoutes());
+    setMode('local');
+    render(<Home />);
+
+    expect(await screen.findByText('Dados só neste navegador')).toBeTruthy();
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
+    expect(screen.queryByRole('region', { name: 'Atendimento' })).toBeNull();
     expect(calls).toHaveLength(0);
   });
 });
