@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
-  CalendarDays, CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
+  CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
 import {
@@ -16,12 +16,14 @@ import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
 import { ReservasPanel } from './reservas-panel';
+import { ReceberPanel } from './receber-panel';
+import { VenderAPrazo } from './vender-a-prazo';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'cardapio' | 'financeiro';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', cardapio: 'Cardápio', financeiro: 'Financeiro' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'cardapio' | 'financeiro' | 'receber';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -45,6 +47,8 @@ export default function Home() {
   const [menuView, setMenuView] = useState<'itens' | 'categorias'>('itens');
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [printDoc, setPrintDoc] = useState<Bobina | Cupom | null>(null);
+  // SPEC/2026-11-17-contas-a-receber.md: comanda sendo vendida a prazo.
+  const [onAccountOrder, setOnAccountOrder] = useState<Order | null>(null);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
   const [kitchenNote, setKitchenNote] = useState('');
   const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
@@ -168,6 +172,7 @@ export default function Home() {
           <button className={section === 'reservas' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('reservas')}><CalendarDays size={18} />Reservas</button>
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
+          <button className={section === 'receber' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('receber')}><HandCoins size={18} />A receber</button>
         </nav>
         <div className="sidebar-bottom"><div className="help-card"><Sparkles size={17} /><strong>Um serviço de cada vez</strong><p>Mesas organizadas deixam cada atendimento mais leve.</p></div><div className="profile"><div className="avatar">IC</div><span><strong>Equipe da casa</strong><small>Operação</small></span><MoreHorizontal size={18} /></div></div>
       </aside>
@@ -191,6 +196,7 @@ export default function Home() {
 
           {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
           {section === 'reservas' && <ReservasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onOpenTable={(tableNumber) => { const table = tables.find((entry) => entry.number === tableNumber); if (table) setSelectedTable(table.id); setSection('operacao'); }} />}
+          {section === 'receber' && <ReceberPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
@@ -214,6 +220,7 @@ export default function Home() {
                   <div className="order-total"><span>Total da comanda</span><strong>{money(orderTotal(selected.order))}</strong></div>
                   {selected.order && <button className="button button-light print-button" disabled={busy} onClick={() => setPrintDoc(buildBobina(selected.order!))}><Printer size={16} />Imprimir bobina</button>}
                   {selected.order && mode === 'api' && <div className="send-kitchen"><input value={kitchenNote} onChange={(event) => setKitchenNote(event.target.value)} maxLength={201} placeholder="Observação para a cozinha (opcional)" /><button className="button button-light" disabled={busy} onClick={() => { const invalid = validateNote(kitchenNote); if (invalid) { setMessage(invalid); return; } void run(async () => { await storeRequest(`/orders/${selected.order!.id}/kitchen`, { method: 'POST', body: JSON.stringify({ ...(kitchenNote.trim() ? { note: kitchenNote.trim() } : {}) }) }); setKitchenNote(''); }, 'Pedido enviado para a cozinha.'); }}><ChefHat size={16} />Enviar para a cozinha</button></div>}
+                  {selected.order && mode === 'api' && <button className="button button-light" disabled={busy} onClick={() => setOnAccountOrder(selected.order)}><HandCoins size={16} />Vender a prazo</button>}
                   {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
               </div>
@@ -243,6 +250,7 @@ export default function Home() {
       {showTableForm && <Modal title="Adicionar mesa" onClose={() => setShowTableForm(false)}><TableForm onCancel={() => setShowTableForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/tables', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, mesa adicionada.')) setShowTableForm(false); }} /></Modal>}
       {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} categories={menuCategories.map((category) => category.name)} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
       {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
+      {onAccountOrder && <VenderAPrazo order={onAccountOrder} totalLabel={money(orderTotal(onAccountOrder))} onCancel={() => setOnAccountOrder(null)} onDone={(text) => { setOnAccountOrder(null); setMessage(text); refreshQuietly(); }} />}
       {printDoc && <PrintSheet doc={printDoc} onClose={() => setPrintDoc(null)} />}
       {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { const closed: { order: Order | null } = { order: null }; const ok = await run(async () => { closed.order = await storeRequest<Order>(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }); }, 'Pronto, conta fechada e mesa liberada.'); if (ok) { setPaymentOrderId(null); if (closed.order) setPrintDoc(buildCupom(closed.order)); } }} /></Modal>}
     </main>

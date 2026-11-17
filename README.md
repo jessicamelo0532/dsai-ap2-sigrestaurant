@@ -90,6 +90,10 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 
 `npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
 
+### Contas a receber (venda a prazo)
+
+No modo servidor, a comanda aberta pode ser fechada **a prazo**: o botão **Vender a prazo** pede o cliente (o da comanda, ou outro buscado), o vencimento (padrão: 30 dias, até 365) e uma observação. A comanda fica `ON_ACCOUNT`, a mesa fica livre e nasce um título a receber com o total. Como relatórios, caixa e comissão contam só comandas pagas, a venda a prazo não entra na receita do caixa do turno. A seção **A receber** mostra o total em aberto (igual à soma dos títulos), o vencido, os próximos 7 dias e o recebido, filtra os títulos e dá baixa com forma de pagamento e data. Rotas: `POST /api/orders/:id/on-account`, `GET /api/receivables` e `POST /api/receivables/:id/receive`. SPEC [`2026-11-17-contas-a-receber.md`](SPEC/2026-11-17-contas-a-receber.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

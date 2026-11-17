@@ -1,7 +1,7 @@
 # Contas a receber: venda a prazo, vencimento e baixa
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #33 (backlog 2.16), `SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md` (contas a pagar)  
 **Derroga:** n/a. Acrescenta a situação `ON_ACCOUNT` (a prazo) à comanda; o fechamento à vista não muda.
@@ -109,3 +109,4 @@ Permitir fechar uma comanda **a prazo**, gerando um título a receber com client
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia, com P-1 a P-5 decididas pela dupla | aprovada |
+| 2026-11-17 | CA-01 a CA-05 verificados por 8 testes de regras e 9 de integração num PostgreSQL 16 local (suíte da API com 715 testes passando; `prisma migrate diff` sem diferença); CA-06 por 6 testes de lógica, 7 de componente e 2 novos na tela principal; `tsc --noEmit` sem erros. P-1 a P-5 seguem como decisão provisória da dupla | implementada |
