@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { CashModule } from './cash/cash.module';
 import { ClosingsModule } from './closings/closings.module';
 import { CustomersModule } from './customers/customers.module';
+import { DeliveryModule } from './delivery/delivery.module';
 import { GoalsModule } from './goals/goals.module';
 import { KitchenModule } from './kitchen/kitchen.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
@@ -19,7 +20,7 @@ import { StockModule } from './stock/stock.module';
 import { WaitersModule } from './waiters/waiters.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule],
   controllers: [AppController],
   providers: [AppService],
 })

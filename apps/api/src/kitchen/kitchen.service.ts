@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { KitchenPriorityChange, KitchenTicket, OrderItem, Prisma } from '@prisma/client';
+import { Channel, parseChannel } from '../delivery/delivery-rules';
 import { PrismaService } from '../prisma.service';
 import { KitchenPriorityDto, SendToKitchenDto } from './kitchen.dto';
 import {
@@ -23,9 +24,9 @@ export type Clock = () => Date;
 
 const ticketInclude = {
   items: { orderBy: [{ createdAt: 'asc' as const }, { id: 'asc' as const }], include: { addons: { orderBy: { id: 'asc' as const } } } },
-  order: { select: { tableNumber: true, waiterName: true } },
+  order: { select: { tableNumber: true, waiterName: true, channel: true } },
 };
-type TicketRow = KitchenTicket & { items: (OrderItem & { addons: { nameSnapshot: string }[] })[]; order: { tableNumber: number; waiterName: string | null } };
+type TicketRow = KitchenTicket & { items: (OrderItem & { addons: { nameSnapshot: string }[] })[]; order: { tableNumber: number; waiterName: string | null; channel: Channel } };
 
 const NOT_FOUND = 'Pedido de cozinha não encontrado.';
 
@@ -69,9 +70,11 @@ export class KitchenService {
   }
 
   // RF-02
-  async queue() {
+  // RF-07 da SPEC/2026-11-16-delivery.md: filtro opcional por canal.
+  async queue(channel?: string) {
+    const filter = parseChannel(channel);
     const rows = await this.prisma.kitchenTicket.findMany({
-      where: { status: { in: [...QUEUE_STATUSES] } },
+      where: { status: { in: [...QUEUE_STATUSES] }, ...(filter ? { order: { channel: filter } } : {}) },
       include: ticketInclude,
     });
     const tickets = sortQueue(rows).map((row) => this.present(row));
@@ -129,6 +132,7 @@ export class KitchenService {
       id: ticket.id,
       orderId: ticket.orderId,
       tableNumber: ticket.order.tableNumber,
+      channel: ticket.order.channel,
       waiterName: ticket.order.waiterName,
       status: ticket.status,
       priority: ticket.priority,

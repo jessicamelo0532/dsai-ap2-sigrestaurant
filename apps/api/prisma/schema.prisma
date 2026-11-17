@@ -119,6 +119,14 @@ model Order {
   customerId     Int?
   customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
   discount       Decimal         @default(0) @db.Decimal(10, 2)
+  channel        OrderChannel    @default(DINE_IN)
+  deliveryFee    Decimal         @default(0) @db.Decimal(10, 2)
+  recipient       String?
+  deliveryAddress String?
+  deliveryPhone   String?
+  deliveryStatus  DeliveryStatus?
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
   loyaltyPoints  Int             @default(0)
   loyaltyEntries LoyaltyEntry[]
 
@@ -126,6 +134,7 @@ model Order {
   @@index([paidAt])
   @@index([waiterId])
   @@index([customerId])
+  @@index([channel, status])
 }
 
 model OrderItem {
@@ -506,4 +515,16 @@ model SalesGoal {
   orders        Int?
   averageTicket Decimal? @db.Decimal(10, 2)
   updatedAt     DateTime @updatedAt
+}
+
+// Delivery (SPEC/2026-11-16-delivery.md)
+enum OrderChannel {
+  DINE_IN
+  DELIVERY
+}
+
+enum DeliveryStatus {
+  RECEIVED
+  OUT_FOR_DELIVERY
+  DELIVERED
 }
