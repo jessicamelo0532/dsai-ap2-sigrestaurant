@@ -14,8 +14,15 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+// fileURLToPath devolve C:\... no Windows (URL.pathname devolvia /C:/..., que
+// nao existe como cwd). As barras ficam normalizadas para / porque o cloc
+// imprime os caminhos assim e o volume remove o prefixo ROOT/ de cada linha.
+const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
+const NO_WINDOWS = process.platform === 'win32';
+// No Windows npm e npx sao arquivos .cmd, que o execFileSync so executa por shell.
+const PRECISA_SHELL_NO_WINDOWS = new Set(['npm', 'npx']);
 const BASE_REF = process.env.AP1_BASE_REF || 'd0a6caf';
 const MIN_LINHAS = 100000;
 const MAX_DUPLICACAO = 5;
@@ -25,7 +32,20 @@ const MAX_COMMIT_MEDIANO = 400;
 const MIN_AUTORIA = 30;
 
 function run(command, args, options = {}) {
+  const porShell = NO_WINDOWS && PRECISA_SHELL_NO_WINDOWS.has(command);
   try {
+    if (porShell) {
+      // Os argumentos de npm/npx neste script nao tem espacos, entao junta-los
+      // com espaco preserva cada argumento.
+      return execFileSync([command, ...args].join(' '), {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        maxBuffer: 64 * 1024 * 1024,
+        shell: true,
+        ...options,
+      });
+    }
     return execFileSync(command, args, {
       cwd: ROOT,
       encoding: 'utf8',
@@ -105,10 +125,13 @@ METRICAS.volume = () => {
 
 METRICAS.duplicacao = () => {
   heading('Duplicacao — jscpd');
-  const relatorio = '/tmp/ap1-jscpd';
+  const relatorio = join(tmpdir(), 'ap1-jscpd');
   rmSync(relatorio, { recursive: true, force: true });
+  // Mesmo alvo e mesmas exclusoes do job de duplicacao do CI: sem elas o
+  // jscpd entra em node_modules/, .next/ e coverage/ locais e mede outra coisa.
   // Reporter JSON: a saida de console carrega codigos ANSI que quebram parsing.
-  run('npx', ['jscpd', 'apps/web', '--min-lines', '5', '--min-tokens', '50',
+  run('npx', ['jscpd', 'apps', '--min-lines', '5', '--min-tokens', '50',
+    '--ignore', '**/node_modules/**,**/.next/**,**/coverage/**,**/dist/**',
     '--reporters', 'json', '--output', relatorio]);
   const arquivo = join(relatorio, 'jscpd-report.json');
   if (!existsSync(arquivo)) {
@@ -127,7 +150,7 @@ METRICAS.duplicacao = () => {
 
 METRICAS.cobertura = () => {
   heading('Cobertura de linhas do codigo novo');
-  const relatorio = '/tmp/ap1-cobertura';
+  const relatorio = join(tmpdir(), 'ap1-cobertura');
   run('npx', ['vitest', 'run', '--root', 'apps/web', '--coverage',
     '--coverage.reporter=json-summary', '--coverage.reporter=text',
     '--coverage.include=lib/**', '--coverage.include=app/**',
