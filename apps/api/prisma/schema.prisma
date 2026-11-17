@@ -74,8 +74,22 @@ model DiningTable {
   number       Int           @unique
   capacity     Int           @default(4)
   createdAt    DateTime      @default(now())
+  // SPEC/2026-11-17-zonas-do-salao.md: toda mesa pertence a uma zona.
+  zoneId       Int
+  zone         Zone          @relation(fields: [zoneId], references: [id], onDelete: Restrict)
   orders       Order[]
   reservations Reservation[]
+
+  @@index([zoneId])
+}
+
+// Zonas do salão (SPEC/2026-11-17-zonas-do-salao.md).
+model Zone {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  sortOrder Int
+  createdAt DateTime      @default(now())
+  tables    DiningTable[]
 }
 
 model MenuItem {

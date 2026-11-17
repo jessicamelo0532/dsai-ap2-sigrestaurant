@@ -15,8 +15,10 @@ async function main() {
     if (existing) await prisma.menuItem.update({ where: { id: existing.id }, data: item });
     else await prisma.menuItem.create({ data: item });
   }
+  // SPEC/2026-11-17-zonas-do-salao.md: toda mesa pertence a uma zona (zona padrão "Salão").
+  const zone = await prisma.zone.upsert({ where: { name: 'Salão' }, update: {}, create: { name: 'Salão', sortOrder: 1 } });
   for (const [number, capacity] of [[1, 2], [2, 2], [3, 4], [4, 4], [5, 6]] as const) {
-    await prisma.diningTable.upsert({ where: { number }, update: {}, create: { number, capacity } });
+    await prisma.diningTable.upsert({ where: { number }, update: {}, create: { number, capacity, zoneId: zone.id } });
   }
 }
 
