@@ -46,6 +46,8 @@ export class OrderMovesService {
       if (target.status !== 'OPEN' || source.status !== 'OPEN') {
         throw new BadRequestException('Só comandas abertas podem ser juntadas.');
       }
+      // RN-09 da SPEC/2026-11-16-programa-de-fidelidade.md
+      if (source.loyaltyPoints > 0) throw new BadRequestException('Desfaça o resgate de pontos da comanda de origem antes de juntar.');
       await tx.orderItem.updateMany({ where: { orderId: source.id }, data: { orderId: target.id } });
       await moveTickets(tx, source.id, target.id); // RN-09 da SPEC/2026-11-16-cozinha-kds.md
       await tx.order.update({ where: { id: source.id }, data: { status: 'MERGED', mergedIntoId: target.id } });

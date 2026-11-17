@@ -111,6 +111,9 @@ model Order {
   kitchenTickets KitchenTicket[]
   customerId     Int?
   customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  discount       Decimal         @default(0) @db.Decimal(10, 2)
+  loyaltyPoints  Int             @default(0)
+  loyaltyEntries LoyaltyEntry[]
 
   @@index([status, openedAt])
   @@index([paidAt])
@@ -397,7 +400,37 @@ model Customer {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  orders    Order[]
+  orders         Order[]
+  loyaltyEntries LoyaltyEntry[]
 
   @@index([nameKey])
+}
+
+// Fidelidade (SPEC/2026-11-16-programa-de-fidelidade.md)
+enum LoyaltyEntryType {
+  EARN
+  REDEEM
+  REFUND
+}
+
+model LoyaltySettings {
+  id              Int      @id @default(1)
+  pointsPerReal   Int
+  centsPerPoint   Int
+  minRedeemPoints Int
+  updatedAt       DateTime @updatedAt
+}
+
+model LoyaltyEntry {
+  id         Int              @id @default(autoincrement())
+  customerId Int
+  orderId    Int?
+  type       LoyaltyEntryType
+  points     Int
+  createdAt  DateTime         @default(now())
+  customer   Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order      Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([customerId, createdAt])
+  @@index([orderId])
 }
