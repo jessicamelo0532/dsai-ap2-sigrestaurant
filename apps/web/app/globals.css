@@ -163,3 +163,20 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* Tela de clientes (SPEC/2026-11-17-tela-de-clientes.md) */
+.cliente-panel{display:grid;gap:12px;font-size:15px}
+.cliente-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cliente-search{display:flex;align-items:center;gap:8px;flex:1;min-width:220px;border:1px solid #e7e7ec;border-radius:9px;padding:0 10px;color:#8a8e99}.cliente-search input{border:0;outline:0;flex:1;padding:9px 0;background:transparent}
+.cliente-check{display:flex;align-items:center;gap:7px;color:#626776;font-weight:600}.cliente-check input{width:18px;height:18px;min-height:0}
+.cliente-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cliente-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px;border:1px solid #f0f0f2;border-radius:10px}.cliente-row.inactive{background:#fafafb}.cliente-row.inactive strong{color:#8a8e99}
+.cliente-copy{display:grid;gap:3px}.cliente-copy span{display:inline-flex;align-items:center;gap:5px;color:#626776;font-size:14px}.cliente-copy small{color:#8a8e99;font-size:14px}
+.cliente-badge{font-size:14px;font-weight:700;border-radius:6px;padding:4px 8px;background:#f2f2f5;color:#555b69}
+.cliente-muted{color:#7a7f8c;font-size:14px}
+.cliente-history{width:min(100%,560px);max-height:90vh;overflow-y:auto;display:grid;gap:14px}
+.cliente-period{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.cliente-period label{display:grid;gap:5px;font-weight:600;color:#626776;font-size:14px}.cliente-period input{border:1px solid #e7e7ec;border-radius:8px;padding:8px 10px}
+.cliente-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0}.cliente-stats div{background:#f7f7f9;border-radius:9px;padding:10px}.cliente-stats dt{font-size:14px;color:#7a7f8c}.cliente-stats dd{margin:4px 0 0;font-weight:700;font-size:16px}
+.cliente-favorites ol{margin:6px 0 0;padding-left:20px;display:grid;gap:3px}.cliente-favorites span{color:#7a7f8c}
+.cliente-orders{list-style:none;margin:0;padding:0;display:grid;gap:6px}.cliente-orders li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;padding:8px 10px;border:1px solid #f0f0f2;border-radius:8px;font-size:15px}
+@media(max-width:650px){.cliente-row{grid-template-columns:1fr auto}.cliente-row .ticket-actions{grid-column:1/-1}.cliente-row .ticket-actions .button{flex:1}.cliente-search{min-width:0;width:100%}.cliente-period label{flex:1}.cliente-period .button{width:100%}}
