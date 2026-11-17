@@ -1,7 +1,7 @@
 # Tela de clientes e histórico de consumo
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-clientes-e-historico.md` (API), issue #35  
 **Derroga:** n/a (só consome a API existente; nenhuma regra muda)
@@ -114,3 +114,4 @@ A duplicidade de nome e telefone (RN-04 da API) é conferida só pela API.
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-08 verificados por 18 testes de `lib/clientes.test.ts` e 13 de `app/clientes-panel.test.tsx`; `tsc --noEmit` sem erros e os 11 testes de `page.test.tsx` passando. O build completo e o E2E de celular (T-07) ficam com o CI | implementada |
