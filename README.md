@@ -175,9 +175,11 @@ No app, a seção **Cozinha** mostra a fila com resumo, filtros, tempo de espera
 
 Rotas `/api/customers` (cadastro com nome, telefone com DDD e observação; busca por parte do nome, sem acento, ou do telefone; edição e desativação), `PUT /api/orders/:id/customer` (`{ customerId }` ou `null`, só em comanda aberta) e `GET /api/customers/:id/history?from&to` (visitas, total gasto, ticket médio, primeira e última visita, 3 itens mais pedidos e as comandas pagas). Nome e telefone não se repetem, mesmo com outra grafia. SPEC [`2026-11-16-clientes-e-historico.md`](SPEC/2026-11-16-clientes-e-historico.md).
 
-### Programa de fidelidade (somente API)
+### Programa de fidelidade
 
 O cliente ligado à comanda ganha pontos quando ela é paga (padrão: 1 ponto por real; `GET`/`PUT /api/loyalty/settings` mudam a regra). `GET /api/customers/:id/loyalty` mostra saldo, quanto ele vale e o extrato. `POST /api/orders/:id/loyalty` (`{ points }`) troca pontos por desconto na comanda aberta (padrão: 100 pontos = R$ 5,00, mínimo de 100) e `DELETE` desfaz; cancelar a comanda também devolve os pontos. O desconto nunca passa do total. O total da comanda (itens menos desconto) é calculado num lugar só (`apps/api/src/common/order-total.ts`) e vale para o relatório financeiro, o caixa, os garçons, o fechamento mensal e o histórico do cliente; o relatório de vendas mostra os descontos à parte. SPEC [`2026-11-16-programa-de-fidelidade.md`](SPEC/2026-11-16-programa-de-fidelidade.md).
+
+Na interface, a seção **Fidelidade** (modo servidor) mostra a regra de pontos em linguagem simples, com exemplos (quantos pontos uma conta de R$ 100 gera e quanto vale o resgate mínimo), permite alterar a regra com prévia enquanto o dono digita e consulta o saldo, o valor em reais e o extrato de pontos de um cliente. SPEC [`2026-11-17-tela-de-fidelidade.md`](SPEC/2026-11-17-tela-de-fidelidade.md).
 
 ### Cardápio por dia e horário (somente API)
 
