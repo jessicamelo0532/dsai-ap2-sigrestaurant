@@ -1,7 +1,7 @@
 # Cobertura do código novo (diff) medida no CI
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #15 (backlog 1.4), `SPEC/2026-11-12-integracao-continua.md`, `SPEC/2026-11-12-conformidade-ap2.md`  
 **Derroga:** n/a (acrescenta um job ao pipeline; nenhum job existente muda)
@@ -107,3 +107,4 @@ Calcular, a cada push, a cobertura das linhas novas de código (frontend e API) 
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
 | 2026-11-17 | RN-03 e CA-05: arquivo só de tipos não entra na conta (encontrado ao rodar T-05: `apps/web/lib/types.ts` aparecia como descoberto) | aprovada |
+| 2026-11-17 | CA-01 a CA-05 verificados por 25 testes em `node --test`; CA-06 verificado localmente (código 0 com `--min 0`, 1 com `--min 100` e 1 sem lcov); CA-07 verificado na execução 44105054534 do GitHub Actions: job verde, 94,6% (2.335 de 2.468 linhas novas) | implementada |
