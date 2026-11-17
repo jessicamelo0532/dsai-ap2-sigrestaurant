@@ -62,6 +62,7 @@ Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/w
 - Cadastrar, editar, pausar, reativar e remover itens do cardápio.
 - Fechar contas com Pix, dinheiro, crédito ou débito.
 - Registrar despesas e consultar receita, despesas, saldo e formas de pagamento por período.
+- **Salão**: numa tela só, as mesas ocupadas e livres, o que cada mesa pediu (itens iguais somados), há quanto tempo a conta está aberta, o total de cada uma e o total em aberto no salão, com filtros e atualização a cada 30 s. Funciona no celular. Ver [`SPEC/2026-11-16-visao-do-salao.md`](SPEC/2026-11-16-visao-do-salao.md).
 
 Na primeira visita, o app cria dados editáveis de demonstração. Eles permanecem após recarregar a página no mesmo navegador e perfil. `localStorage` não sincroniza dados entre dispositivos, navegadores ou perfis; para isso, será necessário reativar a API e conectar um banco hospedado.
 
