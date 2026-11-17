@@ -77,6 +77,9 @@ async function main() {
   await page.getByRole('button', { name: /Adicionar item/ }).click();
   await check('Novo item do cardápio');
   await closeModal();
+  await page.getByRole('button', { name: /^Categorias/ }).click();
+  await page.waitForTimeout(300);
+  await check('Categorias do cardápio');
   await go('Financeiro');
   await check('Financeiro');
   await page.getByRole('button', { name: /Registrar despesa/ }).click();

@@ -13,6 +13,8 @@ import {
 import { hasLocalData, importLocalData } from '@/lib/import-local';
 import { SalaoPanel } from './salao-panel';
 import { CozinhaPanel } from './cozinha-panel';
+import { CategoriasPanel } from './categorias-panel';
+import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
 type Section = 'operacao' | 'salao' | 'cozinha' | 'cardapio' | 'financeiro';
@@ -37,6 +39,8 @@ export default function Home() {
   const [showTableForm, setShowTableForm] = useState(false);
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [menuView, setMenuView] = useState<'itens' | 'categorias'>('itens');
+  const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
   const [kitchenNote, setKitchenNote] = useState('');
   const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
@@ -85,6 +89,15 @@ export default function Home() {
   useEffect(() => {
     if (section === 'financeiro') loadReport().catch((error: Error) => setMessage(error.message));
   }, [section, loadReport]);
+  // RF-07 da tela de categorias: sugestões do formulário de item vêm do cadastro.
+  useEffect(() => {
+    if (section !== 'cardapio' || mode !== 'api') return;
+    let active = true;
+    storeRequest<MenuCategory[]>('/menu-categories')
+      .then((list) => { if (active) setMenuCategories(sortCategories(list)); })
+      .catch(() => { if (active) setMenuCategories([]); });
+    return () => { active = false; };
+  }, [section, mode]);
 
   const selected = tables.find((table) => table.id === selectedTable) ?? null;
   const categories = useMemo(() => [...new Set(menu.filter((item) => item.available).map((item) => item.category))], [menu]);
@@ -200,7 +213,16 @@ export default function Home() {
             </div>
           </section>}
 
-          {section === 'cardapio' && <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />}
+          {section === 'cardapio' && <section className="page-section">
+            <div className="page-heading"><div><div className="eyebrow">SABORES DA CASA</div><h1>Cardápio</h1><p>Cuide dos itens que aparecem para a equipe lançar nas mesas.</p></div>{menuView === 'itens' && <button className="button button-dark" onClick={() => setMenuFormItem(null)}><CirclePlus size={17} />Adicionar item</button>}</div>
+            <div className="floor-filters" role="group" aria-label="Áreas do cardápio">
+              <button className="floor-filter" aria-pressed={menuView === 'itens'} onClick={() => setMenuView('itens')}>Itens<b>{menu.length}</b></button>
+              <button className="floor-filter" aria-pressed={menuView === 'categorias'} onClick={() => setMenuView('categorias')}>Categorias<b>{menuCategories.length}</b></button>
+            </div>
+            {menuView === 'itens'
+              ? <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />
+              : <CategoriasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />}
+          </section>}
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>
             <div className="period-bar"><span><Clock3 size={15} />Período do relatório</span><label>De<input type="date" value={period.from} onChange={(event) => setPeriod((value) => ({ ...value, from: event.target.value }))} /></label><label>Até<input type="date" value={period.to} onChange={(event) => setPeriod((value) => ({ ...value, to: event.target.value }))} /></label><button className="button button-light" onClick={() => loadReport().catch((error: Error) => setMessage(error.message))}>Atualizar</button></div>
@@ -212,7 +234,7 @@ export default function Home() {
         </div>
       </section>
       {showTableForm && <Modal title="Adicionar mesa" onClose={() => setShowTableForm(false)}><TableForm onCancel={() => setShowTableForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/tables', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, mesa adicionada.')) setShowTableForm(false); }} /></Modal>}
-      {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
+      {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} categories={menuCategories.map((category) => category.name)} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
       {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
       {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { if (await run(() => storeRequest(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }), 'Pronto, conta fechada e mesa liberada.')) setPaymentOrderId(null); }} /></Modal>}
     </main>
@@ -280,7 +302,7 @@ function ModeBar({ mode, apiState, busy, localDataAvailable, canConnect, onRetry
 function MenuSection({ menu, busy, onCreate, onEdit, onToggle, onDelete }: { menu: MenuItem[]; busy: boolean; onCreate: () => void; onEdit: (item: MenuItem) => void; onToggle: (item: MenuItem) => void; onDelete: (item: MenuItem) => void }) {
   const [filter, setFilter] = useState('');
   const filtered = menu.filter((item) => `${item.name} ${item.category}`.toLowerCase().includes(filter.toLowerCase()));
-  return <section className="page-section"><div className="page-heading"><div><div className="eyebrow">SABORES DA CASA</div><h1>Cardápio</h1><p>Cuide dos itens que aparecem para a equipe lançar nas mesas.</p></div><button className="button button-dark" onClick={onCreate}><CirclePlus size={17} />Adicionar item</button></div><div className="panel menu-management"><div className="menu-toolbar"><div><h2>Itens cadastrados <span className="count-pill">{menu.length}</span></h2><p>Itens indisponíveis ficam ocultos na hora do pedido.</p></div><div className="menu-search management-search"><Search size={15} /><input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Buscar item" /></div></div><div className="menu-table-head"><span>ITEM</span><span>CATEGORIA</span><span>PREÇO</span><span>DISPONIBILIDADE</span><span /></div><div className="managed-menu-list">{filtered.map((item) => <div className="managed-menu-row" key={item.id}><button className="managed-name managed-name-button" onClick={() => onEdit(item)}><span className="food-icon"><Coffee size={17} /></span><span><strong>{item.name}</strong><small>{item.description || 'Sem descrição'}</small></span></button><span className="category-chip">{item.category}</span><button className="price-edit" onClick={() => onEdit(item)}>{money(item.price)}</button><button className={`availability ${item.available ? 'is-available' : ''}`} disabled={busy} onClick={() => onToggle(item)}><i />{item.available ? 'Disponível' : 'Pausado'}</button><button className="icon-button danger" aria-label={`Remover ${item.name}`} onClick={() => onDelete(item)}><Trash2 size={16} /></button></div>)}{!filtered.length && <div className="empty-state compact"><MenuIcon size={22} /><strong>Nenhum item encontrado</strong><span>Cadastre seu primeiro prato ou ajuste a busca.</span></div>}</div></div></section>;
+  return <div className="panel menu-management"><div className="menu-toolbar"><div><h2>Itens cadastrados <span className="count-pill">{menu.length}</span></h2><p>Itens indisponíveis ficam ocultos na hora do pedido.</p></div><div className="menu-search management-search"><Search size={15} /><input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Buscar item" /></div></div><div className="menu-table-head"><span>ITEM</span><span>CATEGORIA</span><span>PREÇO</span><span>DISPONIBILIDADE</span><span /></div><div className="managed-menu-list">{filtered.map((item) => <div className="managed-menu-row" key={item.id}><button className="managed-name managed-name-button" onClick={() => onEdit(item)}><span className="food-icon"><Coffee size={17} /></span><span><strong>{item.name}</strong><small>{item.description || 'Sem descrição'}</small></span></button><span className="category-chip">{item.category}</span><button className="price-edit" onClick={() => onEdit(item)}>{money(item.price)}</button><button className={`availability ${item.available ? 'is-available' : ''}`} disabled={busy} onClick={() => onToggle(item)}><i />{item.available ? 'Disponível' : 'Pausado'}</button><button className="icon-button danger" aria-label={`Remover ${item.name}`} onClick={() => onDelete(item)}><Trash2 size={16} /></button></div>)}{!filtered.length && <div className="empty-state compact"><MenuIcon size={22} /><strong>Nenhum item encontrado</strong><span>Cadastre seu primeiro prato ou ajuste a busca.</span></div>}</div></div>;
 }
 
 function Modal({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
@@ -296,10 +318,10 @@ function TableForm({ onSubmit, onCancel }: { onSubmit: (data: object) => void; o
   return <FormShell onCancel={onCancel} submitLabel="Adicionar mesa" onSubmit={(event) => { event.preventDefault(); onSubmit({ number: Number(number), capacity: Number(capacity) }); }}><label>Número da mesa<input autoFocus type="number" min="1" max="9999" required value={number} onChange={(event) => setNumber(event.target.value)} placeholder="Ex.: 12" /></label><label>Lugares<input type="number" min="1" max="100" required value={capacity} onChange={(event) => setCapacity(event.target.value)} /></label></FormShell>;
 }
 
-function MenuForm({ item, onSubmit, onCancel }: { item: MenuItem | null; onSubmit: (data: object) => void | Promise<void>; onCancel: () => void }) {
+function MenuForm({ item, categories, onSubmit, onCancel }: { item: MenuItem | null; categories: string[]; onSubmit: (data: object) => void | Promise<void>; onCancel: () => void }) {
   const [form, setForm] = useState({ name: item?.name ?? '', description: item?.description ?? '', category: item?.category ?? '', price: item?.price ?? '' });
   const change = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }));
-  return <FormShell onCancel={onCancel} submitLabel="Salvar no cardápio" onSubmit={(event) => { event.preventDefault(); onSubmit({ ...form, price: Number(form.price), category: form.category || 'Geral' }); }}><label>Nome do item<input autoFocus required maxLength={100} value={form.name} onChange={(event) => change('name', event.target.value)} placeholder="Ex.: Moqueca da casa" /></label><div className="form-two"><label>Categoria<input value={form.category} onChange={(event) => change('category', event.target.value)} placeholder="Pratos principais" /></label><label>Preço (R$)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={(event) => change('price', event.target.value)} placeholder="0,00" /></label></div><label>Descrição <span className="optional-label">opcional</span><textarea rows={3} maxLength={500} value={form.description} onChange={(event) => change('description', event.target.value)} placeholder="Conte um pouco sobre o prato" /></label></FormShell>;
+  return <FormShell onCancel={onCancel} submitLabel="Salvar no cardápio" onSubmit={(event) => { event.preventDefault(); onSubmit({ ...form, price: Number(form.price), category: form.category || 'Geral' }); }}><label>Nome do item<input autoFocus required maxLength={100} value={form.name} onChange={(event) => change('name', event.target.value)} placeholder="Ex.: Moqueca da casa" /></label><div className="form-two"><label>Categoria<input list="categorias-do-cardapio" value={form.category} onChange={(event) => change('category', event.target.value)} placeholder="Pratos principais" /><datalist id="categorias-do-cardapio">{categories.map((name) => <option key={name} value={name} />)}</datalist></label><label>Preço (R$)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={(event) => change('price', event.target.value)} placeholder="0,00" /></label></div><label>Descrição <span className="optional-label">opcional</span><textarea rows={3} maxLength={500} value={form.description} onChange={(event) => change('description', event.target.value)} placeholder="Conte um pouco sobre o prato" /></label></FormShell>;
 }
 
 function ExpenseForm({ onSubmit, onCancel }: { onSubmit: (data: object) => void; onCancel: () => void }) {
