@@ -161,9 +161,11 @@ Rotas em `/api/cash` (SPEC [`2026-11-16-caixa-por-turno.md`](SPEC/2026-11-16-cai
 
 Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/waiter` (atribui ou troca o garçom de uma comanda aberta, guardando nome e taxa daquele momento) e `GET /api/reports/waiters?from&to` (contas, receita, ticket médio e comissão por garçom, com "Sem garçom" e os totais). Comissão padrão de 10%, de 0 a 30% por garçom. SPEC [`2026-11-16-garcons-e-comissao.md`](SPEC/2026-11-16-garcons-e-comissao.md).
 
-### Transferir comanda e juntar contas (somente API)
+### Transferir comanda e juntar contas
 
 `POST /api/orders/:id/transfer` (`{ tableId, reason }`) move a comanda aberta para uma mesa livre; `POST /api/orders/:id/merge` (`{ sourceOrderId, reason }`) passa os itens de outra comanda aberta para esta, com os preços guardados, e a outra fica como juntada (`MERGED`), sem poder ser paga; `GET /api/orders/:id/history` mostra as mudanças com o motivo. SPEC [`2026-11-16-transferencia-e-juncao-de-comandas.md`](SPEC/2026-11-16-transferencia-e-juncao-de-comandas.md).
+
+Na comanda aberta, nos dois modos, o bloco **Mesa e contas** transfere a comanda para uma mesa livre e junta a conta de outra mesa nesta, sempre com motivo, e mostra o histórico de mudanças da comanda. No modo navegador as rotas `transfer`, `merge` e `history` têm as mesmas regras e mensagens da API. SPEC [`2026-11-17-mover-e-juntar-na-tela.md`](SPEC/2026-11-17-mover-e-juntar-na-tela.md).
 
 ### Cozinha: envio, fila de produção e prioridade
 

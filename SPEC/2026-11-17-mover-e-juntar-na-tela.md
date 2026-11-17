@@ -1,7 +1,7 @@
 # Transferir comanda e juntar contas pela tela
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-transferencia-e-juncao-de-comandas.md` (API), issue #37  
 **Derroga:** n/a (mesmas regras da API; o modo navegador passa a ter as mesmas rotas)
@@ -100,3 +100,4 @@ As da SPEC da API, repetidas no modo navegador e, as de formulário, na tela ant
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-06 verificados por 8 testes de `lib/mover.test.ts`, 9 de `lib/local-mover.test.ts` (inclui o total pago depois de juntar), 8 de `app/comanda-mover.test.tsx` e 1 novo em `app/page.test.tsx` (transferência no modo navegador); `tsc --noEmit` sem erros | implementada |

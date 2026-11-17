@@ -254,3 +254,21 @@ describe('modo navegador (RF-08)', () => {
     expect(calls).toHaveLength(0);
   });
 });
+
+describe('mesa e contas na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md)', () => {
+  it('transfere a comanda para outra mesa no modo navegador (CA-01)', async () => {
+    setMode('local');
+    render(<Home />);
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Bruschetta da casa/ })[0]);
+    fireEvent.click(await screen.findByRole('button', { name: /Transferir mesa/ }));
+    fireEvent.change(screen.getByLabelText('Mesa de destino'), { target: { value: '4' } });
+    fireEvent.change(screen.getByLabelText('Motivo'), { target: { value: 'Cliente pediu janela' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Transferir' }));
+
+    expect(await screen.findByRole('heading', { name: 'Mesa 04' })).toBeTruthy();
+    expect(await screen.findByText('Transferida da mesa 01 para a mesa 04')).toBeTruthy();
+  });
+});
+

@@ -16,6 +16,7 @@ import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
 import { ReservasPanel } from './reservas-panel';
+import { ComandaMover } from './comanda-mover';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
@@ -214,6 +215,7 @@ export default function Home() {
                   <div className="order-total"><span>Total da comanda</span><strong>{money(orderTotal(selected.order))}</strong></div>
                   {selected.order && <button className="button button-light print-button" disabled={busy} onClick={() => setPrintDoc(buildBobina(selected.order!))}><Printer size={16} />Imprimir bobina</button>}
                   {selected.order && mode === 'api' && <div className="send-kitchen"><input value={kitchenNote} onChange={(event) => setKitchenNote(event.target.value)} maxLength={201} placeholder="Observação para a cozinha (opcional)" /><button className="button button-light" disabled={busy} onClick={() => { const invalid = validateNote(kitchenNote); if (invalid) { setMessage(invalid); return; } void run(async () => { await storeRequest(`/orders/${selected.order!.id}/kitchen`, { method: 'POST', body: JSON.stringify({ ...(kitchenNote.trim() ? { note: kitchenNote.trim() } : {}) }) }); setKitchenNote(''); }, 'Pedido enviado para a cozinha.'); }}><ChefHat size={16} />Enviar para a cozinha</button></div>}
+                  {selected.order && <ComandaMover order={selected.order} tableId={selected.id} tables={tables} onMoved={(tableId) => { setSelectedTable(tableId); refreshQuietly(); }} />}
                   {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
               </div>
