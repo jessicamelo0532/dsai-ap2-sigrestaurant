@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CashModule } from './cash/cash.module';
 import { ClosingsModule } from './closings/closings.module';
+import { OrderMovesModule } from './order-moves/order-moves.module';
 import { PrismaModule } from './prisma.module';
 import { PurchasingModule } from './purchasing/purchasing.module';
 import { ReservationsModule } from './reservations/reservations.module';
@@ -11,7 +12,7 @@ import { StockModule } from './stock/stock.module';
 import { WaitersModule } from './waiters/waiters.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule],
   controllers: [AppController],
   providers: [AppService],
 })
