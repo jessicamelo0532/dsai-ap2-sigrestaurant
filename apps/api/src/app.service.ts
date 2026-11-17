@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
 import { discountCents, orderTotalCents, orderTotalSelect, subtotalCents } from './common/order-total';
@@ -10,12 +10,21 @@ import { cancelPendingTickets } from './kitchen/kitchen-guard';
 import { assertItemEditable } from './kitchen/kitchen-rules';
 import { assertItemChangeFits, creditPayment, refundRedemption } from './loyalty/loyalty-ledger';
 import { assertDiscountFits } from './loyalty/loyalty-rules';
+import { isOpenAt, unavailableMessage } from './menu-availability/availability-rules';
+import { Clock, MENU_CLOCK } from './menu-availability/menu-clock';
 
 const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
 
 @Injectable()
 export class AppService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly now: Clock;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() @Inject(MENU_CLOCK) clock?: Clock, // RNF-02 da SPEC/2026-11-16-cardapio-por-horario.md
+  ) {
+    this.now = clock ?? (() => new Date());
+  }
 
   async listTables() {
     const tables = await this.prisma.diningTable.findMany({
@@ -46,11 +55,13 @@ export class AppService {
     return { success: true };
   }
 
-  listMenu(includeUnavailable = false) {
-    return this.prisma.menuItem.findMany({
-      where: includeUnavailable ? undefined : { available: true },
-      orderBy: [{ category: 'asc' }, { name: 'asc' }],
-    });
+  async listMenu(includeUnavailable = false) {
+    const order = [{ category: 'asc' as const }, { name: 'asc' as const }];
+    if (includeUnavailable) return this.prisma.menuItem.findMany({ orderBy: order });
+    // RF-03 da SPEC/2026-11-16-cardapio-por-horario.md: fora da janela, o item some da lista.
+    const items = await this.prisma.menuItem.findMany({ where: { available: true }, orderBy: order, include: { availability: true } });
+    const now = this.now();
+    return items.filter((item) => isOpenAt(item.availability, now)).map(({ availability: _windows, ...item }) => item);
   }
 
   getMenuItem(id: number) {
@@ -79,8 +90,10 @@ export class AppService {
       await tx.$queryRaw`SELECT "id" FROM "DiningTable" WHERE "id" = ${tableId} FOR UPDATE`;
       const table = await tx.diningTable.findUnique({ where: { id: tableId } });
       if (!table) throw new NotFoundException('Mesa não encontrada.');
-      const item = await tx.menuItem.findFirst({ where: { id: dto.menuItemId, available: true } });
+      const item = await tx.menuItem.findFirst({ where: { id: dto.menuItemId, available: true }, include: { availability: true } });
       if (!item) throw new BadRequestException('Este item não está disponível no cardápio.');
+      // RF-04 e RN-08 da SPEC/2026-11-16-cardapio-por-horario.md
+      if (!isOpenAt(item.availability, this.now())) throw new BadRequestException(unavailableMessage(item.availability, this.now()));
       let order = await tx.order.findFirst({ where: { tableId, status: 'OPEN' }, orderBy: { openedAt: 'desc' } });
       if (!order) order = await tx.order.create({ data: { tableId, tableNumber: table.number } });
       await tx.orderItem.create({
