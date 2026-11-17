@@ -3,17 +3,19 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
   ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
-  CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, ReceiptText,
+  CreditCard, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
 import {
-  apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, orderTotal, Report, setMode,
+  apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, Order, orderTotal, Report, setMode,
   storeRequest, subscribeMode, Table,
 } from '@/lib/store';
 import { hasLocalData, importLocalData } from '@/lib/import-local';
 import { SalaoPanel } from './salao-panel';
 import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
+import { PrintSheet } from './print-sheet';
+import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
@@ -41,6 +43,7 @@ export default function Home() {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [menuView, setMenuView] = useState<'itens' | 'categorias'>('itens');
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
+  const [printDoc, setPrintDoc] = useState<Bobina | Cupom | null>(null);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
   const [kitchenNote, setKitchenNote] = useState('');
   const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
@@ -206,6 +209,7 @@ export default function Home() {
                   <div className="order-lines">{selected.order?.items.map((line) => <div className="order-line" key={line.id}><div className="line-copy"><strong>{line.nameSnapshot}</strong><small>{line.quantity} × {money(line.unitPrice)}</small></div><b>{money(Number(line.unitPrice) * line.quantity)}</b><button className="line-remove" aria-label="Remover item" onClick={() => run(() => storeRequest(`/orders/${selected.order!.id}/items/${line.id}`, { method: 'DELETE' }))}><X size={14} /></button></div>)}{!selected.order?.items.length && <div className="empty-order-copy">Nenhum item nesta comanda ainda.<br />Escolha algo gostoso no cardápio.</div>}</div>
                   <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => run(() => storeRequest(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
                   <div className="order-total"><span>Total da comanda</span><strong>{money(orderTotal(selected.order))}</strong></div>
+                  {selected.order && <button className="button button-light print-button" disabled={busy} onClick={() => setPrintDoc(buildBobina(selected.order!))}><Printer size={16} />Imprimir bobina</button>}
                   {selected.order && mode === 'api' && <div className="send-kitchen"><input value={kitchenNote} onChange={(event) => setKitchenNote(event.target.value)} maxLength={201} placeholder="Observação para a cozinha (opcional)" /><button className="button button-light" disabled={busy} onClick={() => { const invalid = validateNote(kitchenNote); if (invalid) { setMessage(invalid); return; } void run(async () => { await storeRequest(`/orders/${selected.order!.id}/kitchen`, { method: 'POST', body: JSON.stringify({ ...(kitchenNote.trim() ? { note: kitchenNote.trim() } : {}) }) }); setKitchenNote(''); }, 'Pedido enviado para a cozinha.'); }}><ChefHat size={16} />Enviar para a cozinha</button></div>}
                   {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
@@ -236,7 +240,8 @@ export default function Home() {
       {showTableForm && <Modal title="Adicionar mesa" onClose={() => setShowTableForm(false)}><TableForm onCancel={() => setShowTableForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/tables', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, mesa adicionada.')) setShowTableForm(false); }} /></Modal>}
       {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} categories={menuCategories.map((category) => category.name)} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
       {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
-      {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { if (await run(() => storeRequest(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }), 'Pronto, conta fechada e mesa liberada.')) setPaymentOrderId(null); }} /></Modal>}
+      {printDoc && <PrintSheet doc={printDoc} onClose={() => setPrintDoc(null)} />}
+      {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { const closed: { order: Order | null } = { order: null }; const ok = await run(async () => { closed.order = await storeRequest<Order>(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }); }, 'Pronto, conta fechada e mesa liberada.'); if (ok) { setPaymentOrderId(null); if (closed.order) setPrintDoc(buildCupom(closed.order)); } }} /></Modal>}
     </main>
   );
 }

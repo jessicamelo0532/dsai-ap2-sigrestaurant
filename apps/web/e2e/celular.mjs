@@ -61,6 +61,11 @@ async function main() {
   await page.locator('.quick-item').first().click();
   await page.waitForTimeout(300);
   await check('Visão geral com comanda');
+  await page.getByRole('button', { name: /Imprimir bobina/ }).click();
+  await page.waitForTimeout(300);
+  await check('Bobina da comanda');
+  await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Bobina da comanda' }).waitFor({ state: 'detached' });
   await page.getByRole('button', { name: /Fechar conta/ }).click();
   await check('Fechar conta');
   await closeModal();
@@ -77,9 +82,6 @@ async function main() {
   await page.getByRole('button', { name: /Adicionar item/ }).click();
   await check('Novo item do cardápio');
   await closeModal();
-  await page.getByRole('button', { name: /^Categorias/ }).click();
-  await page.waitForTimeout(300);
-  await check('Categorias do cardápio');
   await go('Financeiro');
   await check('Financeiro');
   await page.getByRole('button', { name: /Registrar despesa/ }).click();

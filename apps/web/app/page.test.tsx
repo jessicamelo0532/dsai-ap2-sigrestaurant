@@ -159,7 +159,12 @@ describe('envio para a cozinha (RF-05)', () => {
 
 describe('fechamento de conta (RF-06)', () => {
   it('fecha a conta com a forma de pagamento escolhida', async () => {
-    const calls = stubApi({ ...serverRoutes(), 'POST /orders/10/close': () => ({ body: { id: 10 } }) });
+    const calls = stubApi({
+      ...serverRoutes(),
+      'POST /orders/10/close': () => ({
+        body: { id: 10, tableNumber: 1, status: 'PAID', paymentMethod: 'CASH', paidAt: '2026-11-17T20:15:00.000Z', openedAt: new Date().toISOString(), items: [{ id: 5, menuItemId: 1, nameSnapshot: 'Açaí', unitPrice: '18.00', quantity: 2 }] },
+      }),
+    });
     render(<Home />);
 
     fireEvent.click(await screen.findByRole('button', { name: /Fechar conta/ }));
@@ -172,6 +177,8 @@ describe('fechamento de conta (RF-06)', () => {
       expect(sent?.body).toEqual({ paymentMethod: 'CASH' });
     });
     expect(await screen.findByText('Pronto, conta fechada e mesa liberada.')).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Cupom da conta' })).toBeTruthy();
+    expect(screen.getByText('Pagamento: Dinheiro')).toBeTruthy();
   });
 });
 
