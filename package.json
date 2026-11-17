@@ -12,7 +12,8 @@
     "metricas": "node scripts/metricas.mjs",
     "build:api": "npm --workspace apps/api run build",
     "test:api": "npm --workspace apps/api run test",
-    "test:api:coverage": "npm --workspace apps/api run test:coverage"
+    "test:api:coverage": "npm --workspace apps/api run test:coverage",
+    "e2e:celular": "npm --workspace apps/web run e2e:celular"
   },
   "devDependencies": {
     "jscpd": "^4.0.5"
