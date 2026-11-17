@@ -90,6 +90,10 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 
 `npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
 
+### Zonas do salão
+
+As mesas ficam organizadas por zona (por exemplo, Salão, Varanda, Área externa), nos dois modos. A tela **Salão** mostra um grupo por zona com "N de M ocupadas", tem filtro por zona e o botão **Zonas**, que cria, renomeia e exclui zonas e move mesas de uma zona para outra. Toda mesa pertence a uma zona: as mesas que já existiam foram para a zona padrão "Salão" (migração no servidor, conversão automática no navegador), e mesa nova entra na primeira zona. Rotas: `GET/POST /api/zones`, `PATCH/DELETE /api/zones/:id` e `PATCH /api/tables/:id` com `{ zoneId }`. SPEC [`2026-11-17-zonas-do-salao.md`](SPEC/2026-11-17-zonas-do-salao.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

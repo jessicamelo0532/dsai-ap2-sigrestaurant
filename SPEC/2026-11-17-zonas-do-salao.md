@@ -1,7 +1,7 @@
 # Zonas do salão e mesas agrupadas por zona
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** issue #18 (backlog 2.1), `SPEC/2026-11-16-visao-do-salao.md`  
 **Derroga:** n/a. Acrescenta a zona à mesa sem mudar o que já existe; mesa sem zona informada vai para a zona padrão.
@@ -120,3 +120,4 @@ Cadastrar zonas, colocar cada mesa numa zona e mostrar o salão agrupado e filtr
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia com P-1 a P-3 provisórias | aprovada |
+| 2026-11-17 | CA-01 verificado aplicando as migrações num PostgreSQL 16 com 3 mesas (todas na zona "Salão", nenhuma sem zona) e `prisma migrate diff` sem diferença; CA-02 a CA-05 por 15 testes de regras e 13 de integração (suíte da API com 721 testes passando); CA-06 por 7 testes do adaptador local; CA-07 e CA-08 por 10 testes de lógica e 11 de componente (suíte do frontend com 206 testes). P-1 a P-3 seguem provisórias | implementada |
