@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
-import { discountCents, orderTotalCents, orderTotalSelect, subtotalCents } from './common/order-total';
+import { discountCents, orderTotalCents, orderTotalSelect, subtotalCents, toCents } from './common/order-total';
 import { centsToDecimal } from './purchasing/purchase-rules';
 import { PrismaService } from './prisma.service';
 import { deductStockForSale } from './stock/stock-sale';
@@ -14,8 +14,13 @@ import { isOpenAt, unavailableMessage } from './menu-availability/availability-r
 import { Clock, MENU_CLOCK } from './menu-availability/menu-clock';
 import { resolveCategory } from './menu-categories/category-link';
 import { compareMenu } from './menu-categories/category-rules';
+import { optionsInclude, storedOptions } from './menu-options/menu-options.service';
+import { buildLine } from './menu-options/option-rules';
 
-const orderInclude = { items: { orderBy: { createdAt: 'asc' as const } } };
+// Linhas com os adicionais escolhidos (SPEC/2026-11-16-variacoes-e-adicionais.md, RF-04).
+const orderInclude = {
+  items: { orderBy: [{ createdAt: 'asc' as const }, { id: 'asc' as const }], include: { addons: { orderBy: { id: 'asc' as const } } } },
+};
 
 @Injectable()
 export class AppService {
@@ -107,14 +112,24 @@ export class AppService {
       await tx.$queryRaw`SELECT "id" FROM "DiningTable" WHERE "id" = ${tableId} FOR UPDATE`;
       const table = await tx.diningTable.findUnique({ where: { id: tableId } });
       if (!table) throw new NotFoundException('Mesa não encontrada.');
-      const item = await tx.menuItem.findFirst({ where: { id: dto.menuItemId, available: true }, include: { availability: true } });
+      const item = await tx.menuItem.findFirst({ where: { id: dto.menuItemId, available: true }, include: { availability: true, ...optionsInclude } });
       if (!item) throw new BadRequestException('Este item não está disponível no cardápio.');
       // RF-04 e RN-08 da SPEC/2026-11-16-cardapio-por-horario.md
       if (!isOpenAt(item.availability, this.now())) throw new BadRequestException(unavailableMessage(item.availability, this.now()));
+      // RF-03 e RN-04 a RN-07 da SPEC/2026-11-16-variacoes-e-adicionais.md: cópia de nome, variação, adicionais e preço.
+      const line = buildLine({ name: item.name, priceCents: toCents(item.price) }, storedOptions(item.variants), storedOptions(item.addons), dto);
       let order = await tx.order.findFirst({ where: { tableId, status: 'OPEN' }, orderBy: { openedAt: 'desc' } });
       if (!order) order = await tx.order.create({ data: { tableId, tableNumber: table.number } });
       await tx.orderItem.create({
-        data: { orderId: order.id, menuItemId: item.id, nameSnapshot: item.name, unitPrice: item.price, quantity: dto.quantity },
+        data: {
+          orderId: order.id,
+          menuItemId: item.id,
+          nameSnapshot: line.nameSnapshot,
+          variantName: line.variantName,
+          unitPrice: centsToDecimal(line.unitPriceCents),
+          quantity: dto.quantity,
+          addons: { create: line.addons.map((addon) => ({ nameSnapshot: addon.name, price: centsToDecimal(addon.priceCents) })) },
+        },
       });
       return tx.order.findUnique({ where: { id: order.id }, include: orderInclude });
     });

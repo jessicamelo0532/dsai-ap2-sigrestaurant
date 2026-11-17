@@ -92,6 +92,8 @@ model MenuItem {
   availability MenuAvailability[]
   categoryId   Int?
   menuCategory MenuCategory?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants     MenuVariant[]
+  addons       MenuAddon[]
 
   @@index([categoryId])
 }
@@ -135,6 +137,8 @@ model OrderItem {
   quantity      Int
   createdAt     DateTime @default(now())
   ticketId      Int?
+  variantName   String?
+  addons        OrderItemAddon[]
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem      MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
   ticket        KitchenTicket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
@@ -460,4 +464,36 @@ model MenuCategory {
   sortOrder Int
   createdAt DateTime   @default(now())
   items     MenuItem[]
+}
+
+// Variações e adicionais (SPEC/2026-11-16-variacoes-e-adicionais.md)
+model MenuVariant {
+  id         Int      @id @default(autoincrement())
+  menuItemId Int
+  name       String
+  price      Decimal  @db.Decimal(10, 2)
+  sortOrder  Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
+}
+
+model MenuAddon {
+  id         Int      @id @default(autoincrement())
+  menuItemId Int
+  name       String
+  price      Decimal  @db.Decimal(10, 2)
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId])
+}
+
+model OrderItemAddon {
+  id           Int       @id @default(autoincrement())
+  orderItemId  Int
+  nameSnapshot String
+  price        Decimal   @db.Decimal(10, 2)
+  orderItem    OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderItemId])
 }
