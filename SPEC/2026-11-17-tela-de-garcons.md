@@ -1,7 +1,7 @@
 # Tela de garçons e relatório de comissão
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-11-16-garcons-e-comissao.md` (API), issue #34  
 **Derroga:** n/a (só consome a API existente; nenhuma regra muda)
@@ -111,3 +111,4 @@ As regras são as da SPEC da API, que continua sendo a fonte final. A tela repet
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-08 verificados por 21 testes de `lib/garcons.test.ts` e 14 de `app/garcons-panel.test.tsx`; `tsc --noEmit` sem erros. O `next build` local não completa por falta de memória da máquina (3,7 GB); o build completo e o E2E de celular (T-07) ficam com o CI | implementada |
