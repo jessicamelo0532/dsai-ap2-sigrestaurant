@@ -53,7 +53,7 @@ O comando delega ao workspace `apps/web` e executa a suíte Vitest uma única ve
 npm --workspace apps/web run test:watch
 ```
 
-Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node`, sem rede, banco ou serviços externos — hoje são **48 testes**.
+Os testes ficam em arquivos `*.test.ts` colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node`, sem rede, banco ou serviços externos — hoje são **74 testes**.
 
 Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
 
@@ -65,6 +65,7 @@ Para a API, `npm run test:api` roda os **698 testes** de integração contra Pos
 - Fechar contas com Pix, dinheiro, crédito ou débito.
 - Registrar despesas e consultar receita, despesas, saldo e formas de pagamento por período.
 - **Salão**: numa tela só, as mesas ocupadas e livres, o que cada mesa pediu (itens iguais somados), há quanto tempo a conta está aberta, o total de cada uma e o total em aberto no salão, com filtros e atualização a cada 30 s. Funciona no celular. Ver [`SPEC/2026-11-16-visao-do-salao.md`](SPEC/2026-11-16-visao-do-salao.md).
+- **Cozinha**: fila de produção com prioridade alta primeiro, tempo de espera e faixa de atraso, filtros e as ações de iniciar preparo, marcar pronto e entregar; o pedido sai da comanda aberta em "Enviar para a cozinha". Ver [`SPEC/2026-11-17-tela-da-cozinha.md`](SPEC/2026-11-17-tela-da-cozinha.md).
 - **Celular**: em telas de até 650 px a navegação fica no rodapé, os textos têm 14 px ou mais, os botões 44 px ou mais e os campos não fazem o celular ampliar a tela. `npm run e2e:celular` confere isso (roda no CI). Ver [`SPEC/2026-11-16-app-no-celular.md`](SPEC/2026-11-16-app-no-celular.md).
 
 Na primeira visita, o app cria dados editáveis de demonstração. Eles permanecem após recarregar a página no mesmo navegador e perfil. `localStorage` não sincroniza dados entre dispositivos, navegadores ou perfis; para isso, será necessário reativar a API e conectar um banco hospedado.
@@ -161,9 +162,11 @@ Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/w
 
 `POST /api/orders/:id/transfer` (`{ tableId, reason }`) move a comanda aberta para uma mesa livre; `POST /api/orders/:id/merge` (`{ sourceOrderId, reason }`) passa os itens de outra comanda aberta para esta, com os preços guardados, e a outra fica como juntada (`MERGED`), sem poder ser paga; `GET /api/orders/:id/history` mostra as mudanças com o motivo. SPEC [`2026-11-16-transferencia-e-juncao-de-comandas.md`](SPEC/2026-11-16-transferencia-e-juncao-de-comandas.md).
 
-### Cozinha: envio, fila de produção e prioridade (somente API)
+### Cozinha: envio, fila de produção e prioridade
 
 `POST /api/orders/:id/kitchen` (`{ note? }`) envia à cozinha os itens da comanda ainda não enviados; cada envio vira um pedido de cozinha, e os itens enviados não podem mais ser alterados nem removidos. `GET /api/kitchen/queue` traz a fila (prioridade alta primeiro, depois ordem de chegada) com a mesa atual, os itens, os minutos de espera e a faixa de atraso (no prazo até 10 min, atenção até 20, atrasado a partir de 20), além de um resumo. `POST /api/kitchen/tickets/:id/start`, `/ready` e `/deliver` mudam a situação; `PUT /api/kitchen/tickets/:id/priority` (`{ priority: NORMAL | HIGH, changedBy }`) muda a prioridade e grava quem mudou. Cancelar a comanda tira os pedidos dela da fila. SPEC [`2026-11-16-cozinha-kds.md`](SPEC/2026-11-16-cozinha-kds.md).
+
+No app, a seção **Cozinha** mostra a fila com resumo, filtros, tempo de espera, faixa de atraso e as ações de preparo e entrega; o botão **Enviar para a cozinha** fica na comanda aberta, com observação opcional. A tela se atualiza a cada 15 s e só funciona no modo servidor. SPEC [`2026-11-17-tela-da-cozinha.md`](SPEC/2026-11-17-tela-da-cozinha.md).
 
 ### Clientes e histórico de consumo (somente API)
 
