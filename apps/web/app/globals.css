@@ -163,3 +163,9 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* Quantidade e cancelamento na comanda (SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md) */
+.qty-stepper{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:2px;margin-left:auto}
+.qty-stepper b{min-width:22px;text-align:center;font-size:15px}
+.qty-button{border:0;background:transparent;color:#4a4f5c;cursor:pointer;display:grid;place-items:center;width:44px;height:44px;border-radius:999px}.qty-button:disabled{color:#c9cbd2;cursor:not-allowed}.qty-button:not(:disabled):hover{background:#f2f2f5}
+.cancel-order-button{color:#b4373b}

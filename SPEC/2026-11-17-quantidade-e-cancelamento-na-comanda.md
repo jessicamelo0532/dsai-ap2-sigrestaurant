@@ -1,7 +1,7 @@
 # Alterar quantidade e cancelar comanda pela tela
 
 **Data:** 2026-11-17  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** claude-code/claude-opus-5.5  
 **SPEC derivada de:** `SPEC/2026-10-01-restaurante.md` (comandas), `SPEC/2026-11-12-reativacao-backend.md` (rotas de comanda)  
 **Derroga:** n/a (a API não muda; o modo navegador ganha o cancelamento com a mesma regra)
@@ -92,3 +92,4 @@ Na comanda aberta, nos dois modos, ajustar a quantidade de cada item com − e +
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-17 | Criação, aprovada pela Jéssica na sessão do dia | aprovada |
+| 2026-11-17 | CA-01 a CA-05 verificados por 6 testes de lógica e do adaptador local e 3 novos na tela principal (modo servidor e navegador); `tsc --noEmit` sem erros | implementada |

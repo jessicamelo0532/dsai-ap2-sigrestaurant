@@ -90,6 +90,10 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 
 `npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
 
+### Ajustes na comanda
+
+Nos dois modos, cada linha da comanda aberta tem − quantidade + (de 1 a 500; para tirar o item, continua o ✕), e o botão **Cancelar comanda** pede confirmação e libera a mesa sem cobrar os itens. No modo navegador, o cancelamento segue a mesma regra da API ("Apenas comandas abertas podem ser canceladas."). SPEC [`2026-11-17-quantidade-e-cancelamento-na-comanda.md`](SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):
