@@ -54,7 +54,7 @@ npm --workspace apps/web run test:watch
 ```
 
 
-Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **155 testes** (13 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **87% de linhas** (`npm run coverage`).
+Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **178 testes** (15 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **87% de linhas** (`npm run coverage`).
 Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **121 testes** (11 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **86% de linhas** (`npm run coverage`).
 
 
