@@ -1,5 +1,7 @@
 # Auditoria de conformidade — Aula 09 (Kickoff da AP2)
 
+> **Retrato de 2026-11-12.** O estado atual está em [Estado após a sessão de 2026-11-17](#estado-após-a-sessão-de-2026-11-17); as seções abaixo registram a medição original e as correções feitas depois.
+
 **Data:** 2026-11-12
 **Escopo:** verificação do repositório `dsai-ap2-sigrestaurant` contra as diretivas e métricas da Aula 09 (22/10/2026).
 **Método:** inspeção do repositório + execução de scripts de medição (`cloc`, `jscpd`, `vitest --coverage`, mutação manual, `npm audit`). Nada foi alterado no repositório durante a auditoria, exceto o `package-lock.json` explicitamente autorizado.
@@ -218,6 +220,20 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 
 **Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-4 (quando e como o frontend passa a usar a API — a SPEC de reativação deixa isso em aberto), P-5 (SPEC de atualização do `next@16`), P-6 e P-7 (URL pública e deploy contínuo).
 
+### Estado após a sessão de 2026-11-17
+
+**Fatos verificados nesta sessão:**
+
+- Os **17 PRs empilhados** da segunda integrante (#54 a #70) foram revisados e mesclados na ordem, retargetando a base de cada um para a `main` (a API do GitHub foi usada porque `gh pr edit --base` falha em PRs com "Projects classic"). A `main` passou de `ccd86b5` para `3b32ef7`.
+- O que entrou: entrevista com o cliente, tela Salão, uso no celular (com job de CI em 375 px), fechamento mensal com DRE, relatório de vendas, caixa por turno, garçons e comissão, transferência e junção de comandas, **Next.js 16** (elimina o alerta crítico), cozinha (KDS) e prioridade, clientes, fidelidade, cardápio por horário, categorias, variações e adicionais, metas e delivery.
+- **23 issues foram fechadas** com comentário de evidência: #6, #8, #12, #13, #16, #19, #21, #22, #25, #27, #28, #30, #31, #32, #34, #35, #36, #37, #38, #39, #41, #44 e #45. Ficaram abertas por estarem parciais: #26, #29, #33, #40, #42, #43 e #14.
+- Verificação local: **48 testes** do frontend (Next 16 + React 19), **698 testes** da API, `npm run build` e `npm run build:api` verdes; `docker compose build` + `up -d` com **16 migrações aplicadas** sobre o banco existente, `/api/health` ok e as rotas novas respondendo 200 no container.
+- **Armadilha:** `npm install` não regenera o Prisma Client — a suíte da API falha até rodar `npx prisma generate`. O CI não sofre porque `npm run build:api` gera o client antes dos testes.
+- **Métricas antes dos commits desta sessão: 6 de 10.** Cobertura caiu para **58,91%** (o painel Salão em `app/page.tsx` não tem teste de componente — é a issue 1.3); faltava sessão de `2026-11-17`; e a autoria da primeira integrante caiu para **29%** (mínimo 30%) por causa do volume de commits da segunda. Sessão, README, auditoria e backlog foram atualizados para fechar as duas últimas.
+- O `package-lock.json` ficou com diferença local de metadados gerada pelo npm desta máquina e **não foi commitada**.
+
+**Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-6 (URL pública do fork), P-7 (deploy contínuo). A P-4 (SPEC de reativação) e a P-5 (SPEC do `next@16`) foram resolvidas pelos PRs #2 e #62.
+
 ---
 
 ## 6. Pendências que exigem o humano
@@ -227,8 +243,8 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 | ~~P-1~~ | ~~`gh auth login`~~ | **Resolvida em 2026-11-14.** O `gh` está autenticado; as 40 issues foram publicadas e o PR #1 (pipeline de CI) foi aprovado e merged na `main`. |
 | P-2 | Nome/e-mail do segundo integrante da dupla | Métrica de autoria (30% cada) e alternância de commits. A autoria dos commits da segunda integrante aparece como "Jéssica Lopes Melo" e o nome do segundo integrante da dupla (o terceiro, que aparece como `afonso` na AP1) ainda não foi confirmado. |
 | P-3 | Custo/tokens reais das sessões | O ambiente não exporta esse dado; não pode ser inventado (`AGENTS.md` §8). |
-| P-4 | Aprovação da SPEC de ativação do backend | Muda a estratégia de persistência e a stack ativa — proibido sem SPEC aprovada. A segunda integrante abriu o PR #2 com SPEC própria que mantém o frontend no `localStorage`. |
-| P-5 | Aprovação da SPEC de atualização do `next@16` | Correção do alerta crítico de dependência; breaking change. É a issue 1.2 do backlog. |
+| ~~P-4~~ | ~~Aprovação da SPEC de ativação do backend~~ | **Resolvida em 2026-11-14** pelos PRs #2 a #5 e #49 (SPECs datadas de 2026-11-12/13), com a `main` no modo servidor disponível e o modo local preservado. |
+| ~~P-5~~ | ~~Aprovação da SPEC de atualização do `next@16`~~ | **Resolvida em 2026-11-17** pelo PR #62 (SPEC `2026-11-16-next-16-sem-alerta-critico.md`), com `npm audit --audit-level=critical` em código 0. |
 | P-6 | Confirmação de que a URL pública pode ser a mesma da AP1 ou deve ser uma nova deployment do fork | A métrica exige que a URL sirva o último commit da `main` do fork. É a issue 0.5 do backlog. |
 | P-7 | Plano de deploy contínuo (Vercel webhook em `main`) | Sem isso, a URL pública fica desatualizada a cada merge. É a issue 1.6 do backlog. |
 
