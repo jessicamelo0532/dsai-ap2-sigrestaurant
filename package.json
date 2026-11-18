@@ -13,7 +13,9 @@
     "build:api": "npm --workspace apps/api run build",
     "test:api": "npm --workspace apps/api run test",
     "test:api:coverage": "npm --workspace apps/api run test:coverage",
-    "e2e:celular": "npm --workspace apps/web run e2e:celular"
+    "e2e:celular": "npm --workspace apps/web run e2e:celular",
+    "cobertura:diff": "node scripts/cobertura-diff.mjs",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\""
   },
   "devDependencies": {
     "jscpd": "^4.0.5",

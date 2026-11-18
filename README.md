@@ -215,6 +215,7 @@ Rotas `/api/delivery-orders`: `POST` abre o pedido (`{ recipient, address, phone
 O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.md): da fila de issues até a entrega.
 
 - **Integração contínua**: o pipeline da branch `jessica/ci-pipeline` roda em todo push e em todo PR para a `main` (build, testes com cobertura, duplicação, segredos e `npm audit`). Ver [`SPEC/2026-11-12-integracao-continua.md`](SPEC/2026-11-12-integracao-continua.md).
+- **Cobertura do código novo**: o job "Cobertura do código novo (diff, mínimo 70%)" do CI cruza as linhas adicionadas desde o último commit da AP1 (`d0a6caf`) com a cobertura do frontend e da API e falha abaixo de 70%; o resultado aparece no resumo do job. Localmente: `npm run cobertura:diff` (depois de `npm run test:coverage` e `npm run test:api:coverage`). Em 2026-11-17: **94,6%** (2.335 de 2.468 linhas). Ver [`SPEC/2026-11-17-cobertura-do-codigo-novo.md`](SPEC/2026-11-17-cobertura-do-codigo-novo.md).
 - **Medir as métricas da aula**: `npm run metricas` reproduz localmente as 10 métricas verificáveis da Aula 09 (volume, duplicação, cobertura, specs, trailers, frequência, sessões, autoria, segurança e URL pública).
 - **Publicar issues**: `node scripts/publicar-issues.mjs` cria as issues a partir de `docs/issues/bodies/`; o script é idempotente e pula as que já existem.
 - **SPEC antes do código**: toda funcionalidade nova tem SPEC datada em `SPEC/` antes do primeiro commit de código.
