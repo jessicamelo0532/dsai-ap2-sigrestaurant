@@ -50,6 +50,8 @@ async function main() {
   const report = {};
   const check = async (name) => { report[name] = await page.evaluate(inspect, LIMITS); };
   const go = async (section) => { await page.getByRole('button', { name: section, exact: true }).first().click(); await page.waitForTimeout(300); };
+  // A barra de navegação é fixa no rodapé; centraliza alvos da página antes de tocar.
+  const tap = async (locator) => { await locator.evaluate((element) => element.scrollIntoView({ block: 'center' })); await locator.click(); };
   const closeModal = async () => { await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click(); await page.locator('.modal-backdrop').waitFor({ state: 'detached' }); };
 
   await page.goto(BASE_URL);
@@ -58,15 +60,15 @@ async function main() {
 
   // Lançar pedido sem ampliar a tela: escolher mesa, adicionar item, abrir o fechamento.
   await page.locator('.table-card').nth(1).click();
-  await page.locator('.quick-item').first().click();
+  await tap(page.locator('.quick-item').first());
   await page.waitForTimeout(300);
   await check('Visão geral com comanda');
-  await page.getByRole('button', { name: /Imprimir bobina/ }).click();
+  await tap(page.getByRole('button', { name: /Imprimir bobina/ }));
   await page.waitForTimeout(300);
   await check('Bobina da comanda');
   await page.getByRole('dialog').getByRole('button', { name: 'Fechar', exact: true }).click();
   await page.getByRole('dialog', { name: 'Bobina da comanda' }).waitFor({ state: 'detached' });
-  await page.getByRole('button', { name: /Fechar conta/ }).click();
+  await tap(page.getByRole('button', { name: /Fechar conta/ }));
   await check('Fechar conta');
   await closeModal();
   await page.getByRole('button', { name: /Adicionar mesa/ }).first().click();
