@@ -186,9 +186,11 @@ Na interface, a seção **Garçons** (modo servidor) lista a equipe com os ativo
 
 No app, a seção **Cozinha** mostra a fila com resumo, filtros, tempo de espera, faixa de atraso e as ações de preparo e entrega; o botão **Enviar para a cozinha** fica na comanda aberta, com observação opcional. A tela se atualiza a cada 15 s e só funciona no modo servidor. SPEC [`2026-11-17-tela-da-cozinha.md`](SPEC/2026-11-17-tela-da-cozinha.md).
 
-### Clientes e histórico de consumo (somente API)
+### Clientes e histórico de consumo
 
 Rotas `/api/customers` (cadastro com nome, telefone com DDD e observação; busca por parte do nome, sem acento, ou do telefone; edição e desativação), `PUT /api/orders/:id/customer` (`{ customerId }` ou `null`, só em comanda aberta) e `GET /api/customers/:id/history?from&to` (visitas, total gasto, ticket médio, primeira e última visita, 3 itens mais pedidos e as comandas pagas). Nome e telefone não se repetem, mesmo com outra grafia. SPEC [`2026-11-16-clientes-e-historico.md`](SPEC/2026-11-16-clientes-e-historico.md).
+
+Na interface, a seção **Clientes** (modo servidor) busca por nome ou telefone, mostra os desativados sob pedido, cadastra e edita clientes, desativa e reativa, e abre o histórico de cada um com visitas, total gasto, ticket médio, os itens mais pedidos e as comandas pagas, com período opcional. SPEC [`2026-11-17-tela-de-clientes.md`](SPEC/2026-11-17-tela-de-clientes.md).
 
 ### Programa de fidelidade (somente API)
 
