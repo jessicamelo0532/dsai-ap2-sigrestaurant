@@ -254,3 +254,21 @@ describe('modo navegador (RF-08)', () => {
     expect(calls).toHaveLength(0);
   });
 });
+
+describe('venda a prazo na comanda (SPEC/2026-11-17-contas-a-receber.md)', () => {
+  it('o botão aparece no modo servidor e abre a janela com o total', async () => {
+    stubApi(serverRoutes());
+    render(<Home />);
+    fireEvent.click(await screen.findByRole('button', { name: /Vender a prazo/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Vender a prazo' });
+    expect((dialog.textContent ?? '').replace(/\s/g, ' ')).toContain('R$ 36,00');
+  });
+
+  it('não aparece no modo navegador', async () => {
+    setMode('local');
+    render(<Home />);
+    expect(await screen.findByText('Dados só neste navegador')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Vender a prazo/ })).toBeNull();
+  });
+});
+

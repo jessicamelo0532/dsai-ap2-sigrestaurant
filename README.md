@@ -96,6 +96,10 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 
 As mesas ficam organizadas por zona (por exemplo, Salão, Varanda, Área externa), nos dois modos. A tela **Salão** mostra um grupo por zona com "N de M ocupadas", tem filtro por zona e o botão **Zonas**, que cria, renomeia e exclui zonas e move mesas de uma zona para outra. Toda mesa pertence a uma zona: as mesas que já existiam foram para a zona padrão "Salão" (migração no servidor, conversão automática no navegador), e mesa nova entra na primeira zona. Rotas: `GET/POST /api/zones`, `PATCH/DELETE /api/zones/:id` e `PATCH /api/tables/:id` com `{ zoneId }`. SPEC [`2026-11-17-zonas-do-salao.md`](SPEC/2026-11-17-zonas-do-salao.md).
 
+### Contas a receber (venda a prazo)
+
+No modo servidor, a comanda aberta pode ser fechada **a prazo**: o botão **Vender a prazo** pede o cliente (o da comanda, ou outro buscado), o vencimento (padrão: 30 dias, até 365) e uma observação. A comanda fica `ON_ACCOUNT`, a mesa fica livre e nasce um título a receber com o total. Como relatórios, caixa e comissão contam só comandas pagas, a venda a prazo não entra na receita do caixa do turno. A seção **A receber** mostra o total em aberto (igual à soma dos títulos), o vencido, os próximos 7 dias e o recebido, filtra os títulos e dá baixa com forma de pagamento e data. Rotas: `POST /api/orders/:id/on-account`, `GET /api/receivables` e `POST /api/receivables/:id/receive`. SPEC [`2026-11-17-contas-a-receber.md`](SPEC/2026-11-17-contas-a-receber.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

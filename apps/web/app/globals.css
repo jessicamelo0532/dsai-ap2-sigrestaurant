@@ -189,3 +189,18 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-heading-actions{display:flex;gap:8px;flex-wrap:wrap}
 .horario-modal{width:min(100%,560px);max-height:90vh;overflow-y:auto;display:grid;gap:12px}
 @media(max-width:650px){.reserva-heading-actions{width:100%}.reserva-heading-actions .button{flex:1}}
+
+/* Contas a receber (SPEC/2026-11-17-contas-a-receber.md) */
+.receber-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.receber-summary>div{display:grid;gap:3px;padding:12px;border-radius:10px;background:#fff;border:1px solid var(--line)}.receber-summary span,.receber-summary small{color:#7a7f8c;font-size:14px}.receber-summary strong{font-size:19px}
+.receber-summary .danger strong{color:#b4373b}.receber-summary .ok strong{color:var(--green)}
+.receber-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.receber-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:15px}.receber-row.overdue{border-color:#f3d3d4}
+.receber-copy{display:grid;gap:3px}.receber-copy span,.receber-copy small{color:#7a7f8c;font-size:14px}
+.receber-due{display:grid;gap:4px;justify-items:end}.receber-due b{font-size:17px}
+.receber-badge{font-size:14px;font-weight:700;border-radius:6px;padding:3px 8px;background:#f2f2f5;color:#555b69}.receber-badge.overdue{background:#fdecec;color:#b4373b}.receber-badge.due_today{background:#fff3e3;color:#9a5a17}.receber-badge.paid{background:var(--green-soft);color:var(--green)}
+.receber-total{margin:0;font-size:15px}
+.prazo-customer{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:15px}.prazo-customer span{color:#7a7f8c}
+.prazo-search{display:grid;gap:6px}
+@media(max-width:950px){.receber-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.receber-row{grid-template-columns:1fr auto}.receber-row>.button{grid-column:1/-1}.receber-due{justify-items:start}}

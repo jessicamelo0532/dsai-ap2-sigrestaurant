@@ -12,6 +12,13 @@ enum OrderStatus {
   PAID
   CANCELLED
   MERGED
+  // SPEC/2026-11-17-contas-a-receber.md: fechada a prazo, com título a receber.
+  ON_ACCOUNT
+}
+
+enum ReceivableStatus {
+  OPEN
+  PAID
 }
 
 enum OrderEventType {
@@ -143,6 +150,7 @@ model Order {
   deliveredAt     DateTime?
   loyaltyPoints  Int             @default(0)
   loyaltyEntries LoyaltyEntry[]
+  receivable     Receivable?
 
   @@index([status, openedAt])
   @@index([paidAt])
@@ -434,6 +442,7 @@ model Customer {
   updatedAt DateTime @updatedAt
   orders         Order[]
   loyaltyEntries LoyaltyEntry[]
+  receivables    Receivable[]
 
   @@index([nameKey])
 }
@@ -551,4 +560,25 @@ model OpeningHour {
   endMinute   Int
 
   @@index([weekday])
+
+}
+
+// Contas a receber (SPEC/2026-11-17-contas-a-receber.md): um título por comanda vendida a prazo.
+model Receivable {
+  id            Int              @id @default(autoincrement())
+  orderId       Int              @unique
+  customerId    Int
+  amount        Decimal          @db.Decimal(10, 2)
+  issuedAt      DateTime         @db.Date
+  dueDate       DateTime         @db.Date
+  status        ReceivableStatus @default(OPEN)
+  paymentMethod PaymentMethod?
+  receivedAt    DateTime?        @db.Date
+  notes         String?
+  createdAt     DateTime         @default(now())
+  order         Order            @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer      Customer         @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([status, dueDate])
+  @@index([customerId])
 }

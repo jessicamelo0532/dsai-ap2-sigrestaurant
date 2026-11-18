@@ -20,10 +20,11 @@ import { StockModule } from './stock/stock.module';
 import { WaitersModule } from './waiters/waiters.module';
 
 import { OpeningHoursModule } from './opening-hours/opening-hours.module';
+import { ReceivablesModule } from './receivables/receivables.module';
 import { ZonesModule } from './zones/zones.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ZonesModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule],
   controllers: [AppController],
   providers: [AppService],
 })
