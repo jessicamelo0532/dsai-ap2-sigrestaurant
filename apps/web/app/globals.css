@@ -184,3 +184,8 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .horarios-row{display:grid;grid-template-columns:minmax(0,1fr) 80px 80px auto auto;gap:6px;align-items:center}.horarios-row select,.horarios-row input{min-width:0;border:1px solid #e7e7ec;border-radius:8px;padding:8px 9px;background:#fff}
 .horarios-actions{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:650px){.horarios-row{grid-template-columns:1fr 1fr;}.horarios-row select{grid-column:1/-1}.horarios-actions .button{flex:1}}
+
+/* Horário de funcionamento (SPEC/2026-11-17-horario-de-funcionamento.md) */
+.reserva-heading-actions{display:flex;gap:8px;flex-wrap:wrap}
+.horario-modal{width:min(100%,560px);max-height:90vh;overflow-y:auto;display:grid;gap:12px}
+@media(max-width:650px){.reserva-heading-actions{width:100%}.reserva-heading-actions .button{flex:1}}

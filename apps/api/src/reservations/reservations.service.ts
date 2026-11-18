@@ -1,3 +1,5 @@
+import { assertWithinOpeningHours } from '../opening-hours/opening-rules';
+import { loadOpeningHours } from '../opening-hours/opening-store';
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma, Reservation } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
@@ -54,6 +56,8 @@ export class ReservationsService {
     const slot = { startsAt, endsAt: computeEnd(startsAt, dto.durationMinutes) };
     assertBookingWindow(startsAt, this.now());
     return this.prisma.$transaction(async (tx) => {
+      // RF-02 da SPEC/2026-11-17-horario-de-funcionamento.md
+      assertWithinOpeningHours(await loadOpeningHours(tx), slot.startsAt, slot.endsAt);
       const table = await this.lockTable(tx, dto.tableId);
       assertCapacity(dto.partySize, table);
       await this.assertTableFree(tx, table, slot);
@@ -81,6 +85,10 @@ export class ReservationsService {
       const startsAt = dto.startsAt !== undefined ? parseInstant(dto.startsAt) : current.startsAt;
       const slot = { startsAt, endsAt: computeEnd(startsAt, dto.durationMinutes ?? durationOf(current)) };
       if (dto.startsAt !== undefined) assertBookingWindow(startsAt, this.now());
+      // RF-02 da SPEC/2026-11-17-horario-de-funcionamento.md: só quando muda o início ou a duração.
+      if (dto.startsAt !== undefined || dto.durationMinutes !== undefined) {
+        assertWithinOpeningHours(await loadOpeningHours(tx), slot.startsAt, slot.endsAt);
+      }
 
       const tableId = dto.tableId ?? current.tableId;
       if (tableId === null) throw new BadRequestException('A mesa desta reserva foi removida. Escolha outra mesa.');
@@ -125,6 +133,7 @@ export class ReservationsService {
     const startsAt = parseInstant(startsAtValue);
     const slot = { startsAt, endsAt: computeEnd(startsAt, durationMinutes) };
     assertBookingWindow(startsAt, this.now());
+    assertWithinOpeningHours(await loadOpeningHours(this.prisma), slot.startsAt, slot.endsAt);
 
     const tables = await this.prisma.diningTable.findMany({
       where: { capacity: { gte: partySize } },

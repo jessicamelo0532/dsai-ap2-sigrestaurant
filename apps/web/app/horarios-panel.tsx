@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarClock, CirclePlus, Copy, Eraser, Save, ServerOff, Trash2, Wifi } from 'lucide-react';
+import { CalendarClock, ServerOff, Wifi } from 'lucide-react';
 import { storeRequest } from '@/lib/store';
 import type { MenuItem } from '@/lib/types';
-import {
-  newRow, repeatOnWorkdays, statusLabel, toRows, validateWindows, WEEKDAYS, windowsBody, type Availability, type WindowRow,
-} from '@/lib/horarios';
+import { statusLabel, toRows, validateWindows, windowsBody, type Availability, type WindowRow } from '@/lib/horarios';
+import { JanelasEditor } from './janelas-editor';
 
 // Aba Horários do Cardápio (SPEC/2026-11-17-tela-de-horarios-do-cardapio.md).
 
@@ -48,8 +47,6 @@ export function HorariosPanel({ mode, canConnect, onConnect, menu, onChanged }: 
     );
   }
 
-  const update = (index: number, change: Partial<WindowRow>) => setRows((current) => current.map((row, i) => (i === index ? { ...row, ...change } : row)));
-
   async function save() {
     const invalid = validateWindows(rows);
     if (invalid) { setError(invalid); setMessage(''); return; }
@@ -84,26 +81,15 @@ export function HorariosPanel({ mode, canConnect, onConnect, menu, onChanged }: 
             <CalendarClock size={16} />{statusLabel(availability)}
           </p>
 
-          <div className="horarios-list" role="list" aria-label="Janelas de horário">
-            {!rows.length && <small className="opcoes-hint">Nenhuma janela: o item aparece em qualquer horário.</small>}
-            {rows.map((row, index) => (
-              <div key={row.key} className="horarios-row" role="listitem">
-                <select value={row.weekday} onChange={(e) => update(index, { weekday: Number(e.target.value) })} aria-label={`Dia da janela ${index + 1}`}>
-                  {WEEKDAYS.map((day, weekday) => <option key={day} value={weekday}>{day}</option>)}
-                </select>
-                <input value={row.start} onChange={(e) => update(index, { start: e.target.value })} placeholder="11:00" aria-label={`Início da janela ${index + 1}`} />
-                <input value={row.end} onChange={(e) => update(index, { end: e.target.value })} placeholder="15:00" aria-label={`Fim da janela ${index + 1}`} />
-                <button type="button" className="icon-button" onClick={() => setRows((current) => repeatOnWorkdays(current, index))} aria-label={`Repetir a janela ${index + 1} nos dias úteis`} title="Repetir nos dias úteis"><Copy size={15} /></button>
-                <button type="button" className="icon-button danger" onClick={() => setRows((current) => current.filter((_, i) => i !== index))} aria-label={`Remover a janela ${index + 1}`}><Trash2 size={15} /></button>
-              </div>
-            ))}
-          </div>
-
-          <div className="horarios-actions">
-            <button type="button" className="button button-light" onClick={() => setRows((current) => [...current, newRow()])}><CirclePlus size={15} />Incluir janela</button>
-            <button type="button" className="button button-light" disabled={!rows.length} onClick={() => setRows([])}><Eraser size={15} />Sempre disponível</button>
-            <button type="button" className="button button-dark" disabled={busy} onClick={() => void save()}><Save size={15} />{busy ? 'Salvando…' : 'Salvar horários'}</button>
-          </div>
+          <JanelasEditor
+            rows={rows}
+            onChange={setRows}
+            onSave={() => void save()}
+            busy={busy}
+            emptyText="Nenhuma janela: o item aparece em qualquer horário."
+            clearLabel="Sempre disponível"
+            saveLabel="Salvar horários"
+          />
         </>
       )}
     </div>

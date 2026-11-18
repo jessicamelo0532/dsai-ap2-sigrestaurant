@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CalendarDays, CirclePlus, Clock3, Phone, RefreshCw, ServerOff, UserRound, Users, Wifi } from 'lucide-react';
+import { CalendarClock, CalendarDays, CirclePlus, Clock3, Phone, RefreshCw, ServerOff, UserRound, Users, Wifi } from 'lucide-react';
 import { storeRequest } from '@/lib/store';
 import {
   allowedReservationActions, DEFAULT_DURATION, durationOptions, filterCounts, filterReservations,
@@ -9,6 +9,7 @@ import {
   reservationFilters, statusLabels, tableLabel, toLocalIso, validateReservationForm,
   type AvailableTable, type Reservation, type ReservationFilter,
 } from '@/lib/reservas';
+import { HorarioFuncionamento } from './horario-funcionamento';
 
 type Props = {
   mode: 'api' | 'local';
@@ -25,6 +26,8 @@ export function ReservasPanel({ mode, canConnect, onConnect, onOpenTable }: Prop
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  // SPEC/2026-11-17-horario-de-funcionamento.md (RF-03)
+  const [showHours, setShowHours] = useState(false);
 
   const load = useCallback(async () => {
     if (mode !== 'api') return;
@@ -75,7 +78,10 @@ export function ReservasPanel({ mode, canConnect, onConnect, onOpenTable }: Prop
     <section className="page-section">
       <div className="page-heading">
         <div><div className="eyebrow">AGENDA</div><h1>Reservas</h1><p>Veja as reservas do dia e encaminhe o cliente para a mesa.</p></div>
-        <button className="button button-dark" onClick={() => { setShowForm(true); setSeatedTable(null); }}><CirclePlus size={17} />Nova reserva</button>
+        <div className="reserva-heading-actions">
+          <button className="button button-light" onClick={() => setShowHours(true)}><CalendarClock size={17} />Horário de funcionamento</button>
+          <button className="button button-dark" onClick={() => { setShowForm(true); setSeatedTable(null); }}><CirclePlus size={17} />Nova reserva</button>
+        </div>
       </div>
 
       <div className="reserva-toolbar">
@@ -134,6 +140,7 @@ export function ReservasPanel({ mode, canConnect, onConnect, onOpenTable }: Prop
         ))}
       </div>
 
+      {showHours && <HorarioFuncionamento onClose={() => setShowHours(false)} />}
       {showForm && <ReservaForm day={day} onClose={() => setShowForm(false)} onCreated={() => { setShowForm(false); void load(); setMessage('Pronto, reserva criada.'); }} />}
     </section>
   );

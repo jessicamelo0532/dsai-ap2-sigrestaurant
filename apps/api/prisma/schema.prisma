@@ -542,3 +542,13 @@ enum DeliveryStatus {
   OUT_FOR_DELIVERY
   DELIVERED
 }
+
+// Horário de funcionamento da casa (SPEC/2026-11-17-horario-de-funcionamento.md).
+model OpeningHour {
+  id          Int @id @default(autoincrement())
+  weekday     Int
+  startMinute Int
+  endMinute   Int
+
+  @@index([weekday])
+}
