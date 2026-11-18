@@ -170,9 +170,11 @@ Rotas em `/api/cash` (SPEC [`2026-11-16-caixa-por-turno.md`](SPEC/2026-11-16-cai
 
 Na interface, a seção **Caixa** (modo servidor) abre o turno, mostra vendas e esperado por forma de pagamento, registra sangria e reforço, fecha com a prévia da sobra ou falta de cada forma (observação obrigatória quando há diferença) e lista os turnos dos últimos 30 dias. No modo navegador ela avisa que o caixa precisa do servidor. SPEC [`2026-11-17-tela-do-caixa.md`](SPEC/2026-11-17-tela-do-caixa.md).
 
-### Garçons e comissão (somente API)
+### Garçons e comissão
 
 Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/waiter` (atribui ou troca o garçom de uma comanda aberta, guardando nome e taxa daquele momento) e `GET /api/reports/waiters?from&to` (contas, receita, ticket médio e comissão por garçom, com "Sem garçom" e os totais). Comissão padrão de 10%, de 0 a 30% por garçom. SPEC [`2026-11-16-garcons-e-comissao.md`](SPEC/2026-11-16-garcons-e-comissao.md).
+
+Na interface, a seção **Garçons** (modo servidor) lista a equipe com os ativos primeiro, cadastra e edita nome e comissão, ativa, desativa e exclui garçons, e mostra por período as contas pagas, a receita, o ticket médio e a comissão de cada garçom, com a linha "Sem garçom" e os totais. SPEC [`2026-11-17-tela-de-garcons.md`](SPEC/2026-11-17-tela-de-garcons.md).
 
 ### Transferir comanda e juntar contas (somente API)
 

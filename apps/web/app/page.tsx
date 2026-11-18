@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
-  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
-  CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
-  Search, Sparkles, Trash2, Utensils, Wallet, X,
+  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
 import {
   apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, Order, orderTotal, Report, setMode,
@@ -20,12 +18,13 @@ import { HorariosPanel } from './horarios-panel';
 import { ReceberPanel } from './receber-panel';
 import { VenderAPrazo } from './vender-a-prazo';
 import { CaixaPanel } from './caixa-panel';
+import { GarconsPanel } from './garcons-panel';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -176,6 +175,7 @@ export default function Home() {
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
           <button className={section === 'receber' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('receber')}><HandCoins size={18} />A receber</button>
+          <button className={section === 'garcons' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('garcons')}><UserRound size={18} />Garçons</button>
         </nav>
         <div className="sidebar-bottom"><div className="help-card"><Sparkles size={17} /><strong>Um serviço de cada vez</strong><p>Mesas organizadas deixam cada atendimento mais leve.</p></div><div className="profile"><div className="avatar">IC</div><span><strong>Equipe da casa</strong><small>Operação</small></span><MoreHorizontal size={18} /></div></div>
       </aside>
@@ -201,6 +201,7 @@ export default function Home() {
           {section === 'reservas' && <ReservasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onOpenTable={(tableNumber) => { const table = tables.find((entry) => entry.number === tableNumber); if (table) setSelectedTable(table.id); setSection('operacao'); }} />}
           {section === 'receber' && <ReceberPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'caixa' && <CaixaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
+          {section === 'garcons' && <GarconsPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
