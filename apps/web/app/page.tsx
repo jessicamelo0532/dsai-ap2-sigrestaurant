@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
-  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Utensils, Wallet, X, Contact, Gift,
+  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Utensils, Wallet, X, Contact, Gift, Target,
 } from 'lucide-react';
 import {
   apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, Order, orderTotal, Report, setMode,
@@ -21,12 +21,13 @@ import { CaixaPanel } from './caixa-panel';
 import { GarconsPanel } from './garcons-panel';
 import { ClientesPanel } from './clientes-panel';
 import { FidelidadePanel } from './fidelidade-panel';
+import { MetasPanel } from './metas-panel';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons' | 'clientes' | 'fidelidade';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons', clientes: 'Clientes', fidelidade: 'Fidelidade' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons' | 'clientes' | 'fidelidade' | 'metas';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons', clientes: 'Clientes', fidelidade: 'Fidelidade', metas: 'Metas' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -180,6 +181,7 @@ export default function Home() {
           <button className={section === 'receber' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('receber')}><HandCoins size={18} />A receber</button>
           <button className={section === 'garcons' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('garcons')}><UserRound size={18} />Garçons</button>
           <button className={section === 'fidelidade' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('fidelidade')}><Gift size={18} />Fidelidade</button>
+          <button className={section === 'metas' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('metas')}><Target size={18} />Metas</button>
         </nav>
         <div className="sidebar-bottom"><div className="help-card"><Sparkles size={17} /><strong>Um serviço de cada vez</strong><p>Mesas organizadas deixam cada atendimento mais leve.</p></div><div className="profile"><div className="avatar">IC</div><span><strong>Equipe da casa</strong><small>Operação</small></span><MoreHorizontal size={18} /></div></div>
       </aside>
@@ -208,6 +210,7 @@ export default function Home() {
           {section === 'garcons' && <GarconsPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'clientes' && <ClientesPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'fidelidade' && <FidelidadePanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
+          {section === 'metas' && <MetasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
