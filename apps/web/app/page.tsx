@@ -16,6 +16,7 @@ import { CozinhaPanel } from './cozinha-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
 import { ReservasPanel } from './reservas-panel';
+import { HorariosPanel } from './horarios-panel';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
@@ -42,7 +43,7 @@ export default function Home() {
   const [showTableForm, setShowTableForm] = useState(false);
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [menuView, setMenuView] = useState<'itens' | 'categorias'>('itens');
+  const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios'>('itens');
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [printDoc, setPrintDoc] = useState<Bobina | Cupom | null>(null);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
@@ -225,10 +226,13 @@ export default function Home() {
             <div className="floor-filters" role="group" aria-label="Áreas do cardápio">
               <button className="floor-filter" aria-pressed={menuView === 'itens'} onClick={() => setMenuView('itens')}>Itens<b>{menu.length}</b></button>
               <button className="floor-filter" aria-pressed={menuView === 'categorias'} onClick={() => setMenuView('categorias')}>Categorias<b>{menuCategories.length}</b></button>
+              <button className="floor-filter" aria-pressed={menuView === 'horarios'} onClick={() => setMenuView('horarios')}>Horários</button>
             </div>
             {menuView === 'itens'
               ? <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />
-              : <CategoriasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />}
+              : menuView === 'categorias'
+                ? <CategoriasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />
+                : <HorariosPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} onChanged={refreshQuietly} />}
           </section>}
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>

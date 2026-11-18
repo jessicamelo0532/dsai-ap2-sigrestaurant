@@ -177,3 +177,10 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .zonas-tables{display:grid;gap:8px;font-size:15px}.zonas-tables li{display:flex;justify-content:space-between;align-items:center;gap:10px}.zonas-tables select{border:1px solid #e7e7ec;border-radius:8px;padding:7px 9px;background:#fff}
 .zonas-ok{margin:0;color:var(--green);font-size:14px}
 @media(max-width:650px){.floor-heading-actions{width:100%}.zonas-create .button{flex:none}}
+/* Horários do cardápio (SPEC/2026-11-17-tela-de-horarios-do-cardapio.md) */
+.horarios-panel{display:grid;gap:12px;font-size:15px}
+.horarios-status{display:inline-flex;gap:7px;align-items:center;margin:0;font-weight:700;padding:6px 10px;border-radius:8px;justify-self:start}.horarios-status.always{background:#f2f2f5;color:#555b69}.horarios-status.open{background:var(--green-soft);color:var(--green)}.horarios-status.closed{background:#fff3e3;color:#9a5a17}
+.horarios-list{display:grid;gap:6px}
+.horarios-row{display:grid;grid-template-columns:minmax(0,1fr) 80px 80px auto auto;gap:6px;align-items:center}.horarios-row select,.horarios-row input{min-width:0;border:1px solid #e7e7ec;border-radius:8px;padding:8px 9px;background:#fff}
+.horarios-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:650px){.horarios-row{grid-template-columns:1fr 1fr;}.horarios-row select{grid-column:1/-1}.horarios-actions .button{flex:1}}
