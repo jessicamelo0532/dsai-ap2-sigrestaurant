@@ -254,7 +254,7 @@ METRICAS.sessoes = () => {
 METRICAS.autoria = () => {
   heading('Autoria — 30% dos commits por integrante');
   const autores = run('bash', ['-c',
-    "git log --format='%an' d0a6caf..HEAD | sort | uniq -c | sort -rn"]).trim().split('\n').filter(Boolean);
+    "git log --format='%aN' d0a6caf..HEAD | sort | uniq -c | sort -rn"]).trim().split('\n').filter(Boolean);
   const total = autores.reduce((soma, linha) => soma + Number(linha.trim().split(/\s+/)[0]), 0);
   if (!total) {
     console.log('autoria: nenhum commit no periodo -> NAO CONFORME');
