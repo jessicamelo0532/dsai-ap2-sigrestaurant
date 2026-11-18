@@ -103,6 +103,10 @@ No modo servidor, a comanda aberta pode ser fechada **a prazo**: o botão **Vend
 
 Com uma comanda aberta no modo servidor, o painel da mesa mostra o bloco **Atendimento**: escolher o garçom entre os ativos (é o que alimenta o relatório de comissão), ligar ou tirar o cliente (histórico e pontos) e usar os pontos de fidelidade do cliente como desconto, com prévia do valor e opção de desfazer. O resumo da comanda passa a mostrar subtotal, desconto dos pontos e total a pagar. SPEC [`2026-11-17-atendimento-na-comanda.md`](SPEC/2026-11-17-atendimento-na-comanda.md).
 
+### App offline e QR code das mesas
+
+O app pode ser instalado na tela inicial do celular (manifesto) e abre sem rede depois da primeira visita: um service worker, registrado só em produção, guarda as páginas e os arquivos estáticos (nunca as chamadas à API). No modo navegador, os dados já ficam no aparelho, então as mesas aparecem mesmo offline. Na tela **Salão**, o botão **QR das mesas** gera, para cada mesa, um cartão com QR code que guarda o endereço `/?mesa=N`; lido pela câmera do celular, ele abre a comanda daquela mesa. O QR code é gerado por um codificador próprio (ISO/IEC 18004, nível M), sem dependência nova, conferido módulo a módulo contra uma biblioteca de referência. SPEC [`2026-11-17-pwa-e-qr-das-mesas.md`](SPEC/2026-11-17-pwa-e-qr-das-mesas.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

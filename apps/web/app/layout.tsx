@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { RegistrarOffline } from './registrar-offline';
 
 export const metadata: Metadata = {
   title: 'Mesa Clara | Gestão do restaurante',
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body>{children}</body></html>;
+  return <html lang="pt-BR"><body>{children}<RegistrarOffline /></body></html>;
 }

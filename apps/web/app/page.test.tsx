@@ -326,6 +326,9 @@ describe('mesa e contas na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md)',
 
     expect(await screen.findByRole('heading', { name: 'Mesa 04' })).toBeTruthy();
     expect(await screen.findByText('Transferida da mesa 01 para a mesa 04')).toBeTruthy();
+  });
+});
+
 describe('lançar item com opções (SPEC/2026-11-17-tela-de-variacoes-e-adicionais.md)', () => {
   it('no modo servidor, item sem opções continua sendo lançado direto (CA-04)', async () => {
     const calls = stubApi({
@@ -341,6 +344,37 @@ describe('lançar item com opções (SPEC/2026-11-17-tela-de-variacoes-e-adicion
     await waitFor(() => expect(calls.some((call) => call.method === 'POST' && call.path === '/tables/1/items')).toBe(true));
     expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ menuItemId: 1, quantity: 1 });
     expect(await screen.findByText('Pronto, item lançado na comanda.')).toBeTruthy();
+  });
+});
+
+describe('link por mesa e QR (SPEC/2026-11-17-pwa-e-qr-das-mesas.md)', () => {
+  afterEach(() => { window.history.replaceState(null, '', '/'); });
+
+  it('abre a mesa do link ?mesa=3 e limpa o endereço (CA-03)', async () => {
+    setMode('local');
+    window.history.replaceState(null, '', '/?mesa=3');
+    render(<Home />);
+
+    expect(await screen.findByRole('heading', { name: 'Mesa 03' })).toBeTruthy();
+    expect(window.location.search).toBe('');
+  });
+
+  it('avisa quando a mesa do link não existe (CA-03)', async () => {
+    setMode('local');
+    window.history.replaceState(null, '', '/?mesa=99');
+    render(<Home />);
+
+    expect(await screen.findByText('A mesa 99 não existe neste salão.')).toBeTruthy();
+  });
+
+  it('o Salão abre os cartões com QR (CA-04)', async () => {
+    setMode('local');
+    render(<Home />);
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Salão/ })[0]);
+    fireEvent.click(await screen.findByRole('button', { name: /QR das mesas/ }));
+    expect(screen.getAllByRole('article', { name: /^QR da Mesa/ })).toHaveLength(5);
   });
 });
 

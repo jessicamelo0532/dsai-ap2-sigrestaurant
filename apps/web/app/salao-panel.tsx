@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Clock3, Map as MapIcon, Plus } from 'lucide-react';
+import { ArrowUpRight, Clock3, Map as MapIcon, Plus, QrCode } from 'lucide-react';
 import { money, storeRequest } from '@/lib/store';
 import {
   buildFloor, filterCounts, filterFloor, FLOOR_REFRESH_MS, formatElapsed, summarizeFloor,
@@ -10,6 +10,7 @@ import {
 import type { Table } from '@/lib/types';
 import { filterByZone, groupByZone, occupancyLabel, sortZones, type Zone, type ZoneFilter } from '@/lib/zonas';
 import { ZonasModal } from './zonas-modal';
+import { QrMesas } from './qr-mesas';
 
 // Visão do salão (SPEC/2026-11-16-visao-do-salao.md). Só desenha: a lógica está em lib/salao.ts.
 
@@ -38,6 +39,7 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
   const [zones, setZones] = useState<Zone[]>([]);
   const [zoneFilter, setZoneFilter] = useState<ZoneFilter>('todas');
   const [showZones, setShowZones] = useState(false);
+  const [showQr, setShowQr] = useState(false);
 
   const loadZones = useCallback(() => {
     storeRequest<Zone[]>('/zones').then((list) => setZones(Array.isArray(list) ? list : [])).catch(() => setZones([]));
@@ -76,6 +78,7 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
         <div className="floor-heading-actions">
           <span className="floor-live"><i />Atualiza sozinho a cada {FLOOR_REFRESH_MS / 1000} s</span>
           {!!zones.length && <button className="button button-light" onClick={() => setShowZones(true)}><MapIcon size={16} />Zonas</button>}
+          {!!tables.length && <button className="button button-light" onClick={() => setShowQr(true)}><QrCode size={16} />QR das mesas</button>}
         </div>
       </div>
 
@@ -125,6 +128,7 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
       </div>
 
       {showZones && <ZonasModal zones={zones} tables={tables} onClose={() => setShowZones(false)} onChanged={() => { loadZones(); onRefresh(); }} />}
+      {showQr && <QrMesas tables={tables} origin={window.location.origin} onClose={() => setShowQr(false)} />}
     </section>
   );
 }
