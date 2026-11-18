@@ -277,3 +277,16 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .meta-hint{margin:0;color:#626776;font-size:14px}
 @media(max-width:950px){.meta-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.meta-month strong{min-width:0;flex:1}.meta-period label{flex:1}.meta-period .button{width:100%}.meta-table{font-size:14px;display:block;overflow-x:auto}}
+
+/* Atendimento na comanda (SPEC/2026-11-17-atendimento-na-comanda.md) */
+.atendimento{display:grid;gap:10px;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fcfcfd;font-size:15px}
+.atendimento-title{font-size:15px}
+.atendimento-block{display:grid;gap:6px}
+.atendimento-label{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:#626776;font-size:14px}
+.atendimento select{border:1px solid #e7e7ec;border-radius:8px;padding:8px 10px;background:#fff}
+.atendimento-row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.atendimento-search{display:flex;gap:6px;flex-wrap:wrap}.atendimento-search input{flex:1;min-width:120px;border:1px solid #e7e7ec;border-radius:8px;padding:8px 10px}
+.atendimento-options{list-style:none;margin:0;padding:0;display:grid;gap:5px}.atendimento-options .button{width:100%;justify-content:flex-start}
+.atendimento-muted{color:#7a7f8c;font-size:14px}.atendimento-ok{margin:0;color:var(--green);font-size:14px}
+.order-discount{display:grid;grid-template-columns:1fr auto;gap:4px 10px;color:#626776;font-size:14px;margin-top:8px}.order-discount span:nth-child(4){color:var(--green);font-weight:700}
+@media(max-width:650px){.atendimento-search .button{flex:1}}

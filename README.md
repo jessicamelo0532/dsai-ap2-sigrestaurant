@@ -99,6 +99,10 @@ As mesas ficam organizadas por zona (por exemplo, Salão, Varanda, Área externa
 
 No modo servidor, a comanda aberta pode ser fechada **a prazo**: o botão **Vender a prazo** pede o cliente (o da comanda, ou outro buscado), o vencimento (padrão: 30 dias, até 365) e uma observação. A comanda fica `ON_ACCOUNT`, a mesa fica livre e nasce um título a receber com o total. Como relatórios, caixa e comissão contam só comandas pagas, a venda a prazo não entra na receita do caixa do turno. A seção **A receber** mostra o total em aberto (igual à soma dos títulos), o vencido, os próximos 7 dias e o recebido, filtra os títulos e dá baixa com forma de pagamento e data. Rotas: `POST /api/orders/:id/on-account`, `GET /api/receivables` e `POST /api/receivables/:id/receive`. SPEC [`2026-11-17-contas-a-receber.md`](SPEC/2026-11-17-contas-a-receber.md).
 
+### Atendimento na comanda (modo servidor)
+
+Com uma comanda aberta no modo servidor, o painel da mesa mostra o bloco **Atendimento**: escolher o garçom entre os ativos (é o que alimenta o relatório de comissão), ligar ou tirar o cliente (histórico e pontos) e usar os pontos de fidelidade do cliente como desconto, com prévia do valor e opção de desfazer. O resumo da comanda passa a mostrar subtotal, desconto dos pontos e total a pagar. SPEC [`2026-11-17-atendimento-na-comanda.md`](SPEC/2026-11-17-atendimento-na-comanda.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):
