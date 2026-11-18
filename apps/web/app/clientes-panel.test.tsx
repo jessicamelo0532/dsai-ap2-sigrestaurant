@@ -6,26 +6,7 @@ vi.hoisted(() => { process.env.NEXT_PUBLIC_API_URL = 'http://api.test/api'; });
 
 import { ClientesPanel } from './clientes-panel';
 import type { Customer, CustomerHistory } from '@/lib/clientes';
-
-const reply = (body: unknown, status = 200) => ({
-  ok: status < 400, status, text: async () => (body === undefined ? '' : JSON.stringify(body)),
-}) as unknown as Response;
-
-type Route = (path: string) => { body?: unknown; status?: number };
-function stubApi(routes: Record<string, Route>) {
-  const calls: { method: string; path: string; body: unknown }[] = [];
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    const path = String(url).replace('http://api.test/api', '');
-    const method = (init?.method ?? 'GET').toUpperCase();
-    calls.push({ method, path, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    const handler = routes[`${method} ${path.split('?')[0]}`];
-    if (!handler) return reply({ message: `sem rota ${method} ${path}` }, 404);
-    const answer = handler(path);
-    return reply(answer.body, answer.status);
-  }));
-  return calls;
-}
-
+import { stubApi, Route } from '@/test/api';
 // Dados fictícios (AGENTS.md §9).
 const people: Customer[] = [
   { id: 1, name: 'Ana Souza', phone: '91988887777', notes: 'Sem cebola', active: true },
@@ -44,7 +25,7 @@ const history: CustomerHistory = {
 };
 
 const withPeople = (extra: Record<string, Route> = {}) => stubApi({
-  'GET /customers': (path) => ({ body: path.includes('all=true') ? [...people, inactive] : people }),
+  'GET /customers': (_init, path) => ({ body: path?.includes('all=true') ? [...people, inactive] : people }),
   'GET /customers/1/history': () => ({ body: history }),
   ...extra,
 });

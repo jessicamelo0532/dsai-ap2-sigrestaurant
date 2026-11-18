@@ -6,29 +6,7 @@ vi.hoisted(() => { process.env.NEXT_PUBLIC_API_URL = 'http://api.test/api'; });
 
 import { MetasPanel } from './metas-panel';
 import { currentMonth, shiftMonth, type Goal, type GoalProgress, type PeriodComparison } from '@/lib/metas';
-
-const reply = (body: unknown, status = 200) => ({
-  ok: status < 400, status, text: async () => (body === undefined ? '' : JSON.stringify(body)),
-}) as unknown as Response;
-
-type Route = (path: string) => { body?: unknown; status?: number };
-function stubApi(routes: Record<string, Route>) {
-  const calls: { method: string; path: string; body: unknown }[] = [];
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    const path = String(url).replace('http://api.test/api', '');
-    const method = (init?.method ?? 'GET').toUpperCase();
-    calls.push({ method, path, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    const base = path.split('?')[0];
-    const key = /^\/goals\/\d{4}-\d{2}\/progress$/.test(base) ? `${method} /goals/:m/progress`
-      : /^\/goals\/\d{4}-\d{2}$/.test(base) ? `${method} /goals/:m` : `${method} ${base}`;
-    const handler = routes[key];
-    if (!handler) return reply({ message: `sem rota ${method} ${path}` }, 404);
-    const answer = handler(path);
-    return reply(answer.body, answer.status);
-  }));
-  return calls;
-}
-
+import { stubApi, Route } from '@/test/api';
 const month = currentMonth();
 const goal: Goal = { month, revenue: '50000.00', orders: 400, averageTicket: null };
 const goalWindow = { from: `${month}-01T00:00:00.000Z`, to: `${month}-18T00:00:00.000Z` };

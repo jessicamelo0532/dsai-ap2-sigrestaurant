@@ -10,26 +10,7 @@ import type { OrderEvent } from '@/lib/mover';
 import type { Order, Table } from '@/lib/types';
 
 // SPEC/2026-11-17-mover-e-juntar-na-tela.md (T-03)
-
-const reply = (body: unknown, status = 200) => ({
-  ok: status < 400, status, text: async () => (body === undefined ? '' : JSON.stringify(body)),
-}) as unknown as Response;
-
-type Route = (init?: RequestInit) => { body?: unknown; status?: number };
-function stubApi(routes: Record<string, Route>) {
-  const calls: { method: string; path: string; body: unknown }[] = [];
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    const path = String(url).replace('http://api.test/api', '');
-    const method = (init?.method ?? 'GET').toUpperCase();
-    calls.push({ method, path, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    const handler = routes[`${method} ${path.split('?')[0]}`];
-    if (!handler) return reply({ message: `sem rota ${method} ${path}` }, 404);
-    const answer = handler(init);
-    return reply(answer.body, answer.status);
-  }));
-  return calls;
-}
-
+import { stubApi, Route } from '@/test/api';
 const order = (id: number, tableNumber: number): Order => ({
   id, tableNumber, status: 'OPEN', openedAt: '2026-11-17T12:00:00.000Z',
   items: [{ id: 1, menuItemId: 1, nameSnapshot: 'Açaí', unitPrice: '18.00', quantity: 1 }],

@@ -6,27 +6,7 @@ vi.hoisted(() => { process.env.NEXT_PUBLIC_API_URL = 'http://api.test/api'; });
 
 import { ReservasPanel } from './reservas-panel';
 import type { Reservation } from '@/lib/reservas';
-
-const reply = (body: unknown, status = 200) => ({
-  ok: status < 400, status, text: async () => (body === undefined ? '' : JSON.stringify(body)),
-}) as unknown as Response;
-
-type Route = (init?: RequestInit) => { body?: unknown; status?: number };
-function stubApi(routes: Record<string, Route>) {
-  const calls: { method: string; path: string; body: unknown }[] = [];
-  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-    const path = String(url).replace('http://api.test/api', '');
-    const method = (init?.method ?? 'GET').toUpperCase();
-    calls.push({ method, path, body: init?.body ? JSON.parse(String(init.body)) : undefined });
-    const key = `${method} ${path.split('?')[0]}`;
-    const handler = routes[key] ?? routes[`${method} ${path}`];
-    if (!handler) return reply({ message: `sem rota ${key}` }, 404);
-    const answer = handler(init);
-    return reply(answer.body, answer.status);
-  }));
-  return calls;
-}
-
+import { stubApi } from '@/test/api';
 const base: Reservation[] = [
   { id: 1, tableId: 3, tableNumber: 3, customerName: 'Ana', customerPhone: '9199', partySize: 2, startsAt: '2026-11-17T19:00:00.000Z', endsAt: '2026-11-17T21:00:00.000Z', status: 'BOOKED', notes: null },
   { id: 2, tableId: 4, tableNumber: 4, customerName: 'Bia', customerPhone: null, partySize: 4, startsAt: '2026-11-17T20:00:00.000Z', endsAt: '2026-11-17T22:00:00.000Z', status: 'SEATED', notes: 'aniversário' },
