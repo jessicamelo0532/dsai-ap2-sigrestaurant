@@ -326,6 +326,21 @@ describe('mesa e contas na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md)',
 
     expect(await screen.findByRole('heading', { name: 'Mesa 04' })).toBeTruthy();
     expect(await screen.findByText('Transferida da mesa 01 para a mesa 04')).toBeTruthy();
+describe('lançar item com opções (SPEC/2026-11-17-tela-de-variacoes-e-adicionais.md)', () => {
+  it('no modo servidor, item sem opções continua sendo lançado direto (CA-04)', async () => {
+    const calls = stubApi({
+      ...serverRoutes(),
+      'GET /menu-items/1/options': () => ({ body: { menuItemId: 1, variants: [], addons: [] } }),
+      'POST /tables/1/items': () => ({ body: tables[0].order }),
+    });
+    render(<Home />);
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(2));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Açaí/ }).find((button) => button.classList.contains('quick-item'))!);
+
+    await waitFor(() => expect(calls.some((call) => call.method === 'POST' && call.path === '/tables/1/items')).toBe(true));
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ menuItemId: 1, quantity: 1 });
+    expect(await screen.findByText('Pronto, item lançado na comanda.')).toBeTruthy();
   });
 });
 

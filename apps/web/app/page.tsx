@@ -25,6 +25,8 @@ import { MetasPanel } from './metas-panel';
 import { ComandaAtendimento } from './comanda-atendimento';
 import { ComandaMover } from './comanda-mover';
 import { discountCents, dueCents } from '@/lib/comanda';
+import { OpcoesPanel } from './opcoes-panel';
+import { EscolherOpcoes } from './escolher-opcoes';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
@@ -51,7 +53,9 @@ export default function Home() {
   const [showTableForm, setShowTableForm] = useState(false);
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios'>('itens');
+  const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios' | 'opcoes'>('itens');
+  // SPEC/2026-11-17-tela-de-variacoes-e-adicionais.md: item escolhido no cardápio rápido (modo servidor).
+  const [choosingItem, setChoosingItem] = useState<{ item: MenuItem; tableId: number; quantity: number } | null>(null);
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
   const [printDoc, setPrintDoc] = useState<Bobina | Cupom | null>(null);
   // SPEC/2026-11-17-contas-a-receber.md: comanda sendo vendida a prazo.
@@ -233,7 +237,7 @@ export default function Home() {
                 {!selected ? <div className="order-empty"><span className="empty-illustration"><Utensils size={23} /></span><strong>Selecione uma mesa</strong><p>A comanda e o cardápio aparecem aqui.</p></div> : <>
                   <div className="order-meta"><span><span className="table-dot" />{selected.order ? `Aberta às ${new Date(selected.order.openedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Mesa livre'}</span><span><Utensils size={13} />{selected.capacity} lugares</span></div>
                   <div className="order-lines">{selected.order?.items.map((line) => <div className="order-line" key={line.id}><div className="line-copy"><strong>{line.nameSnapshot}</strong><small>{line.quantity} × {money(line.unitPrice)}</small></div><b>{money(Number(line.unitPrice) * line.quantity)}</b><button className="line-remove" aria-label="Remover item" onClick={() => run(() => storeRequest(`/orders/${selected.order!.id}/items/${line.id}`, { method: 'DELETE' }))}><X size={14} /></button></div>)}{!selected.order?.items.length && <div className="empty-order-copy">Nenhum item nesta comanda ainda.<br />Escolha algo gostoso no cardápio.</div>}</div>
-                  <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => run(() => storeRequest(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
+                  <div className="add-items"><div className="add-items-title"><strong>Adicionar ao pedido</strong><label className="quantity-picker">Qtd.<input type="number" min="1" max="500" value={orderQuantity} onChange={(event) => setOrderQuantity(Math.max(1, Math.min(500, Number(event.target.value) || 1)))} /></label></div><div className="menu-search"><Search size={15} /><input value={menuFilter} onChange={(event) => setMenuFilter(event.target.value)} placeholder="Buscar no cardápio" /></div><div className="quick-menu">{visibleMenu.slice(0, 5).map((item) => <button className="quick-item" key={item.id} disabled={busy} onClick={() => mode === 'api' ? setChoosingItem({ item, tableId: selected.id, quantity: orderQuantity }) : run(() => storeRequest(`/tables/${selected.id}/items`, { method: 'POST', body: JSON.stringify({ menuItemId: item.id, quantity: orderQuantity }) }))}><span><strong>{item.name}</strong><small>{item.category}</small></span><b>{money(item.price)}</b><Plus size={15} /></button>)}{!visibleMenu.length && <small className="no-menu">Nenhum item disponível encontrado.</small>}</div></div>
                   {selected.order && mode === 'api' && <ComandaAtendimento order={selected.order} onChanged={refreshQuietly} />}
                   {selected.order && discountCents(selected.order) > 0 && <div className="order-discount"><span>Subtotal</span><span>{money(orderTotal(selected.order))}</span><span>Desconto (pontos)</span><span>− {money(discountCents(selected.order) / 100)}</span></div>}
                   <div className="order-total"><span>{selected.order && discountCents(selected.order) > 0 ? 'Total a pagar' : 'Total da comanda'}</span><strong>{money(selected.order ? dueCents(selected.order) / 100 : 0)}</strong></div>
@@ -253,12 +257,15 @@ export default function Home() {
               <button className="floor-filter" aria-pressed={menuView === 'itens'} onClick={() => setMenuView('itens')}>Itens<b>{menu.length}</b></button>
               <button className="floor-filter" aria-pressed={menuView === 'categorias'} onClick={() => setMenuView('categorias')}>Categorias<b>{menuCategories.length}</b></button>
               <button className="floor-filter" aria-pressed={menuView === 'horarios'} onClick={() => setMenuView('horarios')}>Horários</button>
+              <button className="floor-filter" aria-pressed={menuView === 'opcoes'} onClick={() => setMenuView('opcoes')}>Opções</button>
             </div>
             {menuView === 'itens'
               ? <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />
               : menuView === 'categorias'
                 ? <CategoriasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />
-                : <HorariosPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} onChanged={refreshQuietly} />}
+                : menuView === 'horarios'
+                  ? <HorariosPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} onChanged={refreshQuietly} />
+                  : <OpcoesPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} />}
           </section>}
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>
@@ -274,6 +281,7 @@ export default function Home() {
       {menuFormItem !== undefined && <Modal title={menuFormItem ? 'Editar item do cardápio' : 'Novo item do cardápio'} onClose={() => setMenuFormItem(undefined)}><MenuForm item={menuFormItem ?? null} categories={menuCategories.map((category) => category.name)} onCancel={() => setMenuFormItem(undefined)} onSubmit={async (data) => { const ok = await run(() => menuFormItem ? storeRequest(`/menu-items/${menuFormItem.id}`, { method: 'PATCH', body: JSON.stringify(data) }) : storeRequest('/menu-items', { method: 'POST', body: JSON.stringify(data) }), menuFormItem ? 'Pronto, item atualizado.' : 'Pronto, item adicionado ao cardápio.'); if (ok) setMenuFormItem(undefined); }} /></Modal>}
       {showExpenseForm && <Modal title="Registrar despesa" onClose={() => setShowExpenseForm(false)}><ExpenseForm onCancel={() => setShowExpenseForm(false)} onSubmit={async (data) => { if (await run(() => storeRequest('/expenses', { method: 'POST', body: JSON.stringify(data) }), 'Pronto, despesa registrada.')) setShowExpenseForm(false); }} /></Modal>}
       {onAccountOrder && <VenderAPrazo order={onAccountOrder} totalLabel={money(orderTotal(onAccountOrder))} onCancel={() => setOnAccountOrder(null)} onDone={(text) => { setOnAccountOrder(null); setMessage(text); refreshQuietly(); }} />}
+      {choosingItem && <EscolherOpcoes item={choosingItem.item} tableId={choosingItem.tableId} quantity={choosingItem.quantity} onCancel={() => setChoosingItem(null)} onDone={(text) => { setChoosingItem(null); setMessage(text); refreshQuietly(); }} />}
       {printDoc && <PrintSheet doc={printDoc} onClose={() => setPrintDoc(null)} />}
       {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { const closed: { order: Order | null } = { order: null }; const ok = await run(async () => { closed.order = await storeRequest<Order>(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }); }, 'Pronto, conta fechada e mesa liberada.'); if (ok) { setPaymentOrderId(null); if (closed.order) setPrintDoc(buildCupom(closed.order)); } }} /></Modal>}
     </main>
