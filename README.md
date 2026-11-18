@@ -180,9 +180,11 @@ Rotas `/api/waiters` (cadastro, edição, desativação), `PUT /api/orders/:id/w
 
 Na interface, a seção **Garçons** (modo servidor) lista a equipe com os ativos primeiro, cadastra e edita nome e comissão, ativa, desativa e exclui garçons, e mostra por período as contas pagas, a receita, o ticket médio e a comissão de cada garçom, com a linha "Sem garçom" e os totais. SPEC [`2026-11-17-tela-de-garcons.md`](SPEC/2026-11-17-tela-de-garcons.md).
 
-### Transferir comanda e juntar contas (somente API)
+### Transferir comanda e juntar contas
 
 `POST /api/orders/:id/transfer` (`{ tableId, reason }`) move a comanda aberta para uma mesa livre; `POST /api/orders/:id/merge` (`{ sourceOrderId, reason }`) passa os itens de outra comanda aberta para esta, com os preços guardados, e a outra fica como juntada (`MERGED`), sem poder ser paga; `GET /api/orders/:id/history` mostra as mudanças com o motivo. SPEC [`2026-11-16-transferencia-e-juncao-de-comandas.md`](SPEC/2026-11-16-transferencia-e-juncao-de-comandas.md).
+
+Na comanda aberta, nos dois modos, o bloco **Mesa e contas** transfere a comanda para uma mesa livre e junta a conta de outra mesa nesta, sempre com motivo, e mostra o histórico de mudanças da comanda. No modo navegador as rotas `transfer`, `merge` e `history` têm as mesmas regras e mensagens da API. SPEC [`2026-11-17-mover-e-juntar-na-tela.md`](SPEC/2026-11-17-mover-e-juntar-na-tela.md).
 
 ### Cozinha: envio, fila de produção e prioridade
 

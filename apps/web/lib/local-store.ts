@@ -2,11 +2,12 @@ import { localDate, orderTotalCents } from './format';
 import { isValidMoney } from './validacao';
 import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
 import { cleanZoneName, deleteBlocker, duplicateZone, nextSortOrder, sortZones, validateZoneName, withZones, ZONE_MESSAGES, type Zone } from './zonas';
+import { cleanReason, MOVE_MESSAGES, validateReason, type OrderEvent } from './mover';
 
 type StoredTable = Omit<Table, 'order'>;
 type StoredOrder = Order & { tableId: number | null };
-// zones: SPEC/2026-11-17-zonas-do-salao.md; dados antigos são convertidos em readData (RF-06).
-type RestaurantData = { zones: Zone[]; tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[] };
+// zones: SPEC/2026-11-17-zonas-do-salao.md; events: SPEC/2026-11-17-mover-e-juntar-na-tela.md.
+type RestaurantData = { zones: Zone[]; tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[]; events: OrderEvent[] };
 
 export const STORAGE_KEY = 'mesa-clara.data.v1';
 const PAYMENT_METHODS = ['CASH', 'CREDIT', 'DEBIT', 'PIX'];
@@ -28,6 +29,7 @@ function initialData(): RestaurantData {
     ],
     orders: [],
     expenses: [],
+    events: [],
   };
 }
 
@@ -48,6 +50,7 @@ function readData(): RestaurantData {
       menu: Array.isArray(parsed.menu) ? parsed.menu : [],
       orders: Array.isArray(parsed.orders) ? parsed.orders : [],
       expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
+      events: Array.isArray(parsed.events) ? parsed.events : [],
     };
   } catch {
     const fresh = initialData();
@@ -209,6 +212,50 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     order.items.push({ id: nextId(order.items), menuItemId: item.id, nameSnapshot: item.name, unitPrice: item.price, quantity });
     writeData(data);
     result = order;
+  } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/transfer$/)) {
+    // RF-04 da SPEC/2026-11-17-mover-e-juntar-na-tela.md: RN-01 a RN-03 com as mensagens da API.
+    const order = data.orders.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!order) throw new Error(MOVE_MESSAGES.orderNotFound);
+    const reasonProblem = validateReason(String(payload.reason ?? ''));
+    if (reasonProblem) throw new Error(reasonProblem);
+    if (order.status !== 'OPEN') throw new Error(MOVE_MESSAGES.transferClosed);
+    const target = data.tables.find((table) => table.id === Number(payload.tableId));
+    if (!target) throw new Error(MOVE_MESSAGES.tableNotFound);
+    if (target.id === order.tableId) throw new Error(MOVE_MESSAGES.sameTable);
+    if (data.orders.some((entry) => entry.tableId === target.id && entry.status === 'OPEN')) throw new Error(MOVE_MESSAGES.occupied(target.number));
+    const fromTableNumber = order.tableNumber;
+    order.tableId = target.id;
+    order.tableNumber = target.number;
+    data.events.push({
+      id: nextId(data.events), orderId: order.id, type: 'TRANSFER', fromTableNumber, toTableNumber: target.number,
+      sourceOrderId: null, reason: cleanReason(String(payload.reason)), createdAt: new Date().toISOString(),
+    });
+    writeData(data);
+    result = order;
+  } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/merge$/)) {
+    const target = data.orders.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    const source = data.orders.find((entry) => entry.id === Number(payload.sourceOrderId));
+    if (!target || !source) throw new Error(MOVE_MESSAGES.orderNotFound);
+    const reasonProblem = validateReason(String(payload.reason ?? ''));
+    if (reasonProblem) throw new Error(reasonProblem);
+    if (target.id === source.id) throw new Error(MOVE_MESSAGES.sameOrder);
+    if (target.status !== 'OPEN' || source.status !== 'OPEN') throw new Error(MOVE_MESSAGES.mergeClosed);
+    // RNF-02 da API: os itens mudam de comanda com o nome e o preço guardados.
+    for (const line of source.items) target.items.push({ ...line, id: nextId(target.items) });
+    const reason = cleanReason(String(payload.reason));
+    const createdAt = new Date().toISOString();
+    const base = { type: 'MERGE' as const, fromTableNumber: source.tableNumber, toTableNumber: target.tableNumber, sourceOrderId: source.id, reason, createdAt };
+    data.events.push({ id: nextId(data.events), orderId: target.id, ...base });
+    data.events.push({ id: nextId(data.events), orderId: source.id, ...base });
+    source.items = [];
+    source.status = 'MERGED';
+    source.tableId = null;
+    writeData(data);
+    result = target;
+  } else if (method === 'GET' && url.pathname.match(/^\/orders\/\d+\/history$/)) {
+    const orderId = Number(url.pathname.split('/')[2]);
+    if (!data.orders.some((entry) => entry.id === orderId)) throw new Error(MOVE_MESSAGES.orderNotFound);
+    result = data.events.filter((event) => event.orderId === orderId).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id);
   } else if (url.pathname === '/orders/open' && method === 'GET') {
     result = data.orders.filter((order) => order.status === 'OPEN');
   } else if (method === 'PATCH' && url.pathname.match(/^\/orders\/\d+\/items\/\d+$/)) {

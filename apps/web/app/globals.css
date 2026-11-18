@@ -290,3 +290,15 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .atendimento-muted{color:#7a7f8c;font-size:14px}.atendimento-ok{margin:0;color:var(--green);font-size:14px}
 .order-discount{display:grid;grid-template-columns:1fr auto;gap:4px 10px;color:#626776;font-size:14px;margin-top:8px}.order-discount span:nth-child(4){color:var(--green);font-weight:700}
 @media(max-width:650px){.atendimento-search .button{flex:1}}
+
+/* Transferir e juntar na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md) */
+.mover{display:grid;gap:8px;margin:10px 0}
+.mover-actions{display:flex;gap:8px;flex-wrap:wrap}.mover-actions .button{flex:1}
+.mover-hint{color:#7a7f8c;font-size:14px}
+.mover-form{display:grid;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fcfcfd}
+.mover-form label{display:grid;gap:5px;font-size:14px;font-weight:600;color:#626776}
+.mover-form select,.mover-form input{border:1px solid #e7e7ec;border-radius:8px;padding:8px 10px;background:#fff}
+.mover-form-actions{display:flex;gap:8px;justify-content:flex-end}
+.mover-ok{margin:0;color:var(--green);font-size:14px}
+.mover-history{display:grid;gap:6px}.mover-history-title{display:inline-flex;gap:6px;align-items:center;font-weight:600;color:#626776;font-size:14px}
+.mover-history ol{margin:0;padding-left:18px;display:grid;gap:5px}.mover-history li{display:grid;gap:2px;font-size:14px}.mover-history small{color:#7a7f8c}
