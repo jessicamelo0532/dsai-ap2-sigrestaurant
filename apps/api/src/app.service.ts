@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException, Optional } 
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
 import { deliveryFeeCents, discountCents, orderTotalCents, orderTotalSelect, subtotalCents } from './common/order-total';
+import { resolveZoneId } from './zones/zone-store';
 import { revenueByChannel } from './delivery/delivery-rules';
 import { centsToDecimal } from './purchasing/purchase-rules';
 import { PrismaService } from './prisma.service';
@@ -45,7 +46,8 @@ export class AppService {
     if (await this.prisma.diningTable.findUnique({ where: { number: dto.number } })) {
       throw new BadRequestException('Já existe uma mesa com esse número.');
     }
-    return this.prisma.diningTable.create({ data: dto });
+    const { zoneId, ...table } = dto;
+    return this.prisma.diningTable.create({ data: { ...table, zoneId: await resolveZoneId(this.prisma, zoneId) } });
   }
 
   async deleteTable(id: number) {

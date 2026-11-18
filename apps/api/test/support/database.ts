@@ -11,7 +11,7 @@ export const controller = new AppController(service);
 
 export async function resetDatabase() {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "SalesGoal", "OrderItemAddon", "MenuVariant", "MenuAddon", "MenuCategory", "MenuAvailability", "LoyaltyEntry", "LoyaltySettings", "KitchenPriorityChange", "KitchenTicket", "OrderEvent", "Waiter", "CashMovement", "CashSession", "MonthlyClosing", "PurchaseItem", "Purchase", "Supplier", "StockMovement", "RecipeItem", "Ingredient", "Reservation", "OrderItem", "Order", "MenuItem", "DiningTable", "Expense", "Customer" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "SalesGoal", "OrderItemAddon", "MenuVariant", "MenuAddon", "MenuCategory", "MenuAvailability", "LoyaltyEntry", "LoyaltySettings", "KitchenPriorityChange", "KitchenTicket", "OrderEvent", "Waiter", "CashMovement", "CashSession", "MonthlyClosing", "PurchaseItem", "Purchase", "Supplier", "StockMovement", "RecipeItem", "Ingredient", "Reservation", "OrderItem", "Order", "MenuItem", "DiningTable", "Zone", "Expense", "Customer" RESTART IDENTITY CASCADE',
   );
 }
 

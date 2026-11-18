@@ -163,3 +163,17 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .reserva-card.status-cancelled,.reserva-card.status-no_show{opacity:.7}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:640px){.form-row{grid-template-columns:1fr}}
+
+/* Zonas do salão (SPEC/2026-11-17-zonas-do-salao.md) */
+.floor-heading-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.zone-filters{margin-top:-6px}
+.zone-group{display:grid;gap:10px;margin-bottom:18px}
+.zone-heading{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px}.zone-heading strong{font-size:16px}.zone-heading span{color:#7a7f8c;font-size:14px}
+.zonas-modal{width:min(100%,520px);max-height:90vh;overflow-y:auto;display:grid;gap:12px}
+.zonas-create,.zonas-rename{display:flex;gap:8px}.zonas-create input,.zonas-rename input{flex:1;min-width:0;border:1px solid #e7e7ec;border-radius:8px;padding:9px 11px}
+.zonas-list,.zonas-tables ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.zonas-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid #f0f0f2;border-radius:9px;font-size:15px}.zonas-list li>span:first-child{display:grid;gap:2px}.zonas-list small{color:#7a7f8c;font-size:14px}.zonas-list .zonas-rename{width:100%}
+.zonas-actions{display:flex;gap:4px}
+.zonas-tables{display:grid;gap:8px;font-size:15px}.zonas-tables li{display:flex;justify-content:space-between;align-items:center;gap:10px}.zonas-tables select{border:1px solid #e7e7ec;border-radius:8px;padding:7px 9px;background:#fff}
+.zonas-ok{margin:0;color:var(--green);font-size:14px}
+@media(max-width:650px){.floor-heading-actions{width:100%}.zonas-create .button{flex:none}}

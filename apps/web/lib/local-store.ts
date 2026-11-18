@@ -1,20 +1,23 @@
 import { localDate, orderTotalCents } from './format';
 import { isValidMoney } from './validacao';
 import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
+import { cleanZoneName, deleteBlocker, duplicateZone, nextSortOrder, sortZones, validateZoneName, withZones, ZONE_MESSAGES, type Zone } from './zonas';
 
 type StoredTable = Omit<Table, 'order'>;
 type StoredOrder = Order & { tableId: number | null };
-type RestaurantData = { tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[] };
+// zones: SPEC/2026-11-17-zonas-do-salao.md; dados antigos são convertidos em readData (RF-06).
+type RestaurantData = { zones: Zone[]; tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[] };
 
 export const STORAGE_KEY = 'mesa-clara.data.v1';
 const PAYMENT_METHODS = ['CASH', 'CREDIT', 'DEBIT', 'PIX'];
 
 function initialData(): RestaurantData {
   return {
+    zones: [{ id: 1, name: 'Salão', sortOrder: 1 }],
     tables: [
-      { id: 1, number: 1, capacity: 2 }, { id: 2, number: 2, capacity: 2 },
-      { id: 3, number: 3, capacity: 4 }, { id: 4, number: 4, capacity: 4 },
-      { id: 5, number: 5, capacity: 6 },
+      { id: 1, number: 1, capacity: 2, zoneId: 1 }, { id: 2, number: 2, capacity: 2, zoneId: 1 },
+      { id: 3, number: 3, capacity: 4, zoneId: 1 }, { id: 4, number: 4, capacity: 4, zoneId: 1 },
+      { id: 5, number: 5, capacity: 6, zoneId: 1 },
     ],
     menu: [
       { id: 1, name: 'Bruschetta da casa', category: 'Entradas', description: 'Tomate fresco, manjericão e pão tostado', price: '24.00', available: true },
@@ -38,8 +41,10 @@ function readData(): RestaurantData {
       return fresh;
     }
     const parsed = JSON.parse(stored) as Partial<RestaurantData>;
+    const zoned = withZones(parsed.zones, Array.isArray(parsed.tables) ? parsed.tables : []);
     return {
-      tables: Array.isArray(parsed.tables) ? parsed.tables : [],
+      zones: zoned.zones,
+      tables: zoned.tables,
       menu: Array.isArray(parsed.menu) ? parsed.menu : [],
       orders: Array.isArray(parsed.orders) ? parsed.orders : [],
       expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
@@ -93,7 +98,10 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     if (!Number.isInteger(number) || number < 1) throw new Error('Informe um número de mesa válido.');
     if (!Number.isInteger(capacity) || capacity < 1) throw new Error('Informe uma quantidade de lugares válida.');
     if (data.tables.some((table) => table.number === number)) throw new Error('Já existe uma mesa com esse número.');
-    const table = { id: nextId(data.tables), number, capacity };
+    // RF-03: sem zona, a primeira; zona inexistente é recusada (RN-05).
+    const zoneId = payload.zoneId === undefined ? sortZones(data.zones)[0].id : Number(payload.zoneId);
+    if (!data.zones.some((zone) => zone.id === zoneId)) throw new Error(ZONE_MESSAGES.notFound);
+    const table = { id: nextId(data.tables), number, capacity, zoneId };
     data.tables.push(table);
     writeData(data);
     result = table;
@@ -104,6 +112,49 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     if (data.orders.some((order) => order.tableId === id && order.status === 'OPEN')) throw new Error('Feche a comanda antes de remover esta mesa.');
     data.tables = data.tables.filter((entry) => entry.id !== id);
     data.orders = data.orders.map((order) => order.tableId === id ? { ...order, tableId: null } : order);
+    writeData(data);
+    result = { success: true };
+  } else if (method === 'PATCH' && url.pathname.match(/^\/tables\/\d+$/)) {
+    // RF-04 e RN-05 da SPEC/2026-11-17-zonas-do-salao.md
+    const table = data.tables.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!table) throw new Error('Mesa não encontrada.');
+    const zoneId = Number(payload.zoneId);
+    if (!data.zones.some((zone) => zone.id === zoneId)) throw new Error(ZONE_MESSAGES.notFound);
+    table.zoneId = zoneId;
+    writeData(data);
+    result = table;
+  } else if (url.pathname === '/zones' && method === 'GET') {
+    // RF-01
+    result = sortZones(data.zones).map((zone) => ({ ...zone, tableCount: data.tables.filter((table) => table.zoneId === zone.id).length }));
+  } else if (url.pathname === '/zones' && method === 'POST') {
+    // RF-02, RN-01, RN-02 e RN-06
+    const name = String(payload.name ?? '');
+    const invalid = validateZoneName(name);
+    if (invalid) throw new Error(invalid);
+    const same = duplicateZone(data.zones, name);
+    if (same) throw new Error(ZONE_MESSAGES.duplicate(same.name));
+    const zone = { id: nextId(data.zones), name: cleanZoneName(name), sortOrder: nextSortOrder(data.zones) };
+    data.zones.push(zone);
+    writeData(data);
+    result = zone;
+  } else if (method === 'PATCH' && url.pathname.match(/^\/zones\/\d+$/)) {
+    const zone = data.zones.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!zone) throw new Error(ZONE_MESSAGES.notFound);
+    const name = String(payload.name ?? '');
+    const invalid = validateZoneName(name);
+    if (invalid) throw new Error(invalid);
+    const same = duplicateZone(data.zones, name, zone.id);
+    if (same) throw new Error(ZONE_MESSAGES.duplicate(same.name));
+    zone.name = cleanZoneName(name);
+    writeData(data);
+    result = zone;
+  } else if (method === 'DELETE' && url.pathname.match(/^\/zones\/\d+$/)) {
+    // RN-03
+    const zone = data.zones.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!zone) throw new Error(ZONE_MESSAGES.notFound);
+    const blocker = deleteBlocker(zone, data.zones, data.tables.filter((table) => table.zoneId === zone.id).length);
+    if (blocker) throw new Error(blocker);
+    data.zones = data.zones.filter((entry) => entry.id !== zone.id);
     writeData(data);
     result = { success: true };
   } else if (url.pathname === '/menu-items' && method === 'GET') {

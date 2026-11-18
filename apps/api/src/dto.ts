@@ -15,6 +15,13 @@ export class CreateTableDto {
   @Min(1, { message: 'Informe uma quantidade de lugares válida.' })
   @Max(100, { message: 'Informe uma quantidade de lugares válida.' })
   capacity = 4;
+
+  // SPEC/2026-11-17-zonas-do-salao.md (RF-03): sem zona, a mesa entra na primeira zona.
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'Zona não encontrada.' })
+  @Min(1, { message: 'Zona não encontrada.' })
+  zoneId?: number;
 }
 
 export class CreateMenuItemDto {

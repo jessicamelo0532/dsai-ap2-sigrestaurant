@@ -104,7 +104,7 @@ export function summarizeFloor(floor: FloorTable[]): FloorSummary {
 }
 
 // RF-07: ocupadas primeiro, da conta mais antiga para a mais nova (empate pelo número); depois as livres.
-export function sortFloor(floor: FloorTable[]): FloorTable[] {
+export function sortFloor<T extends FloorTable>(floor: readonly T[]): T[] {
   return [...floor].sort((a, b) => {
     if (isOccupied(a) !== isOccupied(b)) return isOccupied(a) ? -1 : 1;
     const byTime = (b.minutesOpen ?? 0) - (a.minutesOpen ?? 0);
@@ -113,7 +113,8 @@ export function sortFloor(floor: FloorTable[]): FloorTable[] {
 }
 
 // RF-06
-export function filterFloor(floor: FloorTable[], filter: FloorFilter): FloorTable[] {
+// Genérica para manter campos extras, como a zona (SPEC/2026-11-17-zonas-do-salao.md).
+export function filterFloor<T extends FloorTable>(floor: readonly T[], filter: FloorFilter): T[] {
   const sorted = sortFloor(floor);
   if (filter === 'ocupadas') return sorted.filter(isOccupied);
   if (filter === 'livres') return sorted.filter((table) => !isOccupied(table));

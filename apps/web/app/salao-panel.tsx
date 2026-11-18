@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Clock3, Plus } from 'lucide-react';
-import { money } from '@/lib/store';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, Clock3, Map as MapIcon, Plus } from 'lucide-react';
+import { money, storeRequest } from '@/lib/store';
 import {
   buildFloor, filterCounts, filterFloor, FLOOR_REFRESH_MS, formatElapsed, summarizeFloor,
   type FloorFilter, type FloorTable,
 } from '@/lib/salao';
 import type { Table } from '@/lib/types';
+import { filterByZone, groupByZone, occupancyLabel, sortZones, type Zone, type ZoneFilter } from '@/lib/zonas';
+import { ZonasModal } from './zonas-modal';
 
 // Visão do salão (SPEC/2026-11-16-visao-do-salao.md). Só desenha: a lógica está em lib/salao.ts.
 
@@ -32,6 +34,16 @@ type SalaoPanelProps = {
 export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) {
   const [filter, setFilter] = useState<FloorFilter>('todas');
   const [now, setNow] = useState(() => new Date());
+  // Zonas (SPEC/2026-11-17-zonas-do-salao.md, RF-07 e RF-08). Sem zonas, a tela fica como antes.
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [zoneFilter, setZoneFilter] = useState<ZoneFilter>('todas');
+  const [showZones, setShowZones] = useState(false);
+
+  const loadZones = useCallback(() => {
+    storeRequest<Zone[]>('/zones').then((list) => setZones(Array.isArray(list) ? list : [])).catch(() => setZones([]));
+  }, []);
+
+  useEffect(() => { loadZones(); }, [loadZones, tables]);
 
   // RF-09: atualiza os dados e o relógio enquanto a tela está aberta.
   useEffect(() => {
@@ -45,7 +57,13 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
   const floor = useMemo(() => buildFloor(tables, now), [tables, now]);
   const summary = summarizeFloor(floor);
   const counts = filterCounts(floor);
-  const visible = filterFloor(floor, filter);
+  const zoneById = new Map(tables.map((table) => [table.id, table.zoneId]));
+  const zoned = floor.map((table) => ({ ...table, zoneId: zoneById.get(table.id) }));
+  const visible = filterByZone(filterFloor(zoned, filter), zoneFilter);
+  const groups = zones.length > 1 || zoneFilter !== 'todas' ? groupByZone(zones, visible).filter((group) => group.tables.length) : [];
+  const card = (table: FloorTable) => (table.orderId
+    ? <OccupiedCard key={table.id} table={table} onOpen={() => onOpenTable(table.id)} />
+    : <FreeCard key={table.id} table={table} onOpen={() => onOpenTable(table.id)} />);
 
   return (
     <section className="page-section floor">
@@ -55,7 +73,10 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
           <h1>Salão</h1>
           <p>Mesas ocupadas, o que cada uma pediu e as contas em aberto.</p>
         </div>
-        <span className="floor-live"><i />Atualiza sozinho a cada {FLOOR_REFRESH_MS / 1000} s</span>
+        <div className="floor-heading-actions">
+          <span className="floor-live"><i />Atualiza sozinho a cada {FLOOR_REFRESH_MS / 1000} s</span>
+          {!!zones.length && <button className="button button-light" onClick={() => setShowZones(true)}><MapIcon size={16} />Zonas</button>}
+        </div>
       </div>
 
       <div className="floor-summary">
@@ -77,10 +98,24 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
         ))}
       </div>
 
+      {zones.length > 1 && (
+        <div className="floor-filters zone-filters" role="group" aria-label="Filtrar por zona">
+          <button className="floor-filter" aria-pressed={zoneFilter === 'todas'} onClick={() => setZoneFilter('todas')}>Todas as zonas</button>
+          {sortZones(zones).map((zone) => (
+            <button key={zone.id} className="floor-filter" aria-pressed={zoneFilter === zone.id} onClick={() => setZoneFilter(zone.id)}>{zone.name}</button>
+          ))}
+        </div>
+      )}
+
+      {groups.map((group) => (
+        <section key={group.zone.id} className="zone-group" aria-label={`Zona ${group.zone.name}`}>
+          <header className="zone-heading"><strong>{group.zone.name}</strong><span>{occupancyLabel(group.occupied, group.tables.length)}</span></header>
+          <div className="floor-grid">{group.tables.map(card)}</div>
+        </section>
+      ))}
+
       <div className="floor-grid">
-        {visible.map((table) => (table.orderId
-          ? <OccupiedCard key={table.id} table={table} onOpen={() => onOpenTable(table.id)} />
-          : <FreeCard key={table.id} table={table} onOpen={() => onOpenTable(table.id)} />))}
+        {!groups.length && visible.map(card)}
         {!visible.length && (
           <div className="empty-state">
             <strong>{tables.length ? 'Nenhuma mesa neste filtro' : 'O salão está vazio'}</strong>
@@ -88,6 +123,8 @@ export function SalaoPanel({ tables, onOpenTable, onRefresh }: SalaoPanelProps) 
           </div>
         )}
       </div>
+
+      {showZones && <ZonasModal zones={zones} tables={tables} onClose={() => setShowZones(false)} onChanged={() => { loadZones(); onRefresh(); }} />}
     </section>
   );
 }
