@@ -81,6 +81,8 @@ async function main() {
   await check('Reservas');
   await go('A receber');
   await check('A receber');
+  await go('Caixa');
+  await check('Caixa');
   await go('Cardápio');
   await check('Cardápio');
   await page.getByRole('button', { name: /Adicionar item/ }).click();

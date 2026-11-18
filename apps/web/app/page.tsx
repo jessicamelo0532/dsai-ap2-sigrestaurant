@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
-  ArrowDownLeft, ArrowUpRight, Banknote, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
+  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee,
   CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText,
   Search, Sparkles, Trash2, Utensils, Wallet, X,
 } from 'lucide-react';
@@ -19,12 +19,13 @@ import { ReservasPanel } from './reservas-panel';
 import { HorariosPanel } from './horarios-panel';
 import { ReceberPanel } from './receber-panel';
 import { VenderAPrazo } from './vender-a-prazo';
+import { CaixaPanel } from './caixa-panel';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'cardapio' | 'financeiro' | 'receber';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -171,6 +172,7 @@ export default function Home() {
           <button className={section === 'salao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('salao')}><LayoutGrid size={18} />Salão</button>
           <button className={section === 'cozinha' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cozinha')}><ChefHat size={18} />Cozinha</button>
           <button className={section === 'reservas' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('reservas')}><CalendarDays size={18} />Reservas</button>
+          <button className={section === 'caixa' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('caixa')}><Calculator size={18} />Caixa</button>
           <button className={section === 'cardapio' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cardapio')}><MenuIcon size={18} />Cardápio</button>
           <button className={section === 'financeiro' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('financeiro')}><Wallet size={18} />Financeiro</button>
           <button className={section === 'receber' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('receber')}><HandCoins size={18} />A receber</button>
@@ -198,6 +200,7 @@ export default function Home() {
           {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
           {section === 'reservas' && <ReservasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onOpenTable={(tableNumber) => { const table = tables.find((entry) => entry.number === tableNumber); if (table) setSelectedTable(table.id); setSection('operacao'); }} />}
           {section === 'receber' && <ReceberPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
+          {section === 'caixa' && <CaixaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'operacao' && <section className="page-section">
             <div className="page-heading"><div><div className="eyebrow">{new Date().toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} · SERVIÇO DA CASA</div><h1>Bom dia, equipe <span>☀️</span></h1><p>Veja o salão e acompanhe as comandas em andamento.</p></div><button className="button button-dark" onClick={() => setShowTableForm(true)}><CirclePlus size={17} />Adicionar mesa</button></div>
             <div className="stats-grid">
