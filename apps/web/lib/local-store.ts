@@ -1,5 +1,6 @@
 import { localDate, orderTotalCents } from './format';
 import { isValidMoney } from './validacao';
+import { CANCEL_CLOSED_MESSAGE } from './ajustes-comanda';
 import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
 import { cleanZoneName, deleteBlocker, duplicateZone, nextSortOrder, sortZones, validateZoneName, withZones, ZONE_MESSAGES, type Zone } from './zonas';
 import { cleanReason, MOVE_MESSAGES, validateReason, type OrderEvent } from './mover';
@@ -276,6 +277,14 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     if (!order.items.length) data.orders = data.orders.filter((entry) => entry.id !== order.id);
     writeData(data);
     result = { success: true };
+  } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/cancel$/)) {
+    // RF-03 da SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md: mesma regra da API.
+    const order = data.orders.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!order) throw new Error('Comanda não encontrada.');
+    if (order.status !== 'OPEN') throw new Error(CANCEL_CLOSED_MESSAGE);
+    order.status = 'CANCELLED';
+    writeData(data);
+    result = order;
   } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/close$/)) {
     const orderId = Number(url.pathname.split('/')[2]);
     const order = data.orders.find((entry) => entry.id === orderId);

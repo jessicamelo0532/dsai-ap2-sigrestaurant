@@ -107,6 +107,10 @@ Com uma comanda aberta no modo servidor, o painel da mesa mostra o bloco **Atend
 
 O app pode ser instalado na tela inicial do celular (manifesto) e abre sem rede depois da primeira visita: um service worker, registrado só em produção, guarda as páginas e os arquivos estáticos (nunca as chamadas à API). No modo navegador, os dados já ficam no aparelho, então as mesas aparecem mesmo offline. Na tela **Salão**, o botão **QR das mesas** gera, para cada mesa, um cartão com QR code que guarda o endereço `/?mesa=N`; lido pela câmera do celular, ele abre a comanda daquela mesa. O QR code é gerado por um codificador próprio (ISO/IEC 18004, nível M), sem dependência nova, conferido módulo a módulo contra uma biblioteca de referência. SPEC [`2026-11-17-pwa-e-qr-das-mesas.md`](SPEC/2026-11-17-pwa-e-qr-das-mesas.md).
 
+### Ajustes na comanda
+
+Nos dois modos, cada linha da comanda aberta tem − quantidade + (de 1 a 500; para tirar o item, continua o ✕), e o botão **Cancelar comanda** pede confirmação e libera a mesa sem cobrar os itens. No modo navegador, o cancelamento segue a mesma regra da API ("Apenas comandas abertas podem ser canceladas."). SPEC [`2026-11-17-quantidade-e-cancelamento-na-comanda.md`](SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md).
+
 ### Reservas de mesa (somente API)
 
 Rotas em `/api/reservations` (SPEC [`2026-11-12-reservas-de-mesa.md`](SPEC/2026-11-12-reservas-de-mesa.md)):

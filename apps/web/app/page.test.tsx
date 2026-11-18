@@ -312,6 +312,7 @@ describe('atendimento na comanda (SPEC/2026-11-17-atendimento-na-comanda.md)', (
     expect(calls).toHaveLength(0);
   });
 });
+
 describe('mesa e contas na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md)', () => {
   it('transfere a comanda para outra mesa no modo navegador (CA-01)', async () => {
     setMode('local');
@@ -326,6 +327,42 @@ describe('mesa e contas na comanda (SPEC/2026-11-17-mover-e-juntar-na-tela.md)',
 
     expect(await screen.findByRole('heading', { name: 'Mesa 04' })).toBeTruthy();
     expect(await screen.findByText('Transferida da mesa 01 para a mesa 04')).toBeTruthy();
+  });
+});
+
+describe('quantidade e cancelamento na comanda (SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md)', () => {
+  it('aumenta a quantidade pelo modo servidor (CA-01)', async () => {
+    const calls = stubApi({ ...serverRoutes(), 'PATCH /orders/10/items/5': () => ({ body: tables[0].order }) });
+    render(<Home />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Aumentar Açaí' }));
+    await waitFor(() => expect(calls.some((call) => call.method === 'PATCH')).toBe(true));
+    expect(calls.find((call) => call.method === 'PATCH')?.body).toEqual({ quantity: 3 });
+  });
+
+  it('no modo navegador, muda a quantidade e cancela a comanda (CA-02, CA-03)', async () => {
+    setMode('local');
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<Home />);
+    await waitFor(() => expect(document.querySelectorAll('.table-card')).toHaveLength(5));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Bruschetta da casa/ })[0]);
+    expect((await screen.findByRole('button', { name: 'Diminuir Bruschetta da casa' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Aumentar Bruschetta da casa' }));
+    expect(await screen.findByText('2 × R$ 24,00')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /Cancelar comanda/ }));
+    expect(await screen.findByText('Comanda cancelada.')).toBeTruthy();
+    expect(screen.getByText('Mesa livre')).toBeTruthy();
+  });
+
+  it('sem confirmar, não cancela', async () => {
+    const calls = stubApi(serverRoutes());
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<Home />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /Cancelar comanda/ }));
+    expect(calls.some((call) => call.path.endsWith('/cancel'))).toBe(false);
   });
 });
 
