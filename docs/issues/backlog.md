@@ -98,3 +98,7 @@ Os PRs #54 a #70 levaram para a `main` a maior parte da Fase 2. Issues **fechada
 - 1.3 (#14): E2E de celular existe; falta Testing Library e o diff coverage da 1.4.
 
 **Pendentes de decisão ou credencial:** 0.3 (#9, custo/tokens), 0.4 (#10, autoria — a primeira integrante estava em 29% antes dos commits de documentação de 2026-11-17), 0.5 (#11) e 1.6 (#17) (publicação e deploy contínuo).
+
+## Estado em 2026-11-18
+
+Os 18 PRs abertos (#77 a #94) foram integrados **localmente** na `main`, sem push e sem fechar issues no GitHub. Entraram, entre outros: cobertura do diff no CI, `.mailmap`, zonas, horários de funcionamento, contas a receber, caixa, garçons, clientes, fidelidade, metas, transferência/junção de comandas, variações e adicionais, PWA/QR, quantidade e cancelamento na comanda. Frontend com 552 testes verdes, build e e2e de celular verdes; a suíte da API não foi executada por falta de credencial do PostgreSQL local.

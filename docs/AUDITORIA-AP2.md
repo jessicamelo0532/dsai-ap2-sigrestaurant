@@ -234,6 +234,18 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 
 **Pendências que continuam abertas:** P-2 (identidade do segundo integrante), P-3 (custo real das sessões), P-6 (URL pública do fork), P-7 (deploy contínuo). A P-4 (SPEC de reativação) e a P-5 (SPEC do `next@16`) foram resolvidas pelos PRs #2 e #62.
 
+### Estado após a sessão de 2026-11-18
+
+**Fatos verificados nesta sessão (integração local, sem push):**
+
+- Os **18 PRs abertos** (#77 a #94) foram integrados na `main` local, um a um, com merge commit próprio e resolução manual dos conflitos em `page.tsx`, `globals.css`, `README.md`, `page.test.tsx`, `types.ts`, `local-store.ts`, `salao-panel.tsx`, `app.module.ts`, `schema.prisma` e `test/support/database.ts`. A base partiu de `fbdf5b6`; a tag `backup/pre-integracao` guarda esse ponto.
+- O que entrou: URL pública e métricas no Windows (#77), autoria unificada com `.mailmap` (#86), cobertura do diff no CI (#84), reativação do backend documentada (#94), zonas do salão (#85), horários de funcionamento (#89 e #92), contas a receber (#91), caixa (#78), garçons (#79 e #83), clientes (#80), fidelidade (#81), metas (#82), transferência e junção de comandas (#87), variações e adicionais (#88), PWA offline e QR das mesas (#90) e quantidade/cancelamento na comanda (#93).
+- Verificação local: frontend **552 testes em 45 arquivos**, todos verdes; cobertura de `lib` + `app` em **92,87% de linhas** (2 256 de 2 429); `npm run build` verde; `npx prisma validate` e `npm run build:api` verdes; `npm run e2e:celular` verde em todas as 18 telas.
+- **Correção de layout encontrada pelo e2e:** o seletor de quantidade (#93) alargava o painel da comanda e ampliava a tela para 420 px; a barra inferior, agora com 12 seções, tinha 189 px e cobria o fim do conteúdo. O painel passou a aceitar encolhimento (`min-width: 0`) e o rodapé reserva `200px + safe-area`; o e2e centraliza alvos antes do toque.
+- **Não verificado:** a suíte de integração da API (`npm run test:api`) não foi executada porque o PostgreSQL local não aceita as credenciais de exemplo; o schema e a compilação foram validados. Os números de testes da API no README ("698") permanecem como a última medição conhecida e não foram reconferidos.
+
+**Pendências que continuam abertas:** P-2, P-3, P-6 e P-7. Os 18 merges estão **somente no repositório local**; a `main` remota e os PRs no GitHub não foram alterados.
+
 ---
 
 ## 6. Pendências que exigem o humano
