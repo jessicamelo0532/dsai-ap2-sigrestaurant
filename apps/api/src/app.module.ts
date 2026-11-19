@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { CashModule } from './cash/cash.module';
 import { ClosingsModule } from './closings/closings.module';
 import { CustomersModule } from './customers/customers.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { GoalsModule } from './goals/goals.module';
+import { HealthModule } from './health/health.module';
 import { KitchenModule } from './kitchen/kitchen.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { MenuAvailabilityModule } from './menu-availability/menu-availability.module';
@@ -28,7 +28,6 @@ import { ReceivablesModule } from './receivables/receivables.module';
 import { ZonesModule } from './zones/zones.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule, TablesModule, MenuModule, ExpensesModule, ReportsModule],
-  controllers: [AppController],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule, TablesModule, MenuModule, ExpensesModule, ReportsModule, HealthModule],
 })
 export class AppModule {}
