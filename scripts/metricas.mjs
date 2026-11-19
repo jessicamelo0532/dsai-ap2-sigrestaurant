@@ -196,7 +196,9 @@ METRICAS.specs = () => {
 
 METRICAS.commits = () => {
   heading('Commits com agente — trailers Agent: e Spec:');
-  const hashes = run('bash', ['-c', "git log --format='%H' d0a6caf..HEAD"]).trim().split('\n').filter(Boolean);
+  // Merges do GitHub não são commits de trabalho da dupla e não têm trailers;
+  // a issue 0.4 exige os trailers em todo commit de trabalho.
+  const hashes = run('bash', ['-c', "git log --no-merges --format='%H' d0a6caf..HEAD"]).trim().split('\n').filter(Boolean);
   if (!hashes.length) {
     console.log('commits com agente: nenhum commit no periodo -> NAO CONFORME');
     return false;
@@ -207,7 +209,7 @@ METRICAS.commits = () => {
     if (/Agent:\s*\S/.test(corpo) && /Spec:\s*\S/.test(corpo)) comTrailers += 1;
   }
   const percentual = (comTrailers / hashes.length) * 100;
-  return resultado('commits com trailers', `${comTrailers}/${hashes.length} (${percentual.toFixed(0)}%)`, '>= 80%', percentual >= 80);
+  return resultado('commits com trailers', `${comTrailers}/${hashes.length} (${percentual.toFixed(0)}%)`, '100% dos commits sem merge', percentual >= 100);
 };
 
 METRICAS.frequencia = () => {
@@ -251,31 +253,41 @@ METRICAS.sessoes = () => {
     faltantes.length ? `faltando: ${faltantes.join(', ')}` : '');
 };
 
+// Os dois integrantes da AP2 (SPEC/2026-11-19-autoria-dos-integrantes.md).
+// O .mailmap ja unifica as identidades de Jessica; identidades de agentes e de
+// terceiros ficam fora da proporcao exigida pela issue 0.4.
+const INTEGRANTES_AP2 = new Set(['Jéssica Lopes Melo', 'yurisawaki']);
+
 METRICAS.autoria = () => {
   heading('Autoria — 30% dos commits por integrante');
-  const autores = run('bash', ['-c',
+  const todas = run('bash', ['-c',
     "git log --format='%aN' d0a6caf..HEAD | sort | uniq -c | sort -rn"]).trim().split('\n').filter(Boolean);
-  const total = autores.reduce((soma, linha) => soma + Number(linha.trim().split(/\s+/)[0]), 0);
+  const autores = [];
+  for (const linha of todas) {
+    const [quantidade, ...resto] = linha.trim().split(/\s+/);
+    const nome = resto.join(' ');
+    if (INTEGRANTES_AP2.has(nome)) autores.push({ quantidade: Number(quantidade), nome });
+  }
+  const total = autores.reduce((soma, autor) => soma + autor.quantidade, 0);
   if (!total) {
-    console.log('autoria: nenhum commit no periodo -> NAO CONFORME');
+    console.log('autoria: nenhum commit dos dois integrantes no periodo -> NAO CONFORME');
     return false;
   }
   let todosOk = true;
-  for (const linha of autores) {
-    const [quantidade, ...resto] = linha.trim().split(/\s+/);
-    const percentual = (Number(quantidade) / total) * 100;
+  for (const autor of autores) {
+    const percentual = (autor.quantidade / total) * 100;
     const ok = percentual >= MIN_AUTORIA;
     if (!ok) todosOk = false;
-    console.log(`  ${resto.join(' ')}: ${quantidade} commits (${percentual.toFixed(0)}%) -> ${ok ? 'CONFORME' : 'NAO CONFORME'}`);
+    console.log(`  ${autor.nome}: ${autor.quantidade} commits (${percentual.toFixed(0)}%) -> ${ok ? 'CONFORME' : 'NAO CONFORME'}`);
   }
   // A metrica exige 30% para CADA integrante da dupla: com um unico autor
   // nao ha como distribuir a parcela, mesmo que ele Concentre 100%.
   const integrantes = autores.length;
   if (integrantes < 2) {
-    console.log(`autoria: ${integrantes} integrante(s) no periodo; a metrica exige >= 2 com 30% cada -> NAO CONFORME`);
+    console.log(`autoria: ${integrantes} integrante(s) da dupla no periodo; a metrica exige >= 2 com 30% cada -> NAO CONFORME`);
     return false;
   }
-  console.log(`autoria: ${total} commits, ${integrantes} integrantes, minimo ${MIN_AUTORIA}% cada -> ${todosOk ? 'CONFORME' : 'NAO CONFORME'}`);
+  console.log(`autoria: ${total} commits da dupla, ${integrantes} integrantes, minimo ${MIN_AUTORIA}% cada -> ${todosOk ? 'CONFORME' : 'NAO CONFORME'}`);
   return todosOk;
 };
 

@@ -102,3 +102,11 @@ Os PRs #54 a #70 levaram para a `main` a maior parte da Fase 2. Issues **fechada
 ## Estado em 2026-11-18
 
 Os 18 PRs abertos (#77 a #94) foram integrados na `main` e enviados ao GitHub em 2026-11-18; os PRs ficaram como `MERGED` e as branches remotas foram apagadas. Issues no GitHub não foram fechadas nesta sessão. Entraram, entre outros: cobertura do diff no CI, `.mailmap`, zonas, horários de funcionamento, contas a receber, caixa, garçons, clientes, fidelidade, metas, transferência/junção de comandas, variações e adicionais, PWA/QR, quantidade e cancelamento na comanda. Frontend com 552 testes verdes, build e e2e de celular verdes; a suíte da API não foi executada por falta de credencial do PostgreSQL local.
+
+## Estado em 2026-11-19
+
+- 0.3 (#9): PR #102 adiciona a seção **Custo e tokens** a todas as sessões; os valores reais continuam pendentes do responsável humano.
+- 0.4 (#10): a identidade do segundo integrante foi registrada como Yuri (`yurisawaki <brenoyurisawaki@gmail.com>`) na SPEC `2026-11-19-autoria-dos-integrantes.md`; a métrica passa a contar só a dupla e os trailers só em commits sem merge.
+- 0.5 (#11) e 1.6 (#17): a URL `https://dsai-ap2-sigrestaurant.vercel.app/` responde HTTP 200 e o status `Vercel` do commit `1b8f630` está `success`; o README documenta o deploy a cada push na `main`.
+- 2.25 (#42) e 2.26 (#43): os módulos de mesas, comandas, cardápio, despesas e relatórios estão nos PRs #95 a #101; o caixa já era módulo próprio.
+- 2.3 (#20) e 2.12 (#29): continuam dependendo de decisão de produto e SPEC aprovada.
