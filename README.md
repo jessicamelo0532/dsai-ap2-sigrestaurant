@@ -56,7 +56,7 @@ npm --workspace apps/web run test:watch
 ```
 
 
-Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **552 testes** (45 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **92,9% de linhas** (`npm run coverage`).
+Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **569 testes** (47 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **92,8% de linhas** (`npm run coverage`).
 
 
 Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
@@ -110,6 +110,10 @@ O app pode ser instalado na tela inicial do celular (manifesto) e abre sem rede 
 ### Ajustes na comanda
 
 Nos dois modos, cada linha da comanda aberta tem − quantidade + (de 1 a 500; para tirar o item, continua o ✕), e o botão **Cancelar comanda** pede confirmação e libera a mesa sem cobrar os itens. No modo navegador, o cancelamento segue a mesma regra da API ("Apenas comandas abertas podem ser canceladas."). SPEC [`2026-11-17-quantidade-e-cancelamento-na-comanda.md`](SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md).
+
+### Divisão de conta por consumidor (modo navegador)
+
+Com uma comanda aberta, o botão **Dividir conta** abre três modos: **por igual** (2 a 50 pessoas, com o resto dos centavos na última parcela), **por item** (cada linha fica inteira com uma pessoa e o desconto dos pontos é rateado proporcionalmente) e **por valor** (a soma das parcelas precisa fechar no total a pagar). Cada parcela é paga separadamente, com sua forma de pagamento; a comanda só fecha quando todas forem pagas, e o relatório financeiro soma cada parcela na forma usada. Enquanto a divisão existir, adicionar/alterar/remover itens e juntar comandas ficam bloqueados; **Desfazer divisão** só funciona antes de qualquer pagamento. Rotas locais: `POST /orders/:id/splits`, `POST /orders/:id/splits/:splitId/pay` e `DELETE /orders/:id/splits`. SPEC [`2026-11-19-divisao-de-conta.md`](SPEC/2026-11-19-divisao-de-conta.md).
 
 ### Reservas de mesa (somente API)
 

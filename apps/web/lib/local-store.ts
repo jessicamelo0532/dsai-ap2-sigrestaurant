@@ -1,6 +1,8 @@
 import { localDate, orderTotalCents } from './format';
+import { dueCents } from './comanda';
 import { isValidMoney } from './validacao';
 import { CANCEL_CLOSED_MESSAGE } from './ajustes-comanda';
+import { SPLIT_LOCKED, validateDrafts } from './divisao';
 import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
 import { cleanZoneName, deleteBlocker, duplicateZone, nextSortOrder, sortZones, validateZoneName, withZones, ZONE_MESSAGES, type Zone } from './zonas';
 import { cleanReason, MOVE_MESSAGES, validateReason, type OrderEvent } from './mover';
@@ -206,6 +208,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const quantity = Number(payload.quantity);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) throw new Error('Informe uma quantidade entre 1 e 500.');
     let order = data.orders.find((entry) => entry.tableId === tableId && entry.status === 'OPEN');
+    if (order?.splits?.length) throw new Error(SPLIT_LOCKED);
     if (!order) {
       order = { id: nextId(data.orders), tableId, tableNumber: table.number, status: 'OPEN', openedAt: new Date().toISOString(), items: [] };
       data.orders.push(order);
@@ -241,6 +244,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     if (reasonProblem) throw new Error(reasonProblem);
     if (target.id === source.id) throw new Error(MOVE_MESSAGES.sameOrder);
     if (target.status !== 'OPEN' || source.status !== 'OPEN') throw new Error(MOVE_MESSAGES.mergeClosed);
+    if (target.splits?.length || source.splits?.length) throw new Error(SPLIT_LOCKED);
     // RNF-02 da API: os itens mudam de comanda com o nome e o preço guardados.
     for (const line of source.items) target.items.push({ ...line, id: nextId(target.items) });
     const reason = cleanReason(String(payload.reason));
@@ -257,6 +261,61 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const orderId = Number(url.pathname.split('/')[2]);
     if (!data.orders.some((entry) => entry.id === orderId)) throw new Error(MOVE_MESSAGES.orderNotFound);
     result = data.events.filter((event) => event.orderId === orderId).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id);
+  } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/splits$/)) {
+    const order = data.orders.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!order) throw new Error('Comanda não encontrada.');
+    if (order.status !== 'OPEN') throw new Error('Esta comanda já foi fechada.');
+    if (order.splits?.length) throw new Error('A comanda já está dividida.');
+    if (!order.items.length) throw new Error('Adicione pelo menos um item antes de dividir a conta.');
+    const raw = Array.isArray(payload.splits) ? payload.splits : [];
+    const drafts = raw.map((entry) => {
+      const split = entry as Record<string, unknown>;
+      return {
+        name: String(split.name ?? ''),
+        amount: String(split.amount ?? ''),
+        items: Array.isArray(split.items)
+          ? split.items.map((item) => {
+            const line = item as Record<string, unknown>;
+            return { itemId: Number(line.itemId), quantity: Number(line.quantity) };
+          })
+          : undefined,
+      };
+    });
+    const invalid = validateDrafts(drafts, dueCents(order));
+    if (invalid) throw new Error(invalid);
+    order.splits = drafts.map((draft, index) => ({
+      id: index + 1, name: draft.name.trim(), amount: draft.amount, paid: false,
+      paymentMethod: null, paidAt: null, ...(draft.items ? { items: draft.items } : {}),
+    }));
+    writeData(data);
+    result = order;
+  } else if (method === 'POST' && url.pathname.match(/^\/orders\/\d+\/splits\/\d+\/pay$/)) {
+    const [, , orderIdRaw, , splitIdRaw] = url.pathname.split('/');
+    const order = data.orders.find((entry) => entry.id === Number(orderIdRaw));
+    if (!order) throw new Error('Comanda não encontrada.');
+    if (order.status !== 'OPEN') throw new Error('Esta comanda já foi fechada.');
+    const split = order.splits?.find((entry) => entry.id === Number(splitIdRaw));
+    if (!split) throw new Error('Parcela não encontrada.');
+    if (split.paid) throw new Error('Esta parcela já foi paga.');
+    if (!PAYMENT_METHODS.includes(String(payload.paymentMethod))) throw new Error('Selecione uma forma de pagamento válida.');
+    split.paid = true;
+    split.paymentMethod = String(payload.paymentMethod);
+    split.paidAt = new Date().toISOString();
+    if (order.splits!.every((entry) => entry.paid)) {
+      order.status = 'PAID';
+      order.paidAt = new Date().toISOString();
+      const methods = [...new Set(order.splits!.map((entry) => entry.paymentMethod).filter(Boolean))];
+      order.paymentMethod = methods.length === 1 ? methods[0] : 'MIXED';
+    }
+    writeData(data);
+    result = order;
+  } else if (method === 'DELETE' && url.pathname.match(/^\/orders\/\d+\/splits$/)) {
+    const order = data.orders.find((entry) => entry.id === Number(url.pathname.split('/')[2]));
+    if (!order) throw new Error('Comanda não encontrada.');
+    if (order.splits?.some((split) => split.paid)) throw new Error('Já há parcela paga; não é possível desfazer a divisão.');
+    order.splits = [];
+    writeData(data);
+    result = order;
   } else if (url.pathname === '/orders/open' && method === 'GET') {
     result = data.orders.filter((order) => order.status === 'OPEN');
   } else if (method === 'PATCH' && url.pathname.match(/^\/orders\/\d+\/items\/\d+$/)) {
@@ -265,6 +324,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const line = order?.items.find((entry) => entry.id === Number(itemIdRaw));
     const quantity = Number(payload.quantity);
     if (!order || !line) throw new Error('Item da comanda não encontrado.');
+    if (order.splits?.length) throw new Error(SPLIT_LOCKED);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) throw new Error('Informe uma quantidade entre 1 e 500.');
     line.quantity = quantity;
     writeData(data);
@@ -273,6 +333,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const [, , orderIdRaw, , itemIdRaw] = url.pathname.split('/');
     const order = data.orders.find((entry) => entry.id === Number(orderIdRaw) && entry.status === 'OPEN');
     if (!order || !order.items.some((entry) => entry.id === Number(itemIdRaw))) throw new Error('Item da comanda não encontrado.');
+    if (order.splits?.length) throw new Error(SPLIT_LOCKED);
     order.items = order.items.filter((entry) => entry.id !== Number(itemIdRaw));
     if (!order.items.length) data.orders = data.orders.filter((entry) => entry.id !== order.id);
     writeData(data);
@@ -291,6 +352,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     if (!order) throw new Error('Comanda não encontrada.');
     if (order.status !== 'OPEN') throw new Error('Esta comanda já foi fechada.');
     if (!order.items.length) throw new Error('Adicione pelo menos um item antes de fechar a conta.');
+    if (order.splits?.length && !order.splits.every((split) => split.paid)) throw new Error('A comanda tem parcelas em aberto.');
     if (!PAYMENT_METHODS.includes(String(payload.paymentMethod))) throw new Error('Selecione uma forma de pagamento válida.');
     order.status = 'PAID';
     order.paymentMethod = String(payload.paymentMethod);
@@ -319,7 +381,15 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const paidOrders = data.orders.filter((order) => order.status === 'PAID' && !!order.paidAt && dateFilter(order.paidAt, from, to));
     const expenses = data.expenses.filter((expense) => dateFilter(expense.incurredAt, from, to));
     const paymentsCents: Record<string, number> = Object.fromEntries(PAYMENT_METHODS.map((method) => [method, 0]));
-    for (const order of paidOrders) if (order.paymentMethod) paymentsCents[order.paymentMethod] += orderTotalCents(order);
+    for (const order of paidOrders) {
+      if (order.splits?.length) {
+        for (const split of order.splits) {
+          if (split.paid && split.paymentMethod) paymentsCents[split.paymentMethod] += Math.round(Number(split.amount) * 100);
+        }
+      } else if (order.paymentMethod) {
+        paymentsCents[order.paymentMethod] += orderTotalCents(order);
+      }
+    }
     const revenueCents = Object.values(paymentsCents).reduce((sum, cents) => sum + cents, 0);
     const expenseCents = expenses.reduce((sum, expense) => sum + Math.round(Number(expense.amount) * 100), 0);
     const report: Report = {
