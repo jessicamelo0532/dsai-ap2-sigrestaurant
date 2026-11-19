@@ -22,4 +22,8 @@ Usuária: Pode continuar
 Usuária: Só tem essas duas opções? Não posso trabalhar em mais nada?
 
 Usuária: Pode seguir
+
+## Custo e tokens
+
+A responsável humana decidiu não informar a contagem de tokens nem o custo ("Tire essa informação de tokens, eu decidi não informar isso"). **Campo pendente por decisão humana — não preenchido para não inventar dado.**
 ```

@@ -44,4 +44,8 @@ Usuária: Agora eu tenho que esperar a aprovação dele antes de fazer outra coi
 Usuária (resposta à pergunta sobre qual funcionalidade fazer primeiro): O que vc me sugere?
 
 Usuária: Pode começar
+
+## Custo e tokens
+
+A responsável humana decidiu não informar a contagem de tokens nem o custo ("Tire essa informação de tokens, eu decidi não informar isso"). **Campo pendente por decisão humana — não preenchido para não inventar dado.**
 ```

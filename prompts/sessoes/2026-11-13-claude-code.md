@@ -26,4 +26,8 @@ Usuária: Ok, reestruture o roteiro
 Usuária: Essas 3 perguntas são corretas mesmo? Vc disse que eles pausaram o backend e passaram a guardar dados no navegador, eles fizeram isso mesmo e isso é pertinente pra mim? Nosso primeiro trabalho era pra criar um app com 100k de linhas e algumas regras, eu fiz o EduQuest com o Yuri e o Afonso com o Iuri fizeram esse que estamos mexendo agora, fizemos os apps em um prazo que o professor deu, apresentamos e agora ele pediu pra trocarmos com outra dupla, que é a situação que estamos hoje
 
 Usuária: Tive essa resposta [print da conversa com o cliente, registrado em docs/entrevistas/]
+
+## Custo e tokens
+
+A responsável humana decidiu não informar a contagem de tokens nem o custo ("Tire essa informação de tokens, eu decidi não informar isso"). **Campo pendente por decisão humana — não preenchido para não inventar dado.**
 ```
