@@ -6,6 +6,8 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
 import { OrdersService } from '../src/orders/orders.service';
+import { TablesController } from '../src/tables/tables.controller';
+import { TablesService } from '../src/tables/tables.service';
 import { MenuAvailabilityController } from '../src/menu-availability/menu-availability.controller';
 import { SetAvailabilityDto } from '../src/menu-availability/menu-availability.dto';
 import { MenuAvailabilityService } from '../src/menu-availability/menu-availability.service';
@@ -17,7 +19,9 @@ const clock = { now: new Date('2026-11-16T14:00:00.000Z') };
 const at = (iso: string) => { clock.now = new Date(`${iso}.000Z`); };
 const app = new AppService(prisma, () => clock.now);
 const orders = new OrdersService(prisma, () => clock.now);
-const appController = new AppController(app, orders);
+const tables = new TablesService(prisma);
+const appController = new AppController(app);
+const tablesController = new TablesController(tables, orders);
 const availability = new MenuAvailabilityService(prisma, () => clock.now);
 const controller = new MenuAvailabilityController(availability);
 
@@ -47,7 +51,7 @@ describe('T-01: fora da janela, não entra na comanda (CA-01)', () => {
     );
 
     at('2026-11-23T14:30:00');
-    const order = await appController.addItem(table.id, { menuItemId: lunch.id, quantity: 2 });
+    const order = await tablesController.addItem(table.id, { menuItemId: lunch.id, quantity: 2 });
     expect(order!.items).toHaveLength(1);
   });
 });
