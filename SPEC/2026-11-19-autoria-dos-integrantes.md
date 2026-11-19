@@ -51,8 +51,9 @@ Medir a autoria apenas entre os dois integrantes da AP2 e verificar os trailers 
 
 - **RN-01:** os dois integrantes da AP2 são Jéssica Lopes Melo e yurisawaki (Yuri). Origem: sessões `2026-11-12-claude-code.md` e `2026-11-16-claude-code.md`, que citam a dupla como Jéssica e Yuri, e `git config user.name`/`user.email`.
 - **RN-02:** a métrica de autoria exige pelo menos 30% dos commits da dupla para cada integrante. Origem: issue #10 e métrica da Aula 09.
-- **RN-03:** todo commit de trabalho (sem merge) da AP2 deve ter os trailers `Agent:` e `Spec:`. Merges gerados pelo GitHub ficam fora da contagem porque não são commits de trabalho da dupla.
+- **RN-03:** todo commit de trabalho (sem merge) da AP2 deve ter os trailers `Agent:` e `Spec:`. Merges gerados pelo GitHub ficam fora da contagem de trailers porque não são commits de trabalho da dupla.
 - **RN-04:** a agente não atribui um commit ao integrante que não o solicitou; cada pessoa commita as próprias sessões.
+- **RN-05:** a métrica de autoria conta todos os commits dos dois integrantes, inclusive merges, porque a issue fala em commits da AP2; a de trailers exclui merges (RN-03).
 
 ## Critérios de aceitação verificáveis
 
@@ -99,3 +100,4 @@ Medir a autoria apenas entre os dois integrantes da AP2 e verificar os trailers 
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-19 | Criação e implementação | implementada |
+| 2026-11-19 | Verificação: 292/292 commits sem merge com trailers; autoria 240 × 103 (30%) | implementada |
