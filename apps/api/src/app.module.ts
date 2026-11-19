@@ -12,6 +12,7 @@ import { MenuAvailabilityModule } from './menu-availability/menu-availability.mo
 import { MenuCategoriesModule } from './menu-categories/menu-categories.module';
 import { MenuOptionsModule } from './menu-options/menu-options.module';
 import { OrderMovesModule } from './order-moves/order-moves.module';
+import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma.module';
 import { PurchasingModule } from './purchasing/purchasing.module';
 import { ReservationsModule } from './reservations/reservations.module';
@@ -24,7 +25,7 @@ import { ReceivablesModule } from './receivables/receivables.module';
 import { ZonesModule } from './zones/zones.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule],
   controllers: [AppController],
   providers: [AppService],
 })

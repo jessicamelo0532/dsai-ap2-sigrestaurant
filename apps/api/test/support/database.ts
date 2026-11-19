@@ -1,13 +1,37 @@
 import { AppController } from '../../src/app.controller';
 import { AppService } from '../../src/app.service';
+import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma.service';
 import { assertTestDatabase } from './database-guard';
 
 assertTestDatabase(process.env.DATABASE_URL);
 
 export const prisma = new PrismaService();
-export const service = new AppService(prisma);
-export const controller = new AppController(service);
+const app = new AppService(prisma);
+const orders = new OrdersService(prisma);
+export const service = {
+  listTables: app.listTables.bind(app),
+  createTable: app.createTable.bind(app),
+  deleteTable: app.deleteTable.bind(app),
+  listMenu: app.listMenu.bind(app),
+  getMenuItem: app.getMenuItem.bind(app),
+  createMenuItem: app.createMenuItem.bind(app),
+  updateMenuItem: app.updateMenuItem.bind(app),
+  deleteMenuItem: app.deleteMenuItem.bind(app),
+  addOrderItem: orders.addOrderItem.bind(orders),
+  updateOrderItem: orders.updateOrderItem.bind(orders),
+  removeOrderItem: orders.removeOrderItem.bind(orders),
+  closeOrder: orders.closeOrder.bind(orders),
+  cancelOrder: orders.cancelOrder.bind(orders),
+  listOpenOrders: orders.listOpenOrders.bind(orders),
+  getOrder: orders.getOrder.bind(orders),
+  createExpense: app.createExpense.bind(app),
+  listExpenses: app.listExpenses.bind(app),
+  updateExpense: app.updateExpense.bind(app),
+  deleteExpense: app.deleteExpense.bind(app),
+  report: app.report.bind(app),
+};
+export const controller = new AppController(app, orders);
 
 export async function resetDatabase() {
   await prisma.$executeRawUnsafe(
