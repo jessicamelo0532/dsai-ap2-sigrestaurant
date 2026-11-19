@@ -329,3 +329,98 @@ describe('store — paridade de validação entre os modos (SPEC/2026-11-14-fron
     expect(item.price).toBe('18.50');
   });
 });
+
+describe('store — divisão de conta (SPEC/2026-11-19-divisao-de-conta)', () => {
+  beforeEach(() => {
+    const storage = memoryStorage();
+    vi.stubGlobal('window', { localStorage: storage });
+    storage.setItem(STORAGE_KEY, JSON.stringify({ tables: [], menu: [], orders: [], expenses: [] }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  async function split(orderId: number, amounts: string[]): Promise<Order> {
+    return storeRequest<Order>(`/orders/${orderId}/splits`, {
+      method: 'POST',
+      body: JSON.stringify({ splits: amounts.map((amount, index) => ({ name: `Pessoa ${index + 1}`, amount })) }),
+    });
+  }
+
+  it('T-20: parcelas pagas fecham a comanda e entram no relatório por forma de pagamento', async () => {
+    const table = await createTable(99);
+    const item = await createMenuItem('Prato para dividir', 30);
+    const order = await addItem(table.id, item.id, 2);
+    const divided = await split(order.id, ['30.00', '30.00']);
+
+    expect(divided.splits?.map((entry) => entry.amount)).toEqual(['30.00', '30.00']);
+    await storeRequest(`/orders/${order.id}/splits/${divided.splits![0].id}/pay`, {
+      method: 'POST', body: JSON.stringify({ paymentMethod: 'PIX' }),
+    });
+
+    const open = await storeRequest<Table[]>('/tables');
+    expect(open.find((entry) => entry.id === table.id)?.order?.status).toBe('OPEN');
+
+    const closed = await storeRequest<Order>(`/orders/${order.id}/splits/${divided.splits![1].id}/pay`, {
+      method: 'POST', body: JSON.stringify({ paymentMethod: 'CASH' }),
+    });
+    expect(closed.status).toBe('PAID');
+    expect(closed.paymentMethod).toBe('MIXED');
+
+    const today = localDate(new Date());
+    const rep = await report(today, today);
+    expect(rep.revenue).toBe('60.00');
+    expect(rep.payments.PIX).toBe('30.00');
+    expect(rep.payments.CASH).toBe('30.00');
+  });
+
+  it('T-21: divisão bloqueia itens, fechamento manual, junção e desfazer após pagamento', async () => {
+    const table = await createTable(100);
+    const item = await createMenuItem('Prato bloqueado', 40);
+    const order = await addItem(table.id, item.id, 1);
+    const divided = await split(order.id, ['20.00', '20.00']);
+
+    await expect(addItem(table.id, item.id, 1)).rejects.toThrow('Cancele a divisão antes de alterar os itens da comanda.');
+    await expect(storeRequest(`/orders/${order.id}/items/${order.items[0].id}`, {
+      method: 'PATCH', body: JSON.stringify({ quantity: 2 }),
+    })).rejects.toThrow('Cancele a divisão antes de alterar os itens da comanda.');
+    await expect(storeRequest(`/orders/${order.id}/items/${order.items[0].id}`, { method: 'DELETE' }))
+      .rejects.toThrow('Cancele a divisão antes de alterar os itens da comanda.');
+    await expect(closeOrder(order.id)).rejects.toThrow('A comanda tem parcelas em aberto.');
+
+    const otherTable = await createTable(101);
+    const other = await addItem(otherTable.id, item.id, 1);
+    await expect(storeRequest(`/orders/${order.id}/merge`, {
+      method: 'POST', body: JSON.stringify({ sourceOrderId: other.id, reason: 'Mesmo grupo' }),
+    })).rejects.toThrow('Cancele a divisão antes de alterar os itens da comanda.');
+
+    await storeRequest(`/orders/${order.id}/splits/${divided.splits![0].id}/pay`, {
+      method: 'POST', body: JSON.stringify({ paymentMethod: 'PIX' }),
+    });
+    await expect(storeRequest(`/orders/${order.id}/splits`, { method: 'DELETE' }))
+      .rejects.toThrow('Já há parcela paga; não é possível desfazer a divisão.');
+  });
+
+  it('T-22: desfazer antes do pagamento libera a comanda', async () => {
+    const table = await createTable(102);
+    const item = await createMenuItem('Prato liberado', 50);
+    const order = await addItem(table.id, item.id, 1);
+    await split(order.id, ['25.00', '25.00']);
+
+    const undone = await storeRequest<Order>(`/orders/${order.id}/splits`, { method: 'DELETE' });
+    expect(undone.splits).toEqual([]);
+    const patched = await storeRequest<Order>(`/orders/${order.id}/items/${order.items[0].id}`, {
+      method: 'PATCH', body: JSON.stringify({ quantity: 2 }),
+    });
+    expect(patched.items[0].quantity).toBe(2);
+  });
+
+  it('T-23: soma das parcelas diferente do total é recusada', async () => {
+    const table = await createTable(103);
+    const item = await createMenuItem('Prato recusado', 60);
+    const order = await addItem(table.id, item.id, 1);
+
+    await expect(split(order.id, ['20.00', '20.00'])).rejects.toThrow('A soma das parcelas precisa ser igual ao total da comanda.');
+  });
+});

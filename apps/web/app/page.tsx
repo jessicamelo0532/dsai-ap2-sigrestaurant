@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
-  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Utensils, Wallet, X, Contact, Gift, Target,
+  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Users, Utensils, Wallet, X, Contact, Gift, Target,
 } from 'lucide-react';
 import {
   apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, Order, orderTotal, Report, setMode,
@@ -24,6 +24,7 @@ import { FidelidadePanel } from './fidelidade-panel';
 import { MetasPanel } from './metas-panel';
 import { ComandaAtendimento } from './comanda-atendimento';
 import { ComandaMover } from './comanda-mover';
+import { DivisaoConta } from './divisao-conta';
 import { discountCents, dueCents } from '@/lib/comanda';
 import { OpcoesPanel } from './opcoes-panel';
 import { EscolherOpcoes } from './escolher-opcoes';
@@ -64,6 +65,8 @@ export default function Home() {
   // SPEC/2026-11-17-contas-a-receber.md: comanda sendo vendida a prazo.
   const [onAccountOrder, setOnAccountOrder] = useState<Order | null>(null);
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null);
+  // SPEC/2026-11-19-divisao-de-conta.md: comanda aberta no modal de divisão (modo navegador).
+  const [splitOrder, setSplitOrder] = useState<Order | null>(null);
   const [kitchenNote, setKitchenNote] = useState('');
   const mode = useSyncExternalStore(subscribeMode, getMode, getMode);
   const [apiState, setApiState] = useState<'idle' | 'online' | 'offline'>('idle');
@@ -258,11 +261,12 @@ export default function Home() {
                   {selected.order && discountCents(selected.order) > 0 && <div className="order-discount"><span>Subtotal</span><span>{money(orderTotal(selected.order))}</span><span>Desconto (pontos)</span><span>− {money(discountCents(selected.order) / 100)}</span></div>}
                   <div className="order-total"><span>{selected.order && discountCents(selected.order) > 0 ? 'Total a pagar' : 'Total da comanda'}</span><strong>{money(selected.order ? dueCents(selected.order) / 100 : 0)}</strong></div>
                   {selected.order && <button className="button button-light print-button" disabled={busy} onClick={() => setPrintDoc(buildBobina(selected.order!))}><Printer size={16} />Imprimir bobina</button>}
+                  {selected.order && mode !== 'api' && <button className="button button-light" disabled={busy} onClick={() => setSplitOrder(selected.order!)}><Users size={16} />Dividir conta</button>}
                   {selected.order && mode === 'api' && <div className="send-kitchen"><input value={kitchenNote} onChange={(event) => setKitchenNote(event.target.value)} maxLength={201} placeholder="Observação para a cozinha (opcional)" /><button className="button button-light" disabled={busy} onClick={() => { const invalid = validateNote(kitchenNote); if (invalid) { setMessage(invalid); return; } void run(async () => { await storeRequest(`/orders/${selected.order!.id}/kitchen`, { method: 'POST', body: JSON.stringify({ ...(kitchenNote.trim() ? { note: kitchenNote.trim() } : {}) }) }); setKitchenNote(''); }, 'Pedido enviado para a cozinha.'); }}><ChefHat size={16} />Enviar para a cozinha</button></div>}
                   {selected.order && mode === 'api' && <button className="button button-light" disabled={busy} onClick={() => setOnAccountOrder(selected.order)}><HandCoins size={16} />Vender a prazo</button>}
                   {selected.order && <ComandaMover order={selected.order} tableId={selected.id} tables={tables} onMoved={(tableId) => { setSelectedTable(tableId); refreshQuietly(); }} />}
                   {selected.order && <button className="button button-light cancel-order-button" disabled={busy} onClick={() => { if (window.confirm(cancelConfirmation(selected.number))) run(() => storeRequest(`/orders/${selected.order!.id}/cancel`, { method: 'POST' }), 'Comanda cancelada.'); }}><X size={16} />Cancelar comanda</button>}
-                  {selected.order && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
+                  {selected.order && !selected.order.splits?.length && <button className="button button-dark checkout-button" disabled={busy} onClick={() => setPaymentOrderId(selected.order!.id)}><ReceiptText size={17} />Fechar conta <ArrowUpRight size={16} /></button>}
                 </>}
               </div>
             </div>
@@ -301,6 +305,7 @@ export default function Home() {
       {choosingItem && <EscolherOpcoes item={choosingItem.item} tableId={choosingItem.tableId} quantity={choosingItem.quantity} onCancel={() => setChoosingItem(null)} onDone={(text) => { setChoosingItem(null); setMessage(text); refreshQuietly(); }} />}
       {printDoc && <PrintSheet doc={printDoc} onClose={() => setPrintDoc(null)} />}
       {paymentOrderId !== null && <Modal title="Fechar conta" onClose={() => setPaymentOrderId(null)}><PaymentForm onCancel={() => setPaymentOrderId(null)} onSubmit={async (paymentMethod) => { const closed: { order: Order | null } = { order: null }; const ok = await run(async () => { closed.order = await storeRequest<Order>(`/orders/${paymentOrderId}/close`, { method: 'POST', body: JSON.stringify({ paymentMethod }) }); }, 'Pronto, conta fechada e mesa liberada.'); if (ok) { setPaymentOrderId(null); if (closed.order) setPrintDoc(buildCupom(closed.order)); } }} /></Modal>}
+      {splitOrder && <Modal title="Dividir conta" onClose={() => setSplitOrder(null)}><DivisaoConta order={splitOrder} onChanged={refreshQuietly} onClosed={(closed) => { setSplitOrder(null); setPrintDoc(buildCupom(closed)); refreshQuietly(); }} onCancel={() => setSplitOrder(null)} /></Modal>}
     </main>
   );
 }

@@ -102,3 +102,7 @@ Os PRs #54 a #70 levaram para a `main` a maior parte da Fase 2. Issues **fechada
 ## Estado em 2026-11-18
 
 Os 18 PRs abertos (#77 a #94) foram integrados na `main` e enviados ao GitHub em 2026-11-18; os PRs ficaram como `MERGED` e as branches remotas foram apagadas. Issues no GitHub não foram fechadas nesta sessão. Entraram, entre outros: cobertura do diff no CI, `.mailmap`, zonas, horários de funcionamento, contas a receber, caixa, garçons, clientes, fidelidade, metas, transferência/junção de comandas, variações e adicionais, PWA/QR, quantidade e cancelamento na comanda. Frontend com 552 testes verdes, build e e2e de celular verdes; a suíte da API não foi executada por falta de credencial do PostgreSQL local.
+
+## Estado em 2026-11-19
+
+A **2.3 (#20, divisão de conta por consumidor)** foi implementada no modo navegador no PR da branch `feat/divisao-de-conta`: três modos (por igual, por item e por valor), pagamento individual das parcelas, fechamento automático da comanda quando todas forem pagas e relatório por forma de pagamento. A paridade com a API pausada ficou fora do escopo. SPEC [`2026-11-19-divisao-de-conta.md`](../SPEC/2026-11-19-divisao-de-conta.md).
