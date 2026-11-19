@@ -1,23 +1,23 @@
-import { AppController } from '../../src/app.controller';
-import { AppService } from '../../src/app.service';
 import { ExpensesController } from '../../src/expenses/expenses.controller';
 import { ExpensesService } from '../../src/expenses/expenses.service';
 import { MenuService } from '../../src/menu/menu.service';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma.service';
+import { ReportsController } from '../../src/reports/reports.controller';
+import { ReportsService } from '../../src/reports/reports.service';
 import { TablesService } from '../../src/tables/tables.service';
 import { assertTestDatabase } from './database-guard';
 
 assertTestDatabase(process.env.DATABASE_URL);
 
 export const prisma = new PrismaService();
-const app = new AppService(prisma);
 const expenses = new ExpensesService(prisma);
 const menu = new MenuService(prisma);
 const orders = new OrdersService(prisma);
+const reports = new ReportsService(prisma);
 const tables = new TablesService(prisma);
-const appController = new AppController(app);
 const expensesController = new ExpensesController(expenses);
+const reportsController = new ReportsController(reports);
 export const service = {
   listTables: tables.listTables.bind(tables),
   createTable: tables.createTable.bind(tables),
@@ -38,10 +38,10 @@ export const service = {
   listExpenses: expenses.listExpenses.bind(expenses),
   updateExpense: expenses.updateExpense.bind(expenses),
   deleteExpense: expenses.deleteExpense.bind(expenses),
-  report: app.report.bind(app),
+  report: reports.report.bind(reports),
 };
 export const controller = {
-  report: appController.report.bind(appController),
+  report: reportsController.report.bind(reportsController),
   expenses: expensesController.expenses.bind(expensesController),
   createExpense: expensesController.createExpense.bind(expensesController),
   updateExpense: expensesController.updateExpense.bind(expensesController),
