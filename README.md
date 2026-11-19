@@ -144,6 +144,10 @@ Rotas em `/api/stock` e `/api/menu-items/:id/recipe` (SPEC [`2026-11-13-estoque-
 
 Ao fechar uma conta, os ingredientes da ficha técnica de cada item vendido saem do estoque automaticamente. A baixa não bloqueia o fechamento: se faltar ingrediente, o estoque fica negativo e aparece nos alertas (provisório até a resposta do cliente).
 
+### Ficha técnica e margem (modo navegador)
+
+No modo navegador, a aba **Ficha técnica** do Cardápio cadastra ingredientes com unidade e custo manual, monta a receita de cada prato e mostra o custo e a margem percentual. O custo do prato é a soma de `custo × quantidade`; a margem é `(preço − custo) / preço`. A API de estoque continua sem custo por ingrediente, então a paridade fica pendente. SPEC [`2026-11-19-ficha-tecnica-e-margem.md`](SPEC/2026-11-19-ficha-tecnica-e-margem.md).
+
 ### Fornecedores, compras e contas a pagar (somente API)
 
 Rotas em `/api/suppliers`, `/api/purchases` e `/api/payables` (SPEC [`2026-11-13-fornecedores-e-contas-a-pagar.md`](SPEC/2026-11-13-fornecedores-e-contas-a-pagar.md)):

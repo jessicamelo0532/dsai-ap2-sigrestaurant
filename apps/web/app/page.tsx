@@ -22,6 +22,7 @@ import { GarconsPanel } from './garcons-panel';
 import { ClientesPanel } from './clientes-panel';
 import { FidelidadePanel } from './fidelidade-panel';
 import { MetasPanel } from './metas-panel';
+import { FichaTecnicaPanel } from './ficha-tecnica-panel';
 import { ComandaAtendimento } from './comanda-atendimento';
 import { ComandaMover } from './comanda-mover';
 import { discountCents, dueCents } from '@/lib/comanda';
@@ -56,7 +57,7 @@ export default function Home() {
   const [showTableForm, setShowTableForm] = useState(false);
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios' | 'opcoes'>('itens');
+  const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios' | 'opcoes' | 'ficha'>('itens');
   // SPEC/2026-11-17-tela-de-variacoes-e-adicionais.md: item escolhido no cardápio rápido (modo servidor).
   const [choosingItem, setChoosingItem] = useState<{ item: MenuItem; tableId: number; quantity: number } | null>(null);
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
@@ -275,6 +276,7 @@ export default function Home() {
               <button className="floor-filter" aria-pressed={menuView === 'categorias'} onClick={() => setMenuView('categorias')}>Categorias<b>{menuCategories.length}</b></button>
               <button className="floor-filter" aria-pressed={menuView === 'horarios'} onClick={() => setMenuView('horarios')}>Horários</button>
               <button className="floor-filter" aria-pressed={menuView === 'opcoes'} onClick={() => setMenuView('opcoes')}>Opções</button>
+              <button className="floor-filter" aria-pressed={menuView === 'ficha'} onClick={() => setMenuView('ficha')}>Ficha técnica</button>
             </div>
             {menuView === 'itens'
               ? <MenuSection menu={menu} busy={busy} onCreate={() => setMenuFormItem(null)} onEdit={(item) => setMenuFormItem(item)} onToggle={(item) => run(() => storeRequest(`/menu-items/${item.id}`, { method: 'PATCH', body: JSON.stringify({ available: !item.available }) }), 'Pronto, disponibilidade atualizada.')} onDelete={(item) => { if (window.confirm(`Remover “${item.name}” do cardápio?`)) run(() => storeRequest(`/menu-items/${item.id}`, { method: 'DELETE' }), 'Pronto, item removido.'); }} />
@@ -282,7 +284,9 @@ export default function Home() {
                 ? <CategoriasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />
                 : menuView === 'horarios'
                   ? <HorariosPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} onChanged={refreshQuietly} />
-                  : <OpcoesPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} />}
+                  : menuView === 'ficha'
+                    ? <FichaTecnicaPanel menu={menu} mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onChanged={refreshQuietly} />
+                    : <OpcoesPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} />}
           </section>}
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>

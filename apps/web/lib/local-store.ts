@@ -1,14 +1,19 @@
 import { localDate, orderTotalCents } from './format';
 import { isValidMoney } from './validacao';
 import { CANCEL_CLOSED_MESSAGE } from './ajustes-comanda';
-import type { Expense, MenuItem, Order, OrderItem, Report, Table } from './types';
+import type { Expense, Ingredient, MenuItem, Order, OrderItem, Recipe, Report, Table } from './types';
 import { cleanZoneName, deleteBlocker, duplicateZone, nextSortOrder, sortZones, validateZoneName, withZones, ZONE_MESSAGES, type Zone } from './zonas';
 import { cleanReason, MOVE_MESSAGES, validateReason, type OrderEvent } from './mover';
+import {
+  findIngredientDuplicate, ingredientName, INGREDIENT_IN_USE, recipeView,
+  sortIngredients, validateCost, validateIngredientName, validateRecipe, validateUnit,
+} from './ficha-tecnica';
 
 type StoredTable = Omit<Table, 'order'>;
 type StoredOrder = Order & { tableId: number | null };
 // zones: SPEC/2026-11-17-zonas-do-salao.md; events: SPEC/2026-11-17-mover-e-juntar-na-tela.md.
-type RestaurantData = { zones: Zone[]; tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[]; events: OrderEvent[] };
+// ingredients/recipes: SPEC/2026-11-19-ficha-tecnica-e-margem.md.
+type RestaurantData = { zones: Zone[]; tables: StoredTable[]; menu: MenuItem[]; orders: StoredOrder[]; expenses: Expense[]; events: OrderEvent[]; ingredients: Ingredient[]; recipes: Recipe[] };
 
 export const STORAGE_KEY = 'mesa-clara.data.v1';
 const PAYMENT_METHODS = ['CASH', 'CREDIT', 'DEBIT', 'PIX'];
@@ -31,6 +36,8 @@ function initialData(): RestaurantData {
     orders: [],
     expenses: [],
     events: [],
+    ingredients: [],
+    recipes: [],
   };
 }
 
@@ -52,6 +59,8 @@ function readData(): RestaurantData {
       orders: Array.isArray(parsed.orders) ? parsed.orders : [],
       expenses: Array.isArray(parsed.expenses) ? parsed.expenses : [],
       events: Array.isArray(parsed.events) ? parsed.events : [],
+      ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [],
+      recipes: Array.isArray(parsed.recipes) ? parsed.recipes : [],
     };
   } catch {
     const fresh = initialData();
@@ -161,6 +170,69 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     data.zones = data.zones.filter((entry) => entry.id !== zone.id);
     writeData(data);
     result = { success: true };
+  } else if (url.pathname === '/ingredients' && method === 'GET') {
+    result = sortIngredients(data.ingredients).map((ingredient) => ({
+      ...ingredient,
+      usage: data.recipes.filter((recipe) => recipe.items.some((item) => item.ingredientId === ingredient.id)).length,
+    }));
+  } else if (url.pathname === '/ingredients' && method === 'POST') {
+    const name = ingredientName(String(payload.name ?? ''));
+    const unit = String(payload.unit ?? '');
+    const cost = String(payload.cost ?? '');
+    const invalid = validateIngredientName(name) ?? validateUnit(unit) ?? validateCost(cost);
+    if (invalid) throw new Error(invalid);
+    if (findIngredientDuplicate(data.ingredients, name)) throw new Error('Já existe um ingrediente com esse nome.');
+    const ingredient: Ingredient = {
+      id: nextId(data.ingredients), name, unit: unit as Ingredient['unit'],
+      cost: Number(cost.replace(',', '.')).toFixed(2),
+    };
+    data.ingredients.push(ingredient);
+    writeData(data);
+    result = ingredient;
+  } else if (method === 'PATCH' && url.pathname.match(/^\/ingredients\/\d+$/)) {
+    const id = Number(url.pathname.split('/')[2]);
+    const ingredient = data.ingredients.find((entry) => entry.id === id);
+    if (!ingredient) throw new Error('Ingrediente não encontrado.');
+    const name = payload.name === undefined ? ingredient.name : ingredientName(String(payload.name));
+    const unit = payload.unit === undefined ? ingredient.unit : String(payload.unit);
+    const cost = payload.cost === undefined ? ingredient.cost : String(payload.cost);
+    const invalid = validateIngredientName(name) ?? validateUnit(unit) ?? validateCost(cost);
+    if (invalid) throw new Error(invalid);
+    if (findIngredientDuplicate(data.ingredients, name, id)) throw new Error('Já existe um ingrediente com esse nome.');
+    ingredient.name = name;
+    ingredient.unit = unit as Ingredient['unit'];
+    ingredient.cost = Number(cost.replace(',', '.')).toFixed(2);
+    writeData(data);
+    result = ingredient;
+  } else if (method === 'DELETE' && url.pathname.match(/^\/ingredients\/\d+$/)) {
+    const id = Number(url.pathname.split('/')[2]);
+    if (!data.ingredients.some((entry) => entry.id === id)) throw new Error('Ingrediente não encontrado.');
+    if (data.recipes.some((recipe) => recipe.items.some((item) => item.ingredientId === id))) throw new Error(INGREDIENT_IN_USE);
+    data.ingredients = data.ingredients.filter((entry) => entry.id !== id);
+    writeData(data);
+    result = { success: true };
+  } else if (method === 'GET' && url.pathname.match(/^\/menu-items\/\d+\/recipe$/)) {
+    const menuItemId = Number(url.pathname.split('/')[2]);
+    const menuItem = data.menu.find((entry) => entry.id === menuItemId);
+    if (!menuItem) throw new Error('Item do cardápio não encontrado.');
+    const recipe = data.recipes.find((entry) => entry.menuItemId === menuItemId);
+    result = recipeView(menuItem, recipe, data.ingredients);
+  } else if (method === 'PUT' && url.pathname.match(/^\/menu-items\/\d+\/recipe$/)) {
+    const menuItemId = Number(url.pathname.split('/')[2]);
+    const menuItem = data.menu.find((entry) => entry.id === menuItemId);
+    if (!menuItem) throw new Error('Item do cardápio não encontrado.');
+    const rawItems = Array.isArray(payload.items) ? payload.items : [];
+    const items = rawItems.map((item) => {
+      const entry = item as Record<string, unknown>;
+      return { ingredientId: Number(entry.ingredientId), quantity: Number(entry.quantity) };
+    });
+    const invalid = validateRecipe(items, data.ingredients);
+    if (invalid) throw new Error(invalid);
+    data.recipes = data.recipes.filter((entry) => entry.menuItemId !== menuItemId);
+    if (items.length) data.recipes.push({ menuItemId, items });
+    writeData(data);
+    const recipe = data.recipes.find((entry) => entry.menuItemId === menuItemId);
+    result = recipeView(menuItem, recipe, data.ingredients);
   } else if (url.pathname === '/menu-items' && method === 'GET') {
     result = url.searchParams.get('all') === 'true' ? data.menu : data.menu.filter((item) => item.available);
   } else if (url.pathname === '/menu-items' && method === 'POST') {
@@ -194,6 +266,7 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     const id = Number(url.pathname.split('/')[2]);
     if (!data.menu.some((item) => item.id === id)) throw new Error('Item do cardápio não encontrado.');
     data.menu = data.menu.filter((item) => item.id !== id);
+    data.recipes = data.recipes.filter((recipe) => recipe.menuItemId !== id);
     data.orders = data.orders.map((order) => ({ ...order, items: order.items.map((line) => line.menuItemId === id ? { ...line, menuItemId: null } : line) }));
     writeData(data);
     result = { success: true };
