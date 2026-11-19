@@ -2,16 +2,14 @@ import { BadRequestException, Inject, Injectable, NotFoundException, Optional } 
 import { Prisma } from '@prisma/client';
 import { assertMonthsOpen } from './closings/closing-guard';
 import { deliveryFeeCents, orderTotalCents, orderTotalSelect } from './common/order-total';
-import { resolveZoneId } from './zones/zone-store';
 import { revenueByChannel } from './delivery/delivery-rules';
 import { centsToDecimal } from './purchasing/purchase-rules';
 import { PrismaService } from './prisma.service';
-import { CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto } from './dto';
+import { CreateExpenseDto, CreateMenuItemDto, UpdateExpenseDto, UpdateMenuItemDto } from './dto';
 import { isOpenAt } from './menu-availability/availability-rules';
 import { Clock, MENU_CLOCK } from './menu-availability/menu-clock';
 import { resolveCategory } from './menu-categories/category-link';
 import { compareMenu } from './menu-categories/category-rules';
-import { orderInclude } from './orders/order-include';
 
 @Injectable()
 export class AppService {
@@ -22,36 +20,6 @@ export class AppService {
     @Optional() @Inject(MENU_CLOCK) clock?: Clock, // RNF-02 da SPEC/2026-11-16-cardapio-por-horario.md
   ) {
     this.now = clock ?? (() => new Date());
-  }
-
-  async listTables() {
-    const tables = await this.prisma.diningTable.findMany({
-      orderBy: { number: 'asc' },
-      include: { orders: { where: { status: 'OPEN' }, include: orderInclude, take: 1 } },
-    });
-    return tables.map(({ orders, ...table }) => ({ ...table, order: orders[0] ?? null }));
-  }
-
-  async createTable(dto: CreateTableDto) {
-    if (await this.prisma.diningTable.findUnique({ where: { number: dto.number } })) {
-      throw new BadRequestException('Já existe uma mesa com esse número.');
-    }
-    const { zoneId, ...table } = dto;
-    return this.prisma.diningTable.create({ data: { ...table, zoneId: await resolveZoneId(this.prisma, zoneId) } });
-  }
-
-  async deleteTable(id: number) {
-    const table = await this.prisma.diningTable.findUnique({ where: { id } });
-    if (!table) throw new NotFoundException('Mesa não encontrada.');
-    const open = await this.prisma.order.findFirst({ where: { tableId: id, status: 'OPEN' } });
-    if (open) throw new BadRequestException('Feche a comanda antes de remover esta mesa.');
-    // RN-09 da SPEC/2026-11-12-reservas-de-mesa.md
-    const booked = await this.prisma.reservation.findFirst({
-      where: { tableId: id, status: 'BOOKED', endsAt: { gt: new Date() } },
-    });
-    if (booked) throw new BadRequestException('Esta mesa tem reservas agendadas. Cancele ou remarque antes de remover.');
-    await this.prisma.diningTable.delete({ where: { id } });
-    return { success: true };
   }
 
   async listMenu(includeUnavailable = false) {

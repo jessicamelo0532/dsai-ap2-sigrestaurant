@@ -1,22 +1,13 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { dateRange } from './common/period';
-import { AddOrderItemDto, CreateExpenseDto, CreateMenuItemDto, CreateTableDto, UpdateExpenseDto, UpdateMenuItemDto } from './dto';
-import { OrdersService } from './orders/orders.service';
+import { CreateExpenseDto, CreateMenuItemDto, UpdateExpenseDto, UpdateMenuItemDto } from './dto';
 
 @Controller('api')
 export class AppController {
-  constructor(
-    private readonly app: AppService,
-    private readonly orders: OrdersService,
-  ) {}
+  constructor(private readonly app: AppService) {}
 
   @Get('health') health() { return { status: 'ok' }; }
-
-  @Get('tables') tables() { return this.app.listTables(); }
-  @Post('tables') createTable(@Body() dto: CreateTableDto) { return this.app.createTable(dto); }
-  @Delete('tables/:id') deleteTable(@Param('id', ParseIntPipe) id: number) { return this.app.deleteTable(id); }
-  @Post('tables/:id/items') addItem(@Param('id', ParseIntPipe) id: number, @Body() dto: AddOrderItemDto) { return this.orders.addOrderItem(id, dto); }
 
   @Get('menu-items') menu(@Query('all') all?: string) { return this.app.listMenu(all === 'true'); }
   @Get('menu-items/:id') menuItem(@Param('id', ParseIntPipe) id: number) { return this.app.getMenuItem(id); }
