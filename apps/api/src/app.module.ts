@@ -10,6 +10,7 @@ import { KitchenModule } from './kitchen/kitchen.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { MenuAvailabilityModule } from './menu-availability/menu-availability.module';
 import { MenuCategoriesModule } from './menu-categories/menu-categories.module';
+import { MenuModule } from './menu/menu.module';
 import { MenuOptionsModule } from './menu-options/menu-options.module';
 import { OrderMovesModule } from './order-moves/order-moves.module';
 import { OrdersModule } from './orders/orders.module';
@@ -26,7 +27,7 @@ import { ReceivablesModule } from './receivables/receivables.module';
 import { ZonesModule } from './zones/zones.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule, TablesModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule, TablesModule, MenuModule],
   controllers: [AppController],
   providers: [AppService],
 })
