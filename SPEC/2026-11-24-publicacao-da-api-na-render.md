@@ -133,3 +133,4 @@ Publicar a API e o PostgreSQL na Render a partir de um Blueprint versionado e ap
 | Data | Mudança | Status |
 |---|---|---|
 | 2026-11-24 | Criação da SPEC com decisões humanas (Render, sem auth, dados sintéticos) | aprovada |
+| 2026-11-24 | Blueprint, documentação e teste criados; deploy pendente de quem tem as contas | aprovada |
