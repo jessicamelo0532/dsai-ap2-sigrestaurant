@@ -12,6 +12,7 @@ export const paymentLabels: Record<string, string> = {
   CREDIT: 'Crédito',
   DEBIT: 'Débito',
   PIX: 'Pix',
+  MIXED: 'Misto',
 };
 
 // RN-02: forma de pagamento por extenso; desconhecida sai como veio.

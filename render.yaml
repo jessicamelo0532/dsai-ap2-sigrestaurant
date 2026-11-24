@@ -1,0 +1,32 @@
+# Blueprint da API do Mesa Clara na Render.
+# SPEC: SPEC/2026-11-24-publicacao-da-api-na-render.md
+# Cria um PostgreSQL free e um web service Docker com a API NestJS.
+databases:
+  - name: mesa-clara-db
+    databaseName: restaurante
+    user: restaurante
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: mesa-clara-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    # O plano free não tem preDeployCommand: migrações e seed (idempotente)
+    # rodam no start, antes de a API subir.
+    dockerCommand: /bin/sh -c "npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma && npm --workspace apps/api run prisma:seed && node apps/api/dist/main.js"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mesa-clara-db
+          property: connectionString
+      # Origem única liberada no CORS: a publicação de produção da Vercel.
+      - key: WEB_ORIGIN
+        value: https://dsai-ap2-sigrestaurant.vercel.app
+      - key: NODE_ENV
+        value: production

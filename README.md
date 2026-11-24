@@ -1,6 +1,6 @@
 # Mesa Clara
 
-Sistema de restaurante para administrar mesas, pedidos, cardápio e despesas. O produto publicado é o frontend Next.js: os dados ficam no `localStorage` do navegador. A API NestJS com Prisma e PostgreSQL voltou ao workspace e é compilada e testada no CI, mas ainda não é publicada — a ligação do frontend com a API é SPEC própria, pendente de decisão da dupla (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)).
+Sistema de restaurante para administrar mesas, pedidos, cardápio e despesas. O produto publicado é o frontend Next.js. Sem `NEXT_PUBLIC_API_URL`, os dados ficam no `localStorage` do navegador; com a API publicada na Render e essa variável definida na Vercel, os dados ficam no PostgreSQL e a equipe inteira vê a mesma comanda. A API NestJS com Prisma e PostgreSQL é compilada e testada no CI e tem Blueprint de publicação (SPEC [`2026-11-24-publicacao-da-api-na-render.md`](SPEC/2026-11-24-publicacao-da-api-na-render.md)).
 
 ## Por que este repositório
 
@@ -25,7 +25,7 @@ O app funciona em dois modos, e a interface sempre mostra em qual deles está:
 | Modo | Quando | Onde os dados ficam |
 |---|---|---|
 | **Servidor** | `NEXT_PUBLIC_API_URL` está definida no build | no PostgreSQL, pela API — a equipe inteira vê a mesma comanda |
-| **Navegador** | sem `NEXT_PUBLIC_API_URL` (é o caso da publicação na Vercel) | no `localStorage` deste navegador |
+| **Navegador** | sem `NEXT_PUBLIC_API_URL` (padrão enquanto a Vercel não aponta para a API) | no `localStorage` deste navegador |
 
 - **API fora do ar**: o app **não** troca de modo sozinho. Aparece uma faixa vermelha com "Tentar de novo" e "Usar o modo local" — quem opera o caixa vê que o servidor não responde.
 - **Dados do navegador para o servidor**: com a API no ar e dados neste navegador, a faixa oferece "Importar meus dados". Mesas e itens que já existem no servidor são reaproveitados, não duplicados, e nada é apagado do navegador.
@@ -37,7 +37,7 @@ docker compose build --build-arg NEXT_PUBLIC_API_URL=http://localhost:4000/api w
 
 ## Publicar na Vercel
 
-Importe o repositório e defina `apps/web` como **Root Directory**. Não é necessário configurar `NEXT_PUBLIC_API_URL`, `DATABASE_URL` ou outros serviços externos no modo frontend.
+Importe o repositório e defina `apps/web` como **Root Directory**. Sem `NEXT_PUBLIC_API_URL`, não é necessário configurar `DATABASE_URL` nem outros serviços externos. Para usar o modo servidor, publique a API na Render (seção abaixo) e defina `NEXT_PUBLIC_API_URL` no painel de ambiente da Vercel.
 
 O fork está publicado em **https://dsai-ap2-sigrestaurant.vercel.app/** (projeto `dsai-ap2-sigrestaurant` da Vercel, Root Directory `apps/web`). A Vercel publica cada push na `main` e registra o resultado no status `Vercel` do commit, então a URL serve sempre o último commit da `main`.
 
@@ -56,7 +56,7 @@ npm --workspace apps/web run test:watch
 ```
 
 
-Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **552 testes** (45 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **92,9% de linhas** (`npm run coverage`).
+Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **569 testes** (47 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **92,8% de linhas** (`npm run coverage`).
 
 
 Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
@@ -78,9 +78,9 @@ Na primeira visita, o app cria dados editáveis de demonstração. Eles permanec
 
 O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele está no workspace, é compilado e testado no CI (698 testes) e o `docker compose up` sobe **PostgreSQL, API e frontend** juntos (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)).
 
-O frontend fala com a API quando o build recebe `NEXT_PUBLIC_API_URL` (modo servidor); sem a variável — como na publicação da Vercel — ele usa o `localStorage` (modo navegador). A interface mostra sempre em qual modo está; ver [Os dois modos de operação](#os-dois-modos-de-operação) e a SPEC [`2026-11-14-frontend-em-modo-api.md`](SPEC/2026-11-14-frontend-em-modo-api.md).
+O frontend fala com a API quando o build recebe `NEXT_PUBLIC_API_URL` (modo servidor); sem a variável — como na publicação atual da Vercel enquanto ela não aponta para a API — ele usa o `localStorage` (modo navegador). A interface mostra sempre em qual modo está; ver [Os dois modos de operação](#os-dois-modos-de-operação) e a SPEC [`2026-11-14-frontend-em-modo-api.md`](SPEC/2026-11-14-frontend-em-modo-api.md).
 
-**Importante:** a API ainda não tem autenticação. Ela não deve ser publicada na internet antes de uma SPEC de autenticação.
+**Importante:** a API não tem autenticação. Nesta entrega ela pode ser publicada na Render **apenas com dados sintéticos de demonstração**; não use dados reais nem exponha uma base de produção (decisão humana registrada na SPEC [`2026-11-24-publicacao-da-api-na-render.md`](SPEC/2026-11-24-publicacao-da-api-na-render.md)).
 
 Os testes da API são de integração e precisam de um PostgreSQL. Por segurança, só rodam em banco cujo nome termina em `_test`, porque apagam os dados entre os testes:
 
@@ -90,6 +90,19 @@ DATABASE_URL="postgresql://USUARIO:SENHA@localhost:5432/restaurante_test?schema=
 ```
 
 `npm run build:api` gera o Prisma Client e compila a API. `npm run test:api:coverage` gera a cobertura em `apps/api/coverage/`.
+
+### Publicar a API na Render (modo servidor)
+
+O arquivo [`render.yaml`](render.yaml) descreve um **Blueprint** da Render com um PostgreSQL free e um web service Docker da API. Ao subir, o container aplica `prisma migrate deploy`, roda o seed idempotente e inicia a API; o health check é `/api/health`. A origem liberada no CORS é `https://dsai-ap2-sigrestaurant.vercel.app`.
+
+Passos (quem tem as contas):
+
+1. Na Render, **New > Blueprint**, conecte o fork e a branch `main` (o `render.yaml` precisa estar na `main`).
+2. Aguarde o deploy de `mesa-clara-db` e `mesa-clara-api`; confira `https://<serviço>.onrender.com/api/health` → `{"status":"ok"}`.
+3. Na Vercel, em **Settings > Environment Variables** (Production), defina `NEXT_PUBLIC_API_URL=https://<serviço>.onrender.com/api` e faça **Redeploy** (a variável entra no build).
+4. Se o domínio da Vercel mudar, atualize `WEB_ORIGIN` no `render.yaml` e reaplique o Blueprint.
+
+Limitações do plano free: o PostgreSQL expira em **30 dias** (1 GB, um por workspace) e o web service dorme após **15 min** sem tráfego, acordando em cerca de 1 min. O CORS cobre só a origem de produção, então previews de PR não usam o modo servidor. A API **não tem autenticação**: use apenas dados sintéticos.
 
 ### Zonas do salão
 
@@ -110,6 +123,10 @@ O app pode ser instalado na tela inicial do celular (manifesto) e abre sem rede 
 ### Ajustes na comanda
 
 Nos dois modos, cada linha da comanda aberta tem − quantidade + (de 1 a 500; para tirar o item, continua o ✕), e o botão **Cancelar comanda** pede confirmação e libera a mesa sem cobrar os itens. No modo navegador, o cancelamento segue a mesma regra da API ("Apenas comandas abertas podem ser canceladas."). SPEC [`2026-11-17-quantidade-e-cancelamento-na-comanda.md`](SPEC/2026-11-17-quantidade-e-cancelamento-na-comanda.md).
+
+### Divisão de conta por consumidor (modo navegador)
+
+Com uma comanda aberta, o botão **Dividir conta** abre três modos: **por igual** (2 a 50 pessoas, com o resto dos centavos na última parcela), **por item** (cada linha fica inteira com uma pessoa e o desconto dos pontos é rateado proporcionalmente) e **por valor** (a soma das parcelas precisa fechar no total a pagar). Cada parcela é paga separadamente, com sua forma de pagamento; a comanda só fecha quando todas forem pagas, e o relatório financeiro soma cada parcela na forma usada. Enquanto a divisão existir, adicionar/alterar/remover itens e juntar comandas ficam bloqueados; **Desfazer divisão** só funciona antes de qualquer pagamento. Rotas locais: `POST /orders/:id/splits`, `POST /orders/:id/splits/:splitId/pay` e `DELETE /orders/:id/splits`. SPEC [`2026-11-19-divisao-de-conta.md`](SPEC/2026-11-19-divisao-de-conta.md).
 
 ### Reservas de mesa (somente API)
 
@@ -260,6 +277,7 @@ O fluxo completo está em [`docs/FLUXO-DE-TRABALHO.md`](docs/FLUXO-DE-TRABALHO.m
 ## Itens de entrega do PDF ainda pendentes
 
 - Status da publicação: fork publicado na Vercel com deploy a cada push na `main` (issues 0.5 e 1.6).
+- Modo servidor na Vercel: o Blueprint da API está pronto em [`render.yaml`](render.yaml) (SPEC [`2026-11-24-publicacao-da-api-na-render.md`](SPEC/2026-11-24-publicacao-da-api-na-render.md)); falta aplicar na Render e definir `NEXT_PUBLIC_API_URL` na Vercel (depende de quem tem as contas).
 - URL pública: https://dsai-ap2-sigrestaurant.vercel.app/ (a URL da AP1, https://dsai-ap1-sigrestaurant.vercel.app/, continua servindo a versão da AP1).
 - O PDF exige 100 mil linhas de código versionado. A contagem por `cloc --diff` entre o último commit da AP1 (`d0a6caf`) e a `main` após os PRs #54–#70 (`3b32ef7`) é de **15 996 linhas adicionadas** — 16% do mínimo, das quais **12 199 são código de produto** (`npm run metricas` refaz a conta). Detalhamento em [`docs/AUDITORIA-AP2.md`](docs/AUDITORIA-AP2.md).
 - O ambiente não oferece exportação bruta das conversas; as mensagens do usuário foram transcritas no arquivo de sessão.
