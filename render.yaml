@@ -17,9 +17,10 @@ services:
     dockerfilePath: ./apps/api/Dockerfile
     dockerContext: .
     healthCheckPath: /api/health
-    # O plano free não tem preDeployCommand: migrações e seed (idempotente)
-    # rodam no start, antes de a API subir.
-    dockerCommand: /bin/sh -c "npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma && npm --workspace apps/api run prisma:seed && node apps/api/dist/main.js"
+    # O start (migrações, seed idempotente e servidor) vem do CMD do
+    # Dockerfile (apps/api/docker-entrypoint.sh). Não usar dockerCommand
+    # inline: a Render não o executa via shell e a string com && vira um
+    # único comando (exit 127).
     envVars:
       - key: DATABASE_URL
         fromDatabase:

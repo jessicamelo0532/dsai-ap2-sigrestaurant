@@ -16,5 +16,7 @@ COPY apps/api/prisma apps/api/prisma
 RUN npm ci --include=optional && npx prisma generate --schema=apps/api/prisma/schema.prisma
 ENV NODE_ENV=production
 COPY --from=build /app/apps/api/dist apps/api/dist
+COPY apps/api/docker-entrypoint.sh apps/api/docker-entrypoint.sh
+RUN chmod +x apps/api/docker-entrypoint.sh
 EXPOSE 4000
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma && node apps/api/dist/main.js"]
+CMD ["sh", "apps/api/docker-entrypoint.sh"]
