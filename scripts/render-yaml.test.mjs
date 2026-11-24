@@ -28,10 +28,25 @@ test('WEB_ORIGIN é a origem de produção da Vercel', () => {
   assert.match(blueprint, /value:\s*https:\/\/dsai-ap2-sigrestaurant\.vercel\.app/);
 });
 
-test('start aplica migrações e seed antes de subir a API', () => {
-  assert.match(blueprint, /dockerCommand:.*prisma migrate deploy/s);
-  assert.match(blueprint, /dockerCommand:.*prisma:seed/s);
-  assert.match(blueprint, /dockerCommand:.*node apps\/api\/dist\/main\.js/s);
+test('Blueprint não usa dockerCommand inline (a Render não o executa via shell)', () => {
+  assert.doesNotMatch(blueprint, /dockerCommand:/);
+});
+
+test('Dockerfile da API usa o script de start no CMD', () => {
+  const dockerfile = readFileSync(join(repoRoot, 'apps/api/Dockerfile'), 'utf8');
+  assert.match(dockerfile, /COPY apps\/api\/docker-entrypoint\.sh apps\/api\/docker-entrypoint\.sh/);
+  assert.match(dockerfile, /CMD \["sh", "apps\/api\/docker-entrypoint\.sh"\]/);
+});
+
+test('script de start aplica migrações, seed e inicia a API nesta ordem', () => {
+  const script = readFileSync(join(repoRoot, 'apps/api/docker-entrypoint.sh'), 'utf8');
+  const migrate = script.indexOf('prisma migrate deploy');
+  const seed = script.indexOf('prisma:seed');
+  const start = script.indexOf('node apps/api/dist/main.js');
+  assert.match(script, /set -e/);
+  assert.ok(migrate >= 0, 'migrações ausentes');
+  assert.ok(seed > migrate, 'seed deve vir depois das migrações');
+  assert.ok(start > seed, 'servidor deve vir depois do seed');
 });
 
 test('Blueprint não versiona credencial real', () => {

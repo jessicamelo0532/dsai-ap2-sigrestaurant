@@ -118,6 +118,11 @@ Publicar a API e o PostgreSQL na Render a partir de um Blueprint versionado e ap
   - **URL do serviço só existe após o deploy**: o passo de copiar para a Vercel está nos CAs.
 - **Mitigações:** teste estrutural do Blueprint, verificação manual dos CAs e documentação das limitações.
 
+### Achados durante a execução
+
+- **Start inline falhou na Render (exit 127).** O `dockerCommand` com `/bin/sh -c "npx ... && npm ... && node ..."` foi tratado pela Render como um único comando, e o shell tentou executar a string inteira: `/bin/sh: npx prisma ...: not found`. Correção: o start foi movido para `apps/api/docker-entrypoint.sh` (`set -e`, migrações → seed → servidor), referenciado pelo `CMD` do Dockerfile; o `render.yaml` não define mais `dockerCommand`. O teste do Blueprint passou a proibir `dockerCommand` inline e a conferir a ordem no script.
+- **Seed idempotente:** `apps/api/prisma/seed.ts` usa `findFirst`/`update` para o cardápio e `upsert` para a zona e as mesas; rodar a cada start não duplica dados.
+
 ## Plano de implementação
 
 1. Criar esta SPEC com as decisões humanas de 2026-11-24.
@@ -134,3 +139,4 @@ Publicar a API e o PostgreSQL na Render a partir de um Blueprint versionado e ap
 |---|---|---|
 | 2026-11-24 | Criação da SPEC com decisões humanas (Render, sem auth, dados sintéticos) | aprovada |
 | 2026-11-24 | Blueprint, documentação e teste criados; deploy pendente de quem tem as contas | aprovada |
+| 2026-11-24 | Corrige o start na Render: script no CMD do Dockerfile, sem dockerCommand inline; teste de regressão | aprovada |
