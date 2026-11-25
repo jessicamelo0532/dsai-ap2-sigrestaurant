@@ -1,5 +1,6 @@
 import { AppController } from '../../src/app.controller';
 import { AppService } from '../../src/app.service';
+import { MenuService } from '../../src/menu/menu.service';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma.service';
 import { TablesService } from '../../src/tables/tables.service';
@@ -9,17 +10,18 @@ assertTestDatabase(process.env.DATABASE_URL);
 
 export const prisma = new PrismaService();
 const app = new AppService(prisma);
+const menu = new MenuService(prisma);
 const orders = new OrdersService(prisma);
 const tables = new TablesService(prisma);
 export const service = {
   listTables: tables.listTables.bind(tables),
   createTable: tables.createTable.bind(tables),
   deleteTable: tables.deleteTable.bind(tables),
-  listMenu: app.listMenu.bind(app),
-  getMenuItem: app.getMenuItem.bind(app),
-  createMenuItem: app.createMenuItem.bind(app),
-  updateMenuItem: app.updateMenuItem.bind(app),
-  deleteMenuItem: app.deleteMenuItem.bind(app),
+  listMenu: menu.listMenu.bind(menu),
+  getMenuItem: menu.getMenuItem.bind(menu),
+  createMenuItem: menu.createMenuItem.bind(menu),
+  updateMenuItem: menu.updateMenuItem.bind(menu),
+  deleteMenuItem: menu.deleteMenuItem.bind(menu),
   addOrderItem: orders.addOrderItem.bind(orders),
   updateOrderItem: orders.updateOrderItem.bind(orders),
   removeOrderItem: orders.removeOrderItem.bind(orders),

@@ -3,8 +3,8 @@ import { NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { AppController } from '../src/app.controller';
-import { AppService } from '../src/app.service';
+import { MenuController } from '../src/menu/menu.controller';
+import { MenuService } from '../src/menu/menu.service';
 import { OrdersService } from '../src/orders/orders.service';
 import { TablesController } from '../src/tables/tables.controller';
 import { TablesService } from '../src/tables/tables.service';
@@ -17,10 +17,10 @@ import { createMenuItem, createTable, prisma, resetDatabase } from './support/da
 // 16/11/2026 é segunda-feira; Belém é UTC−3 (14:00Z = 11:00 local).
 const clock = { now: new Date('2026-11-16T14:00:00.000Z') };
 const at = (iso: string) => { clock.now = new Date(`${iso}.000Z`); };
-const app = new AppService(prisma, () => clock.now);
+const menu = new MenuService(prisma, () => clock.now);
 const orders = new OrdersService(prisma, () => clock.now);
 const tables = new TablesService(prisma);
-const appController = new AppController(app);
+const menuController = new MenuController(menu);
 const tablesController = new TablesController(tables, orders);
 const availability = new MenuAvailabilityService(prisma, () => clock.now);
 const controller = new MenuAvailabilityController(availability);
@@ -61,7 +61,7 @@ describe('T-02: item sem janela continua sempre disponível (CA-02)', () => {
     const table = await createTable(1);
     const water = await createMenuItem({ name: 'Água', price: 4 });
     at('2026-11-17T07:00:00');
-    expect((await app.listMenu()).map((item) => item.id)).toEqual([water.id]);
+    expect((await menu.listMenu()).map((item) => item.id)).toEqual([water.id]);
     expect((await orders.addOrderItem(table.id, { menuItemId: water.id, quantity: 1 }))!.items).toHaveLength(1);
     expect(await controller.get(water.id)).toEqual({ menuItemId: water.id, alwaysAvailable: true, availableNow: true, windows: [] });
   });
@@ -74,12 +74,12 @@ describe('T-03: a lista esconde o que está fora da janela (CA-03)', () => {
     const paused = await createMenuItem({ name: 'Pausado', category: 'Pratos', price: 10, available: false });
     await availability.replace(lunch.id, lunchOnMonday);
 
-    expect((await appController.menu()).map((item) => item.id)).toEqual([water.id, lunch.id]);
-    expect((await app.listMenu())[1]).not.toHaveProperty('availability');
+    expect((await menuController.list()).map((item) => item.id)).toEqual([water.id, lunch.id]);
+    expect((await menu.listMenu())[1]).not.toHaveProperty('availability');
 
     at('2026-11-16T18:00:00');
-    expect((await app.listMenu()).map((item) => item.id)).toEqual([water.id]);
-    expect((await appController.menu('true')).map((item) => item.id)).toEqual([water.id, paused.id, lunch.id]);
+    expect((await menu.listMenu()).map((item) => item.id)).toEqual([water.id]);
+    expect((await menuController.list('true')).map((item) => item.id)).toEqual([water.id, paused.id, lunch.id]);
     expect((await availability.get(lunch.id)).availableNow).toBe(false);
   });
 });
@@ -91,7 +91,7 @@ describe('T-04: limites e virada do dia (CA-04)', () => {
     await availability.replace(lunch.id, lunchOnMonday);
     await availability.replace(late.id, { windows: [{ weekday: 1, start: '22:00', end: '24:00' }] });
 
-    const visible = async () => (await app.listMenu()).map((item) => item.name);
+    const visible = async () => (await menu.listMenu()).map((item) => item.name);
     at('2026-11-16T13:59:00');
     expect(await visible()).toEqual([]);
     at('2026-11-16T14:00:00');
@@ -163,7 +163,7 @@ describe('T-05: troca das janelas (CA-05)', () => {
   it('apagar o item apaga as janelas', async () => {
     const item = await createMenuItem({ name: 'Açaí', price: 18 });
     await availability.replace(item.id, lunchOnMonday);
-    await app.deleteMenuItem(item.id);
+    await menu.deleteMenuItem(item.id);
     expect(await prisma.menuAvailability.count()).toBe(0);
   });
 });
