@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { deliveryFeeCents, orderTotalCents, orderTotalSelect } from './common/order-total';
-import { revenueByChannel } from './delivery/delivery-rules';
-import { centsToDecimal } from './purchasing/purchase-rules';
-import { PrismaService } from './prisma.service';
+import { deliveryFeeCents, orderTotalCents, orderTotalSelect } from '../common/order-total';
+import { revenueByChannel } from '../delivery/delivery-rules';
+import { PrismaService } from '../prisma.service';
+import { centsToDecimal } from '../purchasing/purchase-rules';
 
 @Injectable()
-export class AppService {
+export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async report(from: Date, to: Date) {

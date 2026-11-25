@@ -3,7 +3,7 @@ import { recordMovement } from './stock-ledger';
 import { requiredForSale, toMilli } from './stock-rules';
 
 // RF-08 e RN-08: baixa dos ingredientes de uma comanda paga.
-// Roda dentro da transação do fechamento de conta (AppService.closeOrder).
+// Roda dentro da transação do fechamento de conta (OrdersService.closeOrder).
 // Pode deixar o estoque negativo (RN-05).
 export async function deductStockForSale(
   tx: Prisma.TransactionClient,
