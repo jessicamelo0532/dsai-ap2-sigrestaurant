@@ -106,3 +106,9 @@ Os 18 PRs abertos (#77 a #94) foram integrados na `main` e enviados ao GitHub em
 ## Estado em 2026-11-19
 
 A **2.3 (#20, divisão de conta por consumidor)** foi implementada no modo navegador no PR da branch `feat/divisao-de-conta`: três modos (por igual, por item e por valor), pagamento individual das parcelas, fechamento automático da comanda quando todas forem pagas e relatório por forma de pagamento. A paridade com a API pausada ficou fora do escopo. SPEC [`2026-11-19-divisao-de-conta.md`](../SPEC/2026-11-19-divisao-de-conta.md).
+
+- 0.3 (#9): PR #102 adiciona a seção **Custo e tokens** a todas as sessões; os valores reais continuam pendentes do responsável humano.
+- 0.4 (#10): a identidade do segundo integrante foi registrada como Yuri (`yurisawaki <brenoyurisawaki@gmail.com>`) na SPEC `2026-11-19-autoria-dos-integrantes.md`; a métrica passa a contar só a dupla e os trailers só em commits sem merge.
+- 0.5 (#11) e 1.6 (#17): a URL `https://dsai-ap2-sigrestaurant.vercel.app/` responde HTTP 200 e o status `Vercel` do commit `1b8f630` está `success`; o README documenta o deploy a cada push na `main`.
+- 2.25 (#42) e 2.26 (#43): os módulos de mesas, comandas, cardápio, despesas e relatórios estão nos PRs #95 a #101; o caixa já era módulo próprio.
+- 2.12 (#29): continua dependendo de decisão de produto e SPEC aprovada.
