@@ -56,7 +56,7 @@ npm --workspace apps/web run test:watch
 ```
 
 
-Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **569 testes** (47 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **92,8% de linhas** (`npm run coverage`).
+Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **582 testes** (49 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **91,4% de linhas** (`npm run coverage`).
 
 
 Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
@@ -76,7 +76,7 @@ Na primeira visita, o app cria dados editáveis de demonstração. Eles permanec
 
 ## Backend (API NestJS)
 
-O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele está no workspace, é compilado e testado no CI (698 testes) e o `docker compose up` sobe **PostgreSQL, API e frontend** juntos (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)).
+O backend NestJS com Prisma e PostgreSQL fica em `apps/api/`. Ele está no workspace, é compilado e testado no CI (698 testes) e o `docker compose up` sobe **PostgreSQL, API e frontend** juntos (SPEC [`2026-11-12-reativacao-backend.md`](SPEC/2026-11-12-reativacao-backend.md)). As rotas estão separadas em módulos de domínio (mesas, comandas, cardápio, despesas, relatórios, saúde e os módulos das demais funcionalidades), com o mesmo contrato HTTP; ver [`SPEC/2026-11-18-modulos-da-api.md`](SPEC/2026-11-18-modulos-da-api.md).
 
 O frontend fala com a API quando o build recebe `NEXT_PUBLIC_API_URL` (modo servidor); sem a variável — como na publicação atual da Vercel enquanto ela não aponta para a API — ele usa o `localStorage` (modo navegador). A interface mostra sempre em qual modo está; ver [Os dois modos de operação](#os-dois-modos-de-operação) e a SPEC [`2026-11-14-frontend-em-modo-api.md`](SPEC/2026-11-14-frontend-em-modo-api.md).
 

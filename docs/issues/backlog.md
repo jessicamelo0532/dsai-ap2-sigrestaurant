@@ -112,3 +112,7 @@ A **2.3 (#20, divisão de conta por consumidor)** foi implementada no modo naveg
 - 0.5 (#11) e 1.6 (#17): a URL `https://dsai-ap2-sigrestaurant.vercel.app/` responde HTTP 200 e o status `Vercel` do commit `1b8f630` está `success`; o README documenta o deploy a cada push na `main`.
 - 2.25 (#42) e 2.26 (#43): os módulos de mesas, comandas, cardápio, despesas e relatórios estão nos PRs #95 a #101; o caixa já era módulo próprio.
 - 2.12 (#29): ficha técnica e margem no cardápio administrativo do modo navegador, com custo manual por ingrediente (SPEC `2026-11-19-ficha-tecnica-e-margem.md`). A paridade de custo com a API de estoque segue pendente.
+
+## Estado em 2026-11-25
+
+Os 10 PRs abertos (#95 a #104) foram integrados na `main` local, um a um, com merge commit próprio. Entraram os módulos de domínio da API (2.25/2.26, #95 a #101), a pendência de custo/tokens nas sessões (0.3, #102), a autoria da dupla (0.4, #103) e a ficha técnica com margem no modo navegador (2.12, #104). Frontend com 582 testes em 49 arquivos, cobertura de 91,39% de linhas, `npm run test:scripts` com 33 testes e builds do frontend e da API verdes; a suíte de integração da API não foi executada por falta de credencial do PostgreSQL local.

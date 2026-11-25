@@ -248,6 +248,18 @@ A métrica exige que os testes novos **falhem quando a mudança é revertida** (
 
 **Pendências que continuam abertas:** P-2, P-3, P-6 e P-7.
 
+### Estado após a sessão de 2026-11-25
+
+**Fatos verificados nesta sessão (integração local, sem push):**
+
+- Os **10 PRs abertos** (#95 a #104) foram integrados na `main`, um a um, com merge commit próprio. A tag `backup/pre-modulos-api` guarda o ponto anterior (`3561f3b`).
+- O que entrou: SPEC e módulos de domínio da API — comandas (#96), mesas (#97), cardápio (#98), despesas (#99), relatório financeiro (#100) e a ligação dos módulos com o `HealthModule` (#101), removendo `app.controller.ts`/`app.service.ts`; a SPEC dos módulos (#95); a pendência de custo/tokens nas sessões (#102); a autoria da dupla e a métrica de trailers (#103); e a ficha técnica com margem no cardápio do modo navegador (#104).
+- Conflitos resolvidos à mão: `docs/issues/backlog.md` (#103 e #104) e `apps/web/lib/local-store.ts` (#104, imports combinados de divisão de conta, ficha técnica e tipos).
+- Verificação local: frontend **582 testes em 49 arquivos**, todos verdes; cobertura de `lib` + `app` em **91,39% de linhas** (2 602 de 2 847); `npm run test:scripts` com **33 testes** verdes (inclui o `render.yaml`); `npm run build` e `npm run build:api` verdes.
+- **Não verificado:** a suíte de integração da API (`npm run test:api`) continua sem execução local porque o PostgreSQL está de pé mas não aceita as credenciais disponíveis (autenticação `peer`); o número "698 testes" permanece como última medição conhecida.
+
+**Pendências que continuam abertas:** P-2, P-3, P-6 e P-7.
+
 ---
 
 ## 6. Pendências que exigem o humano
