@@ -1,7 +1,7 @@
 # Módulos da API para mesas, comandas, cardápio, despesas e relatórios
 
 **Data:** 2026-11-18  
-**Status:** aprovada  
+**Status:** implementada  
 **Agent:** opencode/deepseek-v4.1-flash-free  
 **SPEC derivada de:** SPEC/2026-11-12-reativacao-backend.md  
 **Derroga:** n/a
@@ -27,7 +27,8 @@ Separar a API em módulos de domínio, mantendo exatamente as mesmas rotas, vali
 - `orders/`: serviço, controller e módulo para `GET /api/orders/open`, `GET /api/orders/:id`, `PATCH/DELETE /api/orders/:id/items/:itemId`, `POST /api/orders/:id/close` e `POST /api/orders/:id/cancel`.
 - `expenses/`: serviço, controller e módulo para `GET/POST/PATCH/DELETE /api/expenses`.
 - `reports/`: serviço, controller e módulo para `GET /api/reports/financial`.
-- `AppModule` importa os cinco módulos novos; `app.controller.ts` e `app.service.ts` deixam de existir.
+- `health/`: controller e módulo para manter `GET /api/health` quando `app.controller.ts` deixar de existir.
+- `AppModule` importa os seis módulos novos; `app.controller.ts` e `app.service.ts` deixam de existir.
 - Testes de integração continuam usando os serviços de domínio por meio de `test/support/database.ts`.
 
 ## Fora do escopo
@@ -43,6 +44,7 @@ Separar a API em módulos de domínio, mantendo exatamente as mesmas rotas, vali
 - **RF-03:** As rotas de comandas ficam em `OrdersController`, com a mesma ordem de declaração (para `orders/open` não ser capturada por `orders/:id`).
 - **RF-04:** As despesas ficam em `ExpensesController` e o relatório financeiro em `ReportsController`.
 - **RF-05:** Cada módulo é registrado em `AppModule` e não declara rota repetida.
+- **RF-06:** `GET /api/health` continua respondendo pelo `HealthController` depois da remoção do `AppController`.
 
 ## Requisitos não funcionais
 
@@ -76,7 +78,7 @@ Separar a API em módulos de domínio, mantendo exatamente as mesmas rotas, vali
 
 ## Impactos na arquitetura
 
-- **Camadas tocadas:** `apps/api/src/tables/`, `menu/`, `orders/`, `expenses/`, `reports/` (novos); `apps/api/src/app.module.ts`; remoção de `app.controller.ts` e `app.service.ts`; `apps/api/test/support/database.ts` e `cardapio-horario.test.ts`.
+- **Camadas tocadas:** `apps/api/src/tables/`, `menu/`, `orders/`, `expenses/`, `reports/`, `health/` (novos); `apps/api/src/app.module.ts`; remoção de `app.controller.ts` e `app.service.ts`; `apps/api/test/support/database.ts` e `cardapio-horario.test.ts`.
 - **Persistência:** não muda schema nem dados.
 - **Backend pausado:** é o próprio backend; o contrato espelhado pelo frontend não muda.
 - **Stack/tecnologias:** não muda.
