@@ -111,4 +111,4 @@ A **2.3 (#20, divisão de conta por consumidor)** foi implementada no modo naveg
 - 0.4 (#10): a identidade do segundo integrante foi registrada como Yuri (`yurisawaki <brenoyurisawaki@gmail.com>`) na SPEC `2026-11-19-autoria-dos-integrantes.md`; a métrica passa a contar só a dupla e os trailers só em commits sem merge.
 - 0.5 (#11) e 1.6 (#17): a URL `https://dsai-ap2-sigrestaurant.vercel.app/` responde HTTP 200 e o status `Vercel` do commit `1b8f630` está `success`; o README documenta o deploy a cada push na `main`.
 - 2.25 (#42) e 2.26 (#43): os módulos de mesas, comandas, cardápio, despesas e relatórios estão nos PRs #95 a #101; o caixa já era módulo próprio.
-- 2.12 (#29): continua dependendo de decisão de produto e SPEC aprovada.
+- 2.12 (#29): ficha técnica e margem no cardápio administrativo do modo navegador, com custo manual por ingrediente (SPEC `2026-11-19-ficha-tecnica-e-margem.md`). A paridade de custo com a API de estoque segue pendente.
