@@ -1,5 +1,7 @@
 import { AppController } from '../../src/app.controller';
 import { AppService } from '../../src/app.service';
+import { ExpensesController } from '../../src/expenses/expenses.controller';
+import { ExpensesService } from '../../src/expenses/expenses.service';
 import { MenuService } from '../../src/menu/menu.service';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma.service';
@@ -10,9 +12,12 @@ assertTestDatabase(process.env.DATABASE_URL);
 
 export const prisma = new PrismaService();
 const app = new AppService(prisma);
+const expenses = new ExpensesService(prisma);
 const menu = new MenuService(prisma);
 const orders = new OrdersService(prisma);
 const tables = new TablesService(prisma);
+const appController = new AppController(app);
+const expensesController = new ExpensesController(expenses);
 export const service = {
   listTables: tables.listTables.bind(tables),
   createTable: tables.createTable.bind(tables),
@@ -29,13 +34,19 @@ export const service = {
   cancelOrder: orders.cancelOrder.bind(orders),
   listOpenOrders: orders.listOpenOrders.bind(orders),
   getOrder: orders.getOrder.bind(orders),
-  createExpense: app.createExpense.bind(app),
-  listExpenses: app.listExpenses.bind(app),
-  updateExpense: app.updateExpense.bind(app),
-  deleteExpense: app.deleteExpense.bind(app),
+  createExpense: expenses.createExpense.bind(expenses),
+  listExpenses: expenses.listExpenses.bind(expenses),
+  updateExpense: expenses.updateExpense.bind(expenses),
+  deleteExpense: expenses.deleteExpense.bind(expenses),
   report: app.report.bind(app),
 };
-export const controller = new AppController(app);
+export const controller = {
+  report: appController.report.bind(appController),
+  expenses: expensesController.expenses.bind(expensesController),
+  createExpense: expensesController.createExpense.bind(expensesController),
+  updateExpense: expensesController.updateExpense.bind(expensesController),
+  deleteExpense: expensesController.deleteExpense.bind(expensesController),
+};
 
 export async function resetDatabase() {
   await prisma.$executeRawUnsafe(
