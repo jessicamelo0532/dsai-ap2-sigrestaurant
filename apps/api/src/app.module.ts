@@ -18,6 +18,7 @@ import { PurchasingModule } from './purchasing/purchasing.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { SalesReportsModule } from './sales-reports/sales-reports.module';
 import { StockModule } from './stock/stock.module';
+import { TablesModule } from './tables/tables.module';
 import { WaitersModule } from './waiters/waiters.module';
 
 import { OpeningHoursModule } from './opening-hours/opening-hours.module';
@@ -25,7 +26,7 @@ import { ReceivablesModule } from './receivables/receivables.module';
 import { ZonesModule } from './zones/zones.module';
 
 @Module({
-  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule],
+  imports: [PrismaModule, ReservationsModule, StockModule, PurchasingModule, ClosingsModule, SalesReportsModule, CashModule, WaitersModule, OrderMovesModule, KitchenModule, CustomersModule, LoyaltyModule, MenuAvailabilityModule, MenuCategoriesModule, MenuOptionsModule, GoalsModule, DeliveryModule, OpeningHoursModule, ReceivablesModule, ZonesModule, OrdersModule, TablesModule],
   controllers: [AppController],
   providers: [AppService],
 })

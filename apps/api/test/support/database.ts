@@ -2,6 +2,7 @@ import { AppController } from '../../src/app.controller';
 import { AppService } from '../../src/app.service';
 import { OrdersService } from '../../src/orders/orders.service';
 import { PrismaService } from '../../src/prisma.service';
+import { TablesService } from '../../src/tables/tables.service';
 import { assertTestDatabase } from './database-guard';
 
 assertTestDatabase(process.env.DATABASE_URL);
@@ -9,10 +10,11 @@ assertTestDatabase(process.env.DATABASE_URL);
 export const prisma = new PrismaService();
 const app = new AppService(prisma);
 const orders = new OrdersService(prisma);
+const tables = new TablesService(prisma);
 export const service = {
-  listTables: app.listTables.bind(app),
-  createTable: app.createTable.bind(app),
-  deleteTable: app.deleteTable.bind(app),
+  listTables: tables.listTables.bind(tables),
+  createTable: tables.createTable.bind(tables),
+  deleteTable: tables.deleteTable.bind(tables),
   listMenu: app.listMenu.bind(app),
   getMenuItem: app.getMenuItem.bind(app),
   createMenuItem: app.createMenuItem.bind(app),
@@ -31,7 +33,7 @@ export const service = {
   deleteExpense: app.deleteExpense.bind(app),
   report: app.report.bind(app),
 };
-export const controller = new AppController(app, orders);
+export const controller = new AppController(app);
 
 export async function resetDatabase() {
   await prisma.$executeRawUnsafe(
