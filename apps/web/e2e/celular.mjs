@@ -81,6 +81,10 @@ async function main() {
   await check('Cozinha');
   await go('Delivery');
   await check('Delivery');
+  await page.getByRole('button', { name: 'Abrir ajuda guiada' }).click();
+  await check('Ajuda');
+  await page.getByRole('button', { name: 'Fechar ajuda' }).click();
+  await page.getByRole('dialog', { name: 'Como podemos ajudar?' }).waitFor({ state: 'detached' });
   await go('Reservas');
   await check('Reservas');
   await go('A receber');

@@ -387,3 +387,42 @@ input,select,textarea,.menu-search input,.quantity-picker input,.period-bar inpu
 .delivery-form select,.modal-form select{width:100%;border:1px solid #e7e7ec;border-radius:8px;padding:10px 11px;color:#333744;background:#fff;font-size:14px}
 @media(max-width:950px){.delivery-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.delivery-card{grid-template-columns:1fr}.delivery-card-actions{justify-content:flex-start}.delivery-card-actions .button{flex:1}.delivery-detail-items li{grid-template-columns:minmax(0,1fr) auto}.delivery-detail-items li>b{grid-column:2}.delivery-heading-actions{width:100%}.delivery-heading-actions .button{flex:1}}
+
+/* Ajuda guiada offline (SPEC/2026-11-25-assistente-de-ajuda.md). */
+.help-trigger{display:inline-flex;align-items:center;gap:6px;height:31px;padding:0 10px;border:1px solid var(--line);background:#fff;border-radius:8px;color:#737987;font-size:10px;font-weight:700;cursor:pointer}
+.help-trigger:hover{background:#f7f6fb;color:#424654}
+.help-backdrop{padding:20px}
+.help-panel{width:min(100%,540px);max-height:min(720px,calc(100vh - 40px));background:#fff;border-radius:15px;padding:22px;box-shadow:0 20px 70px rgba(27,28,40,.2);display:flex;flex-direction:column;overflow:auto;animation:modal-in .16s ease-out}
+.help-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.help-heading h2{font:700 20px Manrope,sans-serif;margin:0;letter-spacing:-.5px;color:#272a37}
+.help-search{display:flex;align-items:center;gap:8px;border:1px solid #e7e7ec;border-radius:9px;padding:0 11px;height:42px;margin:18px 0 14px;color:#a0a3ad;background:#fff}
+.help-search input{border:0;outline:0;flex:1;min-width:0;font-size:12px;color:#333744;background:transparent}
+.help-section-title{font-size:9px;font-weight:700;letter-spacing:.8px;color:#a0a2ad;text-transform:uppercase;margin:6px 0 8px}
+.help-topics{display:grid;gap:8px}
+.help-topic{display:grid;gap:4px;text-align:left;border:1px solid #ededf1;background:#fbfbfd;border-radius:10px;padding:12px 13px;cursor:pointer}
+.help-topic:hover{border-color:#dcd9f2;background:#f8f7ff}
+.help-topic strong{font-size:11px;color:#333744}
+.help-topic span{font-size:10px;color:#8c909c;line-height:1.4}
+.help-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:#6a5bc7;font-size:10px;font-weight:700;padding:0;cursor:pointer;margin:14px 0 10px;align-self:flex-start}
+.help-detail h3{font:700 18px Manrope,sans-serif;margin:0 0 6px;letter-spacing:-.4px;color:#272a37}
+.help-summary{font-size:11px;color:#7d8290;margin:0 0 14px;line-height:1.5}
+.help-steps{margin:0 0 14px;padding-left:20px;display:grid;gap:8px;font-size:11px;color:#424654;line-height:1.5}
+.help-source{display:flex;align-items:center;gap:6px;font-size:9px;color:#a0a2ad;margin:0 0 16px}
+.help-go{width:100%}
+.help-empty{font-size:11px;color:#7d8290;margin:8px 0 10px}
+.help-foot{font-size:9px;color:#b0b2ba;margin:16px 0 0;text-align:center}
+
+@media(max-width:650px){
+.help-trigger{width:44px;height:44px;padding:0;justify-content:center;flex:none}
+.help-trigger span{display:none}
+.help-backdrop{padding:0;align-items:stretch}
+.help-panel{width:100%;max-width:none;max-height:100vh;height:100vh;border-radius:0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.help-heading h2{font-size:20px}
+.help-search{height:44px}
+.help-search input{font-size:16px}
+.help-section-title{font-size:14px}
+.help-topic strong,.help-topic span,.help-summary,.help-steps,.help-empty,.help-source,.help-foot,.help-back{font-size:14px}
+.help-topic{min-height:44px;padding:12px}
+.help-back{min-height:44px}
+.help-go{min-height:44px}
+}

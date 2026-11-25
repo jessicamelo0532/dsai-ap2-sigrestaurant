@@ -118,3 +118,5 @@ A **2.3 (#20, divisão de conta por consumidor)** foi implementada no modo naveg
 Os 10 PRs abertos (#95 a #104) foram integrados na `main` local, um a um, com merge commit próprio. Entraram os módulos de domínio da API (2.25/2.26, #95 a #101), a pendência de custo/tokens nas sessões (0.3, #102), a autoria da dupla (0.4, #103) e a ficha técnica com margem no modo navegador (2.12, #104). Frontend com 582 testes em 49 arquivos, cobertura de 91,39% de linhas, `npm run test:scripts` com 33 testes e builds do frontend e da API verdes; a suíte de integração da API não foi executada por falta de credencial do PostgreSQL local.
 
 - Tela de Delivery (2.24): seção nova no modo servidor com lista por situação, criação com cliente opcional, detalhe com itens/variações, edição, cozinha, pagamento, cancelamento, saída e entrega. SPEC `2026-11-25-tela-de-delivery.md`; 604 testes no frontend.
+
+- Ajuda guiada offline (2.27): botão Ajuda na barra superior com sugestões contextuais, busca sem acento, passos numerados, fonte da SPEC e navegação para a seção. Sem LLM, rede ou persistência. SPEC `2026-11-25-assistente-de-ajuda.md`; 614 testes no frontend.

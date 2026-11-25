@@ -56,7 +56,7 @@ npm --workspace apps/web run test:watch
 ```
 
 
-Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **604 testes** (51 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **89,6% de linhas** (`npm run coverage`).
+Os testes ficam em arquivos `*.test.ts` (ou `*.test.tsx` para componente) colados ao módulo testado (ex.: `apps/web/lib/store.test.ts`); novos arquivos seguem a mesma convenção e são coletados automaticamente, sem mudar configuração. A suíte roda offline, em ambiente `node` — os testes de componente declaram `// @vitest-environment jsdom` no topo e simulam a rede com `vi.stubGlobal('fetch')`, sem rede, banco ou serviços externos — hoje são **614 testes** (53 arquivos). A cobertura de `apps/web/lib` e `apps/web/app` fica em **89,7% de linhas** (`npm run coverage`).
 
 
 Para a API, `npm run test:api` roda os **698 testes** de integração contra PostgreSQL (precisa de banco `_test`, ver abaixo). O uso no celular é conferido por `npm run e2e:celular` (Chrome em 375 px, também no CI).
@@ -260,6 +260,10 @@ Na interface, a seção **Metas** (modo servidor) mostra, para o mês escolhido,
 Rotas `/api/delivery-orders`: `POST` abre o pedido (`{ recipient, address, phone?, fee, customerId? }`, taxa de R$ 0,00 a R$ 100,00), `POST :id/items` lança itens com as mesmas regras da mesa (horário, variação e adicionais), `PATCH :id` muda os dados enquanto o pedido está aberto e não saiu, `POST :id/dispatch` e `:id/delivered` acompanham a entrega, e `GET` lista os ativos ou filtra por situação. Pagar, cancelar, enviar à cozinha, ligar cliente e resgatar pontos usam as rotas da comanda. O total soma a taxa; o relatório financeiro separa a receita do salão e a do delivery (`byChannel`) e o de vendas mostra as taxas. A fila da cozinha mostra o canal e aceita `?channel=DELIVERY`. O pedido de delivery não aparece nas mesas nem em `GET /api/orders/open`. SPEC [`2026-11-16-delivery.md`](SPEC/2026-11-16-delivery.md).
 
 Na interface, a seção **Delivery** (modo servidor) lista os pedidos ativos e filtra por situação, cria o pedido com destinatário, endereço, telefone, taxa e cliente opcional, e abre o detalhe com itens, subtotal, desconto, taxa e total. No detalhe, o operador lança itens do cardápio (com variação e adicionais), muda quantidade, remove item, edita os dados enquanto o pedido está recebido, envia à cozinha, paga, cancela e acompanha a saída e a entrega. No modo navegador a seção avisa que o delivery precisa do servidor. SPEC [`2026-11-25-tela-de-delivery.md`](SPEC/2026-11-25-tela-de-delivery.md).
+
+### Ajuda guiada
+
+O botão **Ajuda** na barra superior abre um painel offline com sugestões da seção atual e o fluxo crítico de salão: abrir mesa, lançar item, enviar à cozinha, fechar conta, receber e conferir o caixa, reservas e problemas comuns. A busca ignora maiúsculas e acentos, cada tópico mostra passos numerados e a SPEC de origem, e o botão **Ir para** leva à seção correspondente. Não há LLM, chamada de rede, chave de API nem histórico gravado. SPEC [`2026-11-25-assistente-de-ajuda.md`](SPEC/2026-11-25-assistente-de-ajuda.md).
 
 ## Especificações e ferramentas
 

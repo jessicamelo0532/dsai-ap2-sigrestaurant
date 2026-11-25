@@ -36,9 +36,8 @@ import { cancelConfirmation } from '@/lib/ajustes-comanda';
 import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressao';
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
-
-type Section = 'operacao' | 'salao' | 'cozinha' | 'delivery' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons' | 'clientes' | 'fidelidade' | 'metas';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', delivery: 'Delivery', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons', clientes: 'Clientes', fidelidade: 'Fidelidade', metas: 'Metas' };
+import { HelpAgent } from './help-agent';
+import { sectionLabels, type Section } from '@/lib/sections';
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -216,7 +215,7 @@ export default function Home() {
       </aside>
 
       <section className="main-area">
-        <header className="topbar"><div className="breadcrumb"><span>Restaurante</span><span className="crumb-slash">/</span><strong>{sectionLabels[section]}</strong></div><div className="top-actions"><span className="open-status"><i />Operação aberta</span><span className="date-chip"><Clock3 size={15} />{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}</span></div></header>
+        <header className="topbar"><div className="breadcrumb"><span>Restaurante</span><span className="crumb-slash">/</span><strong>{sectionLabels[section]}</strong></div><div className="top-actions"><HelpAgent section={section} onNavigate={setSection} /><span className="open-status"><i />Operação aberta</span><span className="date-chip"><Clock3 size={15} />{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}</span></div></header>
         <div className="content">
           <ModeBar
             mode={mode}
