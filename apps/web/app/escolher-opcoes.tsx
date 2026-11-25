@@ -9,15 +9,20 @@ import { formatCents, hasOptions, launchBody, linePrice, toggleAddon, validateCh
 
 type Props = {
   item: MenuItem;
-  tableId: number;
+  tableId?: number;
   quantity: number;
+  // SPEC/2026-11-25-tela-de-delivery.md: a mesma escolha lança em outra rota (pedido de delivery).
+  launchPath?: string;
+  eyebrow?: string;
+  doneMessage?: string;
   onDone: (message: string) => void;
   onCancel: () => void;
 };
 
 const errorText = (caught: unknown, fallback: string) => (caught instanceof Error ? caught.message : fallback);
 
-export function EscolherOpcoes({ item, tableId, quantity, onDone, onCancel }: Props) {
+export function EscolherOpcoes({ item, tableId, quantity, launchPath, eyebrow = 'LANÇAR NA COMANDA', doneMessage = 'Pronto, item lançado na comanda.', onDone, onCancel }: Props) {
+  const endpoint = launchPath ?? `/tables/${tableId}/items`;
   const [options, setOptions] = useState<MenuOptions | null>(null);
   const [variantId, setVariantId] = useState<number | null>(null);
   const [addonIds, setAddonIds] = useState<number[]>([]);
@@ -28,8 +33,8 @@ export function EscolherOpcoes({ item, tableId, quantity, onDone, onCancel }: Pr
   async function launch(body: ReturnType<typeof launchBody>) {
     setBusy(true); setError('');
     try {
-      await storeRequest(`/tables/${tableId}/items`, { method: 'POST', body: JSON.stringify(body) });
-      onDone('Pronto, item lançado na comanda.');
+      await storeRequest(endpoint, { method: 'POST', body: JSON.stringify(body) });
+      onDone(doneMessage);
     } catch (caught) {
       setError(errorText(caught, 'Não foi possível lançar o item.'));
     } finally { setBusy(false); }
@@ -65,7 +70,7 @@ export function EscolherOpcoes({ item, tableId, quantity, onDone, onCancel }: Pr
   return (
     <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div className="modal-card" role="dialog" aria-modal="true" aria-label={`Opções de ${item.name}`}>
-        <div className="modal-heading"><div><div className="eyebrow">LANÇAR NA COMANDA</div><h2>{item.name}</h2></div><button className="icon-button" onClick={onCancel} aria-label="Fechar">×</button></div>
+        <div className="modal-heading"><div><div className="eyebrow">{eyebrow}</div><h2>{item.name}</h2></div><button className="icon-button" onClick={onCancel} aria-label="Fechar">×</button></div>
         <form className="modal-form escolha-form" onSubmit={submit}>
           {!!options.variants.length && (
             <fieldset className="escolha-group">

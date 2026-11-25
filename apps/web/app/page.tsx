@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import {
-  ArrowDownLeft, ArrowUpRight, Banknote, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Users, Utensils, Wallet, X, Contact, Gift, Target,
+  ArrowDownLeft, ArrowUpRight, Banknote, Bike, Calculator, ChefHat, ChevronDown, CirclePlus, Clock3, Coffee, CalendarDays, CreditCard, HandCoins, LayoutDashboard, LayoutGrid, Menu as MenuIcon, MoreHorizontal, Plus, Printer, ReceiptText, UserRound, Search, Sparkles, Trash2, Users, Utensils, Wallet, X, Contact, Gift, Target,
 } from 'lucide-react';
 import {
   apiBaseUrl, checkApi, Expense, getMode, localDate, MenuItem, money, Order, orderTotal, Report, setMode,
@@ -11,6 +11,7 @@ import {
 import { hasLocalData, importLocalData } from '@/lib/import-local';
 import { SalaoPanel } from './salao-panel';
 import { CozinhaPanel } from './cozinha-panel';
+import { DeliveryPanel } from './delivery-panel';
 import { CategoriasPanel } from './categorias-panel';
 import { PrintSheet } from './print-sheet';
 import { ReservasPanel } from './reservas-panel';
@@ -36,8 +37,8 @@ import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressa
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 
-type Section = 'operacao' | 'salao' | 'cozinha' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons' | 'clientes' | 'fidelidade' | 'metas';
-const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons', clientes: 'Clientes', fidelidade: 'Fidelidade', metas: 'Metas' };
+type Section = 'operacao' | 'salao' | 'cozinha' | 'delivery' | 'reservas' | 'caixa' | 'cardapio' | 'financeiro' | 'receber' | 'garcons' | 'clientes' | 'fidelidade' | 'metas';
+const sectionLabels: Record<Section, string> = { operacao: 'Visão geral', salao: 'Salão', cozinha: 'Cozinha', delivery: 'Delivery', reservas: 'Reservas', caixa: 'Caixa', cardapio: 'Cardápio', financeiro: 'Financeiro', receber: 'A receber', garcons: 'Garçons', clientes: 'Clientes', fidelidade: 'Fidelidade', metas: 'Metas' };
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
 export default function Home() {
@@ -200,6 +201,7 @@ export default function Home() {
           <button className={section === 'operacao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('operacao')}><LayoutDashboard size={18} />Visão geral</button>
           <button className={section === 'salao' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('salao')}><LayoutGrid size={18} />Salão</button>
           <button className={section === 'cozinha' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('cozinha')}><ChefHat size={18} />Cozinha</button>
+          <button className={section === 'delivery' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('delivery')}><Bike size={18} />Delivery</button>
           <button className={section === 'reservas' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('reservas')}><CalendarDays size={18} />Reservas</button>
           <button className={section === 'caixa' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('caixa')}><Calculator size={18} />Caixa</button>
           <button className={section === 'clientes' ? 'nav-item active' : 'nav-item'} onClick={() => setSection('clientes')}><Contact size={18} />Clientes</button>
@@ -231,6 +233,7 @@ export default function Home() {
           {section === 'cozinha' && <CozinhaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
 
           {section === 'salao' && <SalaoPanel tables={tables} onRefresh={refreshQuietly} onOpenTable={(tableId) => { setSelectedTable(tableId); setSection('operacao'); }} />}
+          {section === 'delivery' && <DeliveryPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} menu={menu} />}
           {section === 'reservas' && <ReservasPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} onOpenTable={(tableNumber) => { const table = tables.find((entry) => entry.number === tableNumber); if (table) setSelectedTable(table.id); setSection('operacao'); }} />}
           {section === 'receber' && <ReceberPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}
           {section === 'caixa' && <CaixaPanel mode={mode} canConnect={Boolean(apiBaseUrl)} onConnect={() => setMode('api')} />}

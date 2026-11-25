@@ -79,6 +79,8 @@ async function main() {
   await check('Salão');
   await go('Cozinha');
   await check('Cozinha');
+  await go('Delivery');
+  await check('Delivery');
   await go('Reservas');
   await check('Reservas');
   await go('A receber');
