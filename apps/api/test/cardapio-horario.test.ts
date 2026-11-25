@@ -5,6 +5,7 @@ import { validate } from 'class-validator';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
+import { OrdersService } from '../src/orders/orders.service';
 import { MenuAvailabilityController } from '../src/menu-availability/menu-availability.controller';
 import { SetAvailabilityDto } from '../src/menu-availability/menu-availability.dto';
 import { MenuAvailabilityService } from '../src/menu-availability/menu-availability.service';
@@ -15,7 +16,8 @@ import { createMenuItem, createTable, prisma, resetDatabase } from './support/da
 const clock = { now: new Date('2026-11-16T14:00:00.000Z') };
 const at = (iso: string) => { clock.now = new Date(`${iso}.000Z`); };
 const app = new AppService(prisma, () => clock.now);
-const appController = new AppController(app);
+const orders = new OrdersService(prisma, () => clock.now);
+const appController = new AppController(app, orders);
 const availability = new MenuAvailabilityService(prisma, () => clock.now);
 const controller = new MenuAvailabilityController(availability);
 
@@ -34,13 +36,13 @@ describe('T-01: fora da janela, não entra na comanda (CA-01)', () => {
     await controller.replace(lunch.id, lunchOnMonday);
 
     at('2026-11-16T19:00:00');
-    await expect(app.addOrderItem(table.id, { menuItemId: lunch.id, quantity: 1 })).rejects.toThrow(
+    await expect(orders.addOrderItem(table.id, { menuItemId: lunch.id, quantity: 1 })).rejects.toThrow(
       'Este item não está disponível neste horário. Volta segunda-feira às 11:00.',
     );
     expect(await prisma.order.count()).toBe(0);
 
     at('2026-11-23T13:30:00');
-    await expect(app.addOrderItem(table.id, { menuItemId: lunch.id, quantity: 1 })).rejects.toThrow(
+    await expect(orders.addOrderItem(table.id, { menuItemId: lunch.id, quantity: 1 })).rejects.toThrow(
       'Este item não está disponível neste horário. Volta hoje às 11:00.',
     );
 
@@ -56,7 +58,7 @@ describe('T-02: item sem janela continua sempre disponível (CA-02)', () => {
     const water = await createMenuItem({ name: 'Água', price: 4 });
     at('2026-11-17T07:00:00');
     expect((await app.listMenu()).map((item) => item.id)).toEqual([water.id]);
-    expect((await app.addOrderItem(table.id, { menuItemId: water.id, quantity: 1 }))!.items).toHaveLength(1);
+    expect((await orders.addOrderItem(table.id, { menuItemId: water.id, quantity: 1 }))!.items).toHaveLength(1);
     expect(await controller.get(water.id)).toEqual({ menuItemId: water.id, alwaysAvailable: true, availableNow: true, windows: [] });
   });
 });
