@@ -34,6 +34,7 @@ export type PaidSale = {
   lines: SaleLine[];
   discountCents?: number;
   deliveryFeeCents?: number;
+  waiterName?: string | null;
 };
 
 export type ItemStat = {
@@ -53,6 +54,8 @@ export type CategoryStat = {
 
 export type HourStat = { hour: number; orders: number; revenue: string };
 export type WeekdayStat = { weekday: number; label: string; orders: number; revenue: string };
+export type DayStat = { date: string; weekday: number; label: string; orders: number; revenue: string };
+export type WaiterStat = { waiterName: string; orders: number; revenue: string; averageTicket: string; share: number };
 export type PaymentStat = { method: PaymentMethod; orders: number; revenue: string; share: number };
 export type CategoryHour = { category: string; hours: string[] };
 
@@ -71,6 +74,8 @@ export type SalesReport = {
   byCategory: CategoryStat[];
   byHour: HourStat[];
   byWeekday: WeekdayStat[];
+  byDay: DayStat[];
+  byWaiter: WaiterStat[];
   byPayment: PaymentStat[];
   categoryByHour: CategoryHour[];
 };
@@ -96,6 +101,14 @@ export function parseLimit(value: string | number | undefined): number {
 export function localSlot(date: Date): { hour: number; weekday: number } {
   const local = new Date(date.getTime() + LOCAL_OFFSET_HOURS * HOUR_MS);
   return { hour: local.getUTCHours(), weekday: local.getUTCDay() };
+}
+
+export const UNASSIGNED_WAITER = 'Sem garçom';
+
+// Data local de Belém (UTC−3) no formato AAAA-MM-DD.
+export function localDateOf(date: Date): { date: string; weekday: number } {
+  const local = new Date(date.getTime() + LOCAL_OFFSET_HOURS * HOUR_MS);
+  return { date: local.toISOString().slice(0, 10), weekday: local.getUTCDay() };
 }
 
 export function share(partCents: number, totalCents: number): number {
@@ -156,6 +169,8 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
   const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, orders: 0, revenueCents: 0 }));
   const byWeekday = WEEKDAYS.map((label, weekday) => ({ weekday, label, orders: 0, revenueCents: 0 }));
   const byPayment = PAYMENT_METHODS.map((method) => ({ method, orders: 0, revenueCents: 0 }));
+  const byDay = new Map<string, { date: string; weekday: number; orders: number; revenueCents: number }>();
+  const byWaiter = new Map<string, { waiterName: string; orders: number; revenueCents: number }>();
 
   for (const sale of sales) {
     const { hour, weekday } = localSlot(sale.paidAt);
@@ -164,6 +179,16 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
     byHour[hour].revenueCents += total;
     byWeekday[weekday].orders += 1;
     byWeekday[weekday].revenueCents += total;
+    const localDay = localDateOf(sale.paidAt);
+    const day = byDay.get(localDay.date) ?? { date: localDay.date, weekday: localDay.weekday, orders: 0, revenueCents: 0 };
+    day.orders += 1;
+    day.revenueCents += total;
+    byDay.set(localDay.date, day);
+    const waiterName = sale.waiterName?.trim() || UNASSIGNED_WAITER;
+    const waiter = byWaiter.get(waiterName) ?? { waiterName, orders: 0, revenueCents: 0 };
+    waiter.orders += 1;
+    waiter.revenueCents += total;
+    byWaiter.set(waiterName, waiter);
     const payment = byPayment[PAYMENT_METHODS.indexOf(sale.paymentMethod)];
     payment.orders += 1;
     payment.revenueCents += total;
@@ -211,6 +236,16 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
       orders,
       revenue: decimal(cents),
     })),
+    byDay: [...byDay.values()]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(({ date, weekday, orders, revenueCents: cents }) => ({
+        date, weekday, label: WEEKDAYS[weekday], orders, revenue: decimal(cents),
+      })),
+    byWaiter: [...byWaiter.values()]
+      .sort((a, b) => b.revenueCents - a.revenueCents || a.waiterName.localeCompare(b.waiterName, 'pt-BR'))
+      .map(({ waiterName, orders, revenueCents: cents }) => ({
+        waiterName, orders, revenue: decimal(cents), averageTicket: decimal(averageTicketCents(cents, orders)), share: share(cents, revenueCents),
+      })),
     byPayment: byPayment.map(({ method, orders, revenueCents: cents }) => ({
       method,
       orders,
@@ -368,6 +403,7 @@ export function paidSalesFromOrders(orders: Order[], categoryOf: (menuItemId: nu
       paymentMethod: order.paymentMethod as PaymentMethod,
       discountCents: discountCents(order),
       deliveryFeeCents: 0,
+      waiterName: order.waiterName ?? null,
       lines: order.items.map((line) => ({
         key: `${line.menuItemId ?? 'removido'}|${line.nameSnapshot}`,
         name: line.nameSnapshot,

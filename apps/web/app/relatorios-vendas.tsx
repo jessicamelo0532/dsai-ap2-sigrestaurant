@@ -15,6 +15,8 @@ import { storeRequest } from '@/lib/store';
 import { RelatoriosComparativo } from './relatorios-comparativo';
 import { RelatorioImpresso } from './relatorio-impresso';
 import { RelatorioExportJson } from './relatorio-export-json';
+import { RelatorioEvolucaoDiaria } from './relatorio-evolucao-diaria';
+import { RelatorioGarcons } from './relatorio-garcons';
 
 type Props = { from: string; to: string; mode: 'api' | 'local' };
 
@@ -269,7 +271,7 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
-  const [view, setView] = useState<'report' | 'compare'>('report');
+  const [view, setView] = useState<'report' | 'compare' | 'daily' | 'waiters'>('report');
   const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
@@ -349,6 +351,12 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
         <button type="button" role="tab" aria-selected={view === 'compare'} onClick={() => setView('compare')} disabled={!previous}>
           <GitCompareArrows size={15} />Comparativo
         </button>
+        <button type="button" role="tab" aria-selected={view === 'daily'} onClick={() => setView('daily')}>
+          <CalendarDays size={15} />Evolução
+        </button>
+        <button type="button" role="tab" aria-selected={view === 'waiters'} onClick={() => setView('waiters')}>
+          <Trophy size={15} />Garçons
+        </button>
       </div>
 
       {error && (
@@ -371,6 +379,14 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
 
       {report && hasData && view === 'compare' && previous && (
         <RelatoriosComparativo current={report} previous={previous} />
+      )}
+
+      {report && hasData && view === 'daily' && (
+        <RelatorioEvolucaoDiaria report={report} />
+      )}
+
+      {report && hasData && view === 'waiters' && (
+        <RelatorioGarcons report={report} />
       )}
 
       {report && hasData && view === 'report' && (

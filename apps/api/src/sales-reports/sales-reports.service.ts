@@ -18,6 +18,7 @@ export class SalesReportsService {
       select: {
         paidAt: true,
         paymentMethod: true,
+        waiterName: true,
         discount: true,
         deliveryFee: true,
         items: { select: { menuItemId: true, nameSnapshot: true, quantity: true, unitPrice: true, menuItem: { select: { category: true } } } },
@@ -26,6 +27,7 @@ export class SalesReportsService {
     const sales: PaidSale[] = orders.map((order) => ({
       paidAt: order.paidAt!,
       paymentMethod: order.paymentMethod as PaymentMethod,
+      waiterName: order.waiterName,
       lines: order.items.map((line) => ({
         key: `${line.menuItemId ?? 'removido'}|${line.nameSnapshot}`,
         name: line.nameSnapshot,
@@ -53,6 +55,12 @@ export class SalesReportsService {
       byCategory: report.byCategory.map(({ revenueCents, ...rest }) => ({ ...rest, revenue: centsToDecimal(revenueCents) })),
       byHour: report.byHour.map(({ revenueCents, ...rest }) => ({ ...rest, revenue: centsToDecimal(revenueCents) })),
       byWeekday: report.byWeekday.map(({ revenueCents, ...rest }) => ({ ...rest, revenue: centsToDecimal(revenueCents) })),
+      byDay: report.byDay.map(({ revenueCents, ...rest }) => ({ ...rest, revenue: centsToDecimal(revenueCents) })),
+      byWaiter: report.byWaiter.map(({ revenueCents, averageTicketCents, ...rest }) => ({
+        ...rest,
+        revenue: centsToDecimal(revenueCents),
+        averageTicket: centsToDecimal(averageTicketCents),
+      })),
       byPayment: report.byPayment.map(({ revenueCents, ...rest }) => ({ ...rest, revenue: centsToDecimal(revenueCents) })),
       categoryByHour: report.categoryByHour.map(({ category, hours }) => ({ category, hours: hours.map(centsToDecimal) })),
     };

@@ -21,6 +21,7 @@ const sales: PaidSale[] = [
   {
     paidAt: new Date('2026-11-16T15:30:00.000Z'), // segunda, 12h30 em Belém
     paymentMethod: 'PIX',
+    waiterName: 'Ana',
     lines: [line('1|Tacacá', 'Tacacá', 'Pratos', 2, 1800), line('2|Suco', 'Suco', 'Bebidas', 2, 900)],
   },
   {
@@ -31,6 +32,7 @@ const sales: PaidSale[] = [
   {
     paidAt: new Date('2026-11-21T02:30:00.000Z'), // sexta 20/11, 23h30 em Belém
     paymentMethod: 'PIX',
+    waiterName: 'Ana',
     lines: [line('2|Suco', 'Suco', 'Bebidas', 5, 900)],
   },
 ];
@@ -118,6 +120,20 @@ describe('RF-02 a RF-07: relatório', () => {
     expect(report.byWeekday[1]).toEqual({ weekday: 1, label: 'segunda-feira', orders: 2, revenueCents: 12200 });
     expect(report.byWeekday[5]).toMatchObject({ label: 'sexta-feira', orders: 1, revenueCents: 4500 });
     expect(report.byWeekday.reduce((total, day) => total + day.revenueCents, 0)).toBe(report.revenueCents);
+  });
+
+  it('evolução diária agrupa por data local de Belém', () => {
+    expect(report.byDay).toEqual([
+      { date: '2026-11-16', weekday: 1, label: 'segunda-feira', orders: 2, revenueCents: 12200 },
+      { date: '2026-11-20', weekday: 5, label: 'sexta-feira', orders: 1, revenueCents: 4500 },
+    ]);
+  });
+
+  it('desempenho por garçom soma contas, receita, ticket e participação', () => {
+    expect(report.byWaiter).toEqual([
+      { waiterName: 'Ana', orders: 2, revenueCents: 9900, averageTicketCents: 4950, share: 59.3 },
+      { waiterName: 'Sem garçom', orders: 1, revenueCents: 6800, averageTicketCents: 6800, share: 40.7 },
+    ]);
   });
 
   it('formas de pagamento em ordem fixa, com contas, receita e participação', () => {

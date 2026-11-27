@@ -71,6 +71,9 @@ describe('relatório de vendas no modo navegador', () => {
     ]);
     expect(report.byPayment.find((entry) => entry.method === 'PIX')).toMatchObject({ orders: 1, revenue: '69.00', share: 100 });
     expect(report.byHour.reduce((sum, entry) => sum + Math.round(Number(entry.revenue) * 100), 0)).toBe(6900);
+    expect(report.byDay).toHaveLength(1);
+    expect(report.byDay[0]).toMatchObject({ orders: 1, revenue: '69.00' });
+    expect(report.byWaiter[0]).toMatchObject({ waiterName: 'Sem garçom', orders: 1, revenue: '69.00' });
   });
 
   it('exclui comandas abertas e canceladas e respeita o limite', async () => {

@@ -626,3 +626,43 @@ body *{visibility:hidden!important}
 .export-json-actions .button{flex:1;min-height:44px}
 .export-json-content{font-size:9px}
 }
+
+/* Evolução diária e desempenho por garçom. */
+.report-daily,.report-waiters{display:grid;gap:14px}
+.report-daily-empty,.report-waiter-empty{display:grid;justify-items:center;gap:6px;text-align:center;color:#8b8f9b;padding:34px 20px}
+.report-daily-empty strong,.report-waiter-empty strong{font-size:13px;color:#424654}
+.report-daily-empty span,.report-waiter-empty span{font-size:10px}
+.report-daily-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.report-daily-summary>div,.report-waiter-summary>div{background:#fff;border:1px solid #ededf1;border-radius:12px;padding:12px 14px;display:grid;gap:3px}
+.report-daily-summary small,.report-waiter-summary small{font-size:9px;color:#9296a2;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.report-daily-summary strong,.report-waiter-summary strong{font:700 18px Manrope,sans-serif;color:#272a37}
+.report-daily-summary span{font-size:9px;color:#a0a3ad}
+.report-daily-chart{background:#fff;border:1px solid #ededf1;border-radius:14px;padding:12px;overflow-x:auto}
+.report-daily-chart svg{display:block;width:100%;min-width:520px;height:auto}
+.daily-axis{stroke:#ececf1;stroke-width:1}
+.daily-axis-label{fill:#a0a3ad;font:9px Manrope,sans-serif}
+.daily-area{fill:rgba(106,91,199,.18);stroke:none}
+.daily-line{fill:none;stroke:#6a5bc7;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.daily-dot{fill:#6a5bc7;stroke:#fff;stroke-width:1.5}
+.report-daily-table td small{display:block;font-size:8px;color:#a0a3ad;margin-top:3px}
+.report-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
+.report-podium-card{position:relative;background:#fff;border:1px solid #ededf1;border-radius:12px;padding:14px;display:grid;gap:3px;justify-items:start}
+.report-podium-card.place-1{background:linear-gradient(135deg,#f5f1ff,#fff);border-color:#ddd5ff}
+.report-podium-card>svg{color:#8a7de0}
+.report-podium-place{position:absolute;right:12px;top:10px;font:700 20px Manrope,sans-serif;color:#e3def7}
+.report-podium-card strong{font-size:12px;color:#333744}
+.report-podium-card small{font-size:9px;color:#9296a2;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.report-podium-card b{font:700 16px Manrope,sans-serif;color:#272a37}
+.report-waiter-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.report-waiter-bar{display:block;height:6px;min-width:70px;background:#f1f1f5;border-radius:4px;overflow:hidden}
+.report-waiter-bar i{display:block;height:100%;background:linear-gradient(90deg,#b8aef2,#8a7de0);border-radius:4px}
+.report-waiter-table td small{display:block;font-size:8px;color:#a0a3ad;margin-top:3px}
+@media(max-width:950px){
+.report-podium{grid-template-columns:1fr}
+.report-waiter-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+.report-daily-summary{grid-template-columns:1fr}
+.report-daily-chart svg{min-width:560px}
+.report-daily-summary strong,.report-waiter-summary strong{font-size:18px}
+}

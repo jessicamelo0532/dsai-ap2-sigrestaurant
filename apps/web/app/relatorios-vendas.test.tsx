@@ -129,6 +129,26 @@ describe('painel de relatórios de vendas', () => {
     expect(screen.getByRole('table', { name: 'Comparativo de totais' })).toBeTruthy();
   });
 
+  it('abre a evolução diária', async () => {
+    mockReports();
+    render(<RelatoriosVendasPanel from="2026-11-25" to="2026-11-25" mode="api" />);
+    await screen.findByText('O que a casa vendeu');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Evolução' }));
+    expect(await screen.findByText('Como as vendas caminharam')).toBeTruthy();
+    expect(screen.getByRole('table', { name: 'Evolução diária' })).toBeTruthy();
+  });
+
+  it('abre o desempenho por garçom', async () => {
+    mockReports();
+    render(<RelatoriosVendasPanel from="2026-11-25" to="2026-11-25" mode="api" />);
+    await screen.findByText('O que a casa vendeu');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Garçons' }));
+    expect(await screen.findByText('Desempenho por garçom')).toBeTruthy();
+    expect(screen.getByRole('table', { name: 'Garçons por receita' })).toBeTruthy();
+  });
+
   it('abre a prévia de impressão', async () => {
     mockReports();
     render(<RelatoriosVendasPanel from="2026-11-25" to="2026-11-25" mode="api" />);

@@ -6,10 +6,13 @@ import { averageTicketCents } from '../closings/closing-rules';
 
 export type PaymentMethod = 'CASH' | 'CREDIT' | 'DEBIT' | 'PIX';
 export type SaleLine = { key: string; name: string; category: string; quantity: number; unitPriceCents: number };
-export type PaidSale = { paidAt: Date; paymentMethod: PaymentMethod; lines: SaleLine[] };
+export type PaidSale = { paidAt: Date; paymentMethod: PaymentMethod; lines: SaleLine[]; waiterName?: string | null };
 export type ItemStat = { name: string; category: string; quantity: number; revenueCents: number; share: number };
+export type DayStat = { date: string; weekday: number; label: string; orders: number; revenueCents: number };
+export type WaiterStat = { waiterName: string; orders: number; revenueCents: number; averageTicketCents: number; share: number };
 
 export const REMOVED_CATEGORY = 'Item removido do cardápio';
+export const UNASSIGNED_WAITER = 'Sem garçom';
 export const DEFAULT_LIMIT = 10;
 export const MAX_LIMIT = 50;
 // P-1: horário de Belém, UTC−3 sem horário de verão.
@@ -32,6 +35,12 @@ export function parseLimit(value: string | undefined): number {
 export function localSlot(date: Date): { hour: number; weekday: number } {
   const local = new Date(date.getTime() + LOCAL_OFFSET_HOURS * HOUR);
   return { hour: local.getUTCHours(), weekday: local.getUTCDay() };
+}
+
+// Data local de Belém (UTC−3) no formato AAAA-MM-DD.
+export function localDay(date: Date): { date: string; weekday: number } {
+  const local = new Date(date.getTime() + LOCAL_OFFSET_HOURS * HOUR);
+  return { date: local.toISOString().slice(0, 10), weekday: local.getUTCDay() };
 }
 
 // RNF-02: participação com uma casa decimal; sem total, zero.
@@ -75,6 +84,8 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
   const byHour = Array.from({ length: 24 }, (_, hour) => ({ hour, orders: 0, revenueCents: 0 }));
   const byWeekday = WEEKDAYS.map((label, weekday) => ({ weekday, label, orders: 0, revenueCents: 0 }));
   const byPayment = METHODS.map((method) => ({ method, orders: 0, revenueCents: 0 }));
+  const byDay = new Map<string, DayStat>();
+  const byWaiter = new Map<string, Omit<WaiterStat, 'averageTicketCents' | 'share'>>();
 
   for (const sale of sales) {
     const { hour, weekday } = localSlot(sale.paidAt);
@@ -83,6 +94,16 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
     byHour[hour].revenueCents += total;
     byWeekday[weekday].orders += 1;
     byWeekday[weekday].revenueCents += total;
+    const local = localDay(sale.paidAt);
+    const day = byDay.get(local.date) ?? { date: local.date, weekday: local.weekday, label: WEEKDAYS[local.weekday], orders: 0, revenueCents: 0 };
+    day.orders += 1;
+    day.revenueCents += total;
+    byDay.set(local.date, day);
+    const waiterName = sale.waiterName?.trim() || UNASSIGNED_WAITER;
+    const waiter = byWaiter.get(waiterName) ?? { waiterName, orders: 0, revenueCents: 0 };
+    waiter.orders += 1;
+    waiter.revenueCents += total;
+    byWaiter.set(waiterName, waiter);
     const payment = byPayment[METHODS.indexOf(sale.paymentMethod)];
     payment.orders += 1;
     payment.revenueCents += total;
@@ -111,6 +132,14 @@ export function buildSalesReport(sales: PaidSale[], limit = DEFAULT_LIMIT) {
     })),
     byHour,
     byWeekday,
+    byDay: [...byDay.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    byWaiter: [...byWaiter.values()]
+      .sort((a, b) => b.revenueCents - a.revenueCents || a.waiterName.localeCompare(b.waiterName, 'pt-BR'))
+      .map((waiter) => ({
+        ...waiter,
+        averageTicketCents: averageTicketCents(waiter.revenueCents, waiter.orders),
+        share: share(waiter.revenueCents, revenueCents),
+      })),
     byPayment: byPayment.map((payment) => ({ ...payment, share: share(payment.revenueCents, revenueCents) })),
     categoryByHour: categoryList.map(({ category, hours }) => ({ category, hours })),
   };
