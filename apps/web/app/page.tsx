@@ -317,7 +317,7 @@ export default function Home() {
               <div className="panel payment-panel"><div className="panel-heading"><div><h2>Vendas por pagamento</h2><p>Como os clientes pagaram as contas.</p></div></div><div className="payment-list">{Object.entries(paymentLabels).map(([method, label]) => <div className="payment-row" key={method}><span className={`payment-symbol ${method.toLowerCase()}`}>{method === 'CASH' ? <Banknote size={16} /> : method === 'PIX' ? <Sparkles size={16} /> : <CreditCard size={16} />}</span><span>{label}</span><strong>{money(report?.payments?.[method] ?? 0)}</strong></div>)}</div><div className="payment-total"><span>Total recebido</span><b>{money(report?.revenue ?? 0)}</b></div></div>
             </div>
             </>}
-            {financeView === 'vendas' && <RelatoriosVendasPanel from={period.from} to={period.to} mode={mode} />}
+            {financeView === 'vendas' && <RelatoriosVendasPanel from={period.from} to={period.to} mode={mode} onPeriodChange={(from, to) => setPeriod({ from, to })} />}
           </section>}
         </div>
       </section>

@@ -7,8 +7,8 @@ import {
 } from 'lucide-react';
 import { money } from '@/lib/store';
 import {
-  LIMIT_OPTIONS, PAYMENT_LABELS, categoryHourIntensity, centsOf, csvMoney, downloadCsv, formatChange, formatShare,
-  hasSales, previousPeriod, reportFilename, salesReportCsv, topItems, validatePeriod,
+  LIMIT_OPTIONS, PAYMENT_LABELS, categoryHourIntensity, centsOf, csvMoney, downloadCsv, esteMes, formatChange, formatShare,
+  hasSales, hoje, ontem, previousPeriod, reportFilename, salesReportCsv, topItems, ultimos7Dias, validatePeriod,
   type HourMetric, type Rank, type SalesReport,
 } from '@/lib/sales-report';
 import { storeRequest } from '@/lib/store';
@@ -262,7 +262,7 @@ function Heatmap({ report }: { report: SalesReport }) {
   );
 }
 
-export function RelatoriosVendasPanel({ from, to, mode }: Props) {
+export function RelatoriosVendasPanel({ from, to, mode, onPeriodChange }: Props & { onPeriodChange: (from: string, to: string) => void }) {
   const [report, setReport] = useState<SalesReport | null>(null);
   const [previous, setPrevious] = useState<SalesReport | null>(null);
   const [limit, setLimit] = useState<number>(LIMIT_OPTIONS[0]);
@@ -273,6 +273,17 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
   const [reload, setReload] = useState(0);
   const [view, setView] = useState<'report' | 'compare' | 'daily' | 'waiters'>('report');
   const [printing, setPrinting] = useState(false);
+
+  const setPeriod = (option: string) => {
+    let dates = { from, to };
+    switch (option) {
+      case 'Hoje': dates = hoje(); break;
+      case 'Ontem': dates = ontem(); break;
+      case 'Últimos 7 dias': dates = ultimos7Dias(); break;
+      case 'Mês': dates = esteMes(); break;
+    }
+    onPeriodChange(dates.from, dates.to);
+  };
 
   useEffect(() => {
     const invalid = validatePeriod(from, to);
@@ -323,13 +334,13 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
           <div className="eyebrow">RELATÓRIOS DE VENDAS</div>
           <h2>O que a casa vendeu</h2>
           <p>Só comandas pagas no período. {mode === 'local' ? 'Cálculo local neste navegador.' : 'Dados do servidor.'}</p>
-          <div className="report-resumo">
+            <div className="report-resumo">
             <div className="finance-card">
               <small>Faturamento total</small>
               <strong>{money(report?.revenue ?? 0)}</strong>
             </div>
             <div className="finance-card">
-              <small>Contas</small>
+              <small>Contas pagas</small>
               <strong>{report?.paidOrders ?? 0}</strong>
             </div>
             <div className="finance-card">
@@ -337,12 +348,27 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
               <strong>{money(report?.averageTicket ?? 0)}</strong>
             </div>
             <div className="finance-card">
-              <small>Total de vendas</small>
-              <strong>{report?.itemsSold ?? 0}</strong>
+              <small>Produto principal</small>
+              <strong title={report?.topByRevenue[0]?.name}>{report?.topByRevenue[0]?.name ?? '—'}</strong>
+            </div>
+            <div className="finance-card">
+              <small>Garçom destaque</small>
+              <strong title={report?.byWaiter[0]?.waiterName}>{report?.byWaiter[0]?.waiterName ?? '—'}</strong>
             </div>
           </div>
+
         </div>
         <div className="report-actions">
+          <label className="report-select">
+            Período
+            <select onChange={(event) => setPeriod(event.target.value)} aria-label="Período rápido">
+              <option value="">Personalizado</option>
+              <option value="Hoje">Hoje</option>
+              <option value="Ontem">Ontem</option>
+              <option value="Últimos 7 dias">Últimos 7 dias</option>
+              <option value="Mês">Este mês</option>
+            </select>
+          </label>
           <label className="report-select">
             Itens no ranking
             <select value={limit} onChange={(event) => setLimit(Number(event.target.value))} aria-label="Itens no ranking">
