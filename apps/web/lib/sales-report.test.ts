@@ -17,7 +17,7 @@ const sale = (paidAt: string, paymentMethod: PaidSale['paymentMethod'], lines: S
 
 const pizza = line('1|Pizza', 'Pizza', 'Pratos', 2, 3000);
 const juice = line('2|Suco', 'Suco', 'Bebidas', 1, 900);
-const sale1 = sale('2026-11-25T13:00:00.000Z', 'PIX', [pizza, juice], { discountCents: 500, deliveryFeeCents: 200 });
+const sale1 = sale('2026-11-25T13:00:00.000Z', 'PIX', [pizza, juice], { discountCents: 500, deliveryFeeCents: 200, waiterName: 'Ana' });
 const sale2 = sale('2026-11-25T02:30:00.000Z', 'CASH', [line('1|Pizza', 'Pizza', 'Pratos', 1, 3000)]);
 
 // SPEC/2026-11-25-tela-de-relatorios-de-vendas.md (RN-01 a RN-11).
@@ -98,6 +98,21 @@ describe('agregação', () => {
     expect(categoryHourIntensity(report, '0.00')).toBe(0);
   });
 
+  it('agrupa a evolução diária pela data local de Belém', () => {
+    expect(report.byDay).toEqual([
+      { date: '2026-11-24', weekday: 2, label: 'terça-feira', orders: 1, revenue: '30.00' },
+      { date: '2026-11-25', weekday: 3, label: 'quarta-feira', orders: 1, revenue: '69.00' },
+    ]);
+    expect(report.byDay.reduce((sum, day) => sum + centsOf(day.revenue), 0)).toBe(centsOf(report.revenue));
+  });
+
+  it('agrupa o desempenho por garçom com ticket e participação', () => {
+    expect(report.byWaiter).toEqual([
+      { waiterName: 'Ana', orders: 1, revenue: '69.00', averageTicket: '69.00', share: 69.7 },
+      { waiterName: 'Sem garçom', orders: 1, revenue: '30.00', averageTicket: '30.00', share: 30.3 },
+    ]);
+  });
+
   it('respeita o limite do ranking', () => {
     const limited = buildSalesReport([sale1, sale2], 1);
     expect(limited.topByQuantity).toHaveLength(1);
@@ -173,6 +188,12 @@ describe('conversão do modo navegador', () => {
     expect(sales).toHaveLength(1);
     expect(sales[0].discountCents).toBe(150);
     expect(sales[0].lines[0]).toMatchObject({ name: 'Pizza', category: 'Pratos', quantity: 2, unitPriceCents: 3000 });
+    expect(sales[0].waiterName).toBeNull();
+  });
+
+  it('preserva o garçom da comanda paga', () => {
+    const sales = paidSalesFromOrders([order({ waiterName: 'Ana' })], () => 'Pratos');
+    expect(sales[0].waiterName).toBe('Ana');
   });
 
   it('mantém item removido com a categoria de fallback', () => {

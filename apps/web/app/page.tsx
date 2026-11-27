@@ -10,6 +10,7 @@ import {
 } from '@/lib/store';
 import { hasLocalData, importLocalData } from '@/lib/import-local';
 import { SalaoPanel } from './salao-panel';
+import { hoje, ultimos7Dias, ultimos30Dias, esteMes } from '@/lib/sales-report';
 import { CozinhaPanel } from './cozinha-panel';
 import { DeliveryPanel } from './delivery-panel';
 import { CategoriasPanel } from './categorias-panel';
@@ -300,6 +301,12 @@ export default function Home() {
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>
             <div className="period-bar"><span><Clock3 size={15} />Período do relatório</span><label>De<input type="date" value={period.from} onChange={(event) => setPeriod((value) => ({ ...value, from: event.target.value }))} /></label><label>Até<input type="date" value={period.to} onChange={(event) => setPeriod((value) => ({ ...value, to: event.target.value }))} /></label><button className="button button-light" onClick={() => loadReport().catch((error: Error) => setMessage(error.message))}>Atualizar</button></div>
+<div className="period-presets">
+  <button className="button button-small" onClick={() => setPeriod(hoje)}>Hoje</button>
+  <button className="button button-small" onClick={() => setPeriod(ultimos7Dias)}>Últimos 7 dias</button>
+  <button className="button button-small" onClick={() => setPeriod(ultimos30Dias)}>Últimos 30 dias</button>
+  <button className="button button-small" onClick={() => setPeriod(esteMes)}>Este mês</button>
+</div>
             <div className="finance-tabs" role="tablist" aria-label="Visão do financeiro">
               <button className={`finance-tab ${financeView === 'resumo' ? 'active' : ''}`} role="tab" aria-selected={financeView === 'resumo'} onClick={() => setFinanceView('resumo')}>Resumo</button>
               <button className={`finance-tab ${financeView === 'vendas' ? 'active' : ''}`} role="tab" aria-selected={financeView === 'vendas'} onClick={() => setFinanceView('vendas')}>Vendas</button>
