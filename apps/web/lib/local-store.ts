@@ -1,6 +1,7 @@
 import { localDate, orderTotalCents } from './format';
 import { dueCents } from './comanda';
 import { isValidMoney } from './validacao';
+import { paidSalesFromOrders, parseLimit, REMOVED_CATEGORY, reportForPeriod, validatePeriod } from './sales-report';
 import { CANCEL_CLOSED_MESSAGE } from './ajustes-comanda';
 import { SPLIT_LOCKED, validateDrafts } from './divisao';
 import type { Expense, Ingredient, MenuItem, Order, OrderItem, Recipe, Report, Table } from './types';
@@ -447,6 +448,15 @@ export async function localRequest<T>(path: string, init?: RequestInit): Promise
     data.expenses.push(expense);
     writeData(data);
     result = expense;
+  } else if (url.pathname === '/reports/sales' && method === 'GET') {
+    const from = url.searchParams.get('from') || localDate(new Date());
+    const to = url.searchParams.get('to') || localDate(new Date());
+    const invalid = validatePeriod(from, to);
+    if (invalid) throw new Error(invalid);
+    const limit = parseLimit(url.searchParams.get('limit') ?? undefined);
+    const paid = data.orders.filter((order) => order.status === 'PAID' && !!order.paidAt && !!order.paymentMethod && dateFilter(order.paidAt, from, to));
+    const categoryOf = (menuItemId: number | null) => data.menu.find((item) => item.id === menuItemId)?.category ?? REMOVED_CATEGORY;
+    result = reportForPeriod(paidSalesFromOrders(paid, categoryOf), from, to, limit);
   } else if (url.pathname === '/reports/financial' && method === 'GET') {
     const from = url.searchParams.get('from') || localDate(new Date());
     const to = url.searchParams.get('to') || localDate(new Date());
