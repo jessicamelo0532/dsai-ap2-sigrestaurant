@@ -323,6 +323,24 @@ export function RelatoriosVendasPanel({ from, to, mode }: Props) {
           <div className="eyebrow">RELATÓRIOS DE VENDAS</div>
           <h2>O que a casa vendeu</h2>
           <p>Só comandas pagas no período. {mode === 'local' ? 'Cálculo local neste navegador.' : 'Dados do servidor.'}</p>
+          <div className="report-resumo">
+            <div className="finance-card">
+              <small>Faturamento total</small>
+              <strong>{money(report?.revenue ?? 0)}</strong>
+            </div>
+            <div className="finance-card">
+              <small>Contas</small>
+              <strong>{report?.paidOrders ?? 0}</strong>
+            </div>
+            <div className="finance-card">
+              <small>Ticket médio</small>
+              <strong>{money(report?.averageTicket ?? 0)}</strong>
+            </div>
+            <div className="finance-card">
+              <small>Total de vendas</small>
+              <strong>{report?.itemsSold ?? 0}</strong>
+            </div>
+          </div>
         </div>
         <div className="report-actions">
           <label className="report-select">

@@ -413,3 +413,64 @@ export function paidSalesFromOrders(orders: Order[], categoryOf: (menuItemId: nu
       })),
     }));
 }
+
+export function hoje(): { from: string; to: string } {
+  const today = localDateOf(new Date()).date;
+  return { from: today, to: today };
+}
+
+export function ultimos7Dias(): { from: string; to: string } {
+  const today = new Date();
+  const seven = new Date(today);
+  seven.setDate(seven.getDate() - 7);
+  const from = localDateOf(seven).date;
+  const to = localDateOf(today).date;
+  return { from, to };
+}
+
+export function ultimos30Dias(): { from: string; to: string } {
+  const today = new Date();
+  const thirty = new Date(today);
+  thirty.setDate(thirty.getDate() - 30);
+  const from = localDateOf(thirty).date;
+  const to = localDateOf(today).date;
+  return { from, to };
+}
+
+export function esteMes(): { from: string; to: string } {
+  const today = new Date();
+  const first = new Date(today.getFullYear(), today.getMonth(), 1);
+  const from = localDateOf(first).date;
+  const to = localDateOf(today).date;
+  return { from, to };
+}
+
+export function salesReportToCsv(report: SalesReport): string {
+  const bom = '\uFEFF';
+  const lines: string[] = [];
+  // Header
+  lines.push(`Data;Dia da semana;Contas;Receita (R$)`);
+  // Rows from byDay
+  for (const day of report.byDay) {
+    const date = day.date;
+    const weekday = day.label;
+    const orders = day.orders;
+    const revenue = day.revenue;
+    lines.push(`${date};${weekday};${orders};${revenue}`);
+  }
+  // Also include top items maybe, but keep simple.
+  return bom + lines.join('\n');
+}
+
+export function downloadCsvFromReport(filename: string, report: SalesReport) {
+  const content = salesReportToCsv(report);
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
