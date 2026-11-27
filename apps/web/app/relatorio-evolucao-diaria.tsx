@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarRange, TrendingDown, TrendingUp } from 'lucide-react';
+import { CalendarRange, TrendingDown, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { money } from '@/lib/store';
 import { centsOf, formatShare, share, type SalesReport } from '@/lib/sales-report';
 
@@ -39,6 +39,10 @@ function chartGeometry(report: SalesReport, metric: Metric) {
 
 export function RelatorioEvolucaoDiaria({ report }: Props) {
   const [metric, setMetric] = useState<Metric>('revenue');
+  const [page, setPage] = useState(1);
+  const pageSize = 7;
+  const totalPages = Math.ceil(report.byDay.length / pageSize);
+  const pagedDays = report.byDay.slice((page - 1) * pageSize, page * pageSize);
   const geometry = useMemo(() => chartGeometry(report, metric), [report, metric]);
   const totalCents = centsOf(report.revenue);
   const best = useMemo(
@@ -94,6 +98,24 @@ export function RelatorioEvolucaoDiaria({ report }: Props) {
         </div>
       </div>
 
+      <div className="report-pagination" style={{ marginTop: 12 }}>
+        <button
+          className={`button button-small ${page === 1 ? 'disabled' : ''}`}
+          onClick={() => setPage(page - 1)}
+          disabled={page === 1}
+        >
+          <ChevronLeft size={12} /> Anterior
+        </button>
+        <span>página {page} de {totalPages}</span>
+        <button
+          className={`button button-small ${page === totalPages ? 'disabled' : ''}`}
+          onClick={() => setPage(page + 1)}
+          disabled={page === totalPages || totalPages <= 1}
+        >
+          Próximo <ChevronRight size={12} />
+        </button>
+      </div>
+
       <div className="report-daily-chart">
         <svg
           viewBox={`0 0 ${geometry.width} ${geometry.height}`}
@@ -130,7 +152,7 @@ export function RelatorioEvolucaoDiaria({ report }: Props) {
             <tr><th>Data</th><th>Dia</th><th>Contas</th><th>Receita</th><th>Participação</th><th>vs. média</th></tr>
           </thead>
           <tbody>
-            {report.byDay.map((day) => {
+            {pagedDays.map((day) => {
               const dayShare = share(centsOf(day.revenue), totalCents);
               const average = totalCents / report.byDay.length;
               const delta = centsOf(day.revenue) - average;
