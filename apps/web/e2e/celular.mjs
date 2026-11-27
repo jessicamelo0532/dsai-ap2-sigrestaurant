@@ -106,6 +106,9 @@ async function main() {
   await closeModal();
   await go('Financeiro');
   await check('Financeiro');
+  await page.getByRole('tab', { name: 'Vendas' }).click();
+  await page.getByRole('heading', { name: 'O que a casa vendeu' }).waitFor();
+  await check('Relatórios de vendas');
   await page.getByRole('button', { name: /Registrar despesa/ }).click();
   await check('Registrar despesa');
   await closeModal();

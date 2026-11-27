@@ -37,6 +37,7 @@ import { buildBobina, buildCupom, type Bobina, type Cupom } from '@/lib/impressa
 import { sortCategories, type MenuCategory } from '@/lib/categorias';
 import { validateNote } from '@/lib/cozinha';
 import { HelpAgent } from './help-agent';
+import { RelatoriosVendasPanel } from './relatorios-vendas';
 import { sectionLabels, type Section } from '@/lib/sections';
 const paymentLabels: Record<string, string> = { CASH: 'Dinheiro', CREDIT: 'Crédito', DEBIT: 'Débito', PIX: 'Pix' };
 
@@ -59,6 +60,8 @@ export default function Home() {
   const [menuFormItem, setMenuFormItem] = useState<MenuItem | null | undefined>(undefined);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [menuView, setMenuView] = useState<'itens' | 'categorias' | 'horarios' | 'opcoes' | 'ficha'>('itens');
+  // SPEC/2026-11-25-tela-de-relatorios-de-vendas.md: abas do Financeiro.
+  const [financeView, setFinanceView] = useState<'resumo' | 'vendas'>('resumo');
   // SPEC/2026-11-17-tela-de-variacoes-e-adicionais.md: item escolhido no cardápio rápido (modo servidor).
   const [choosingItem, setChoosingItem] = useState<{ item: MenuItem; tableId: number; quantity: number } | null>(null);
   const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([]);
@@ -297,10 +300,17 @@ export default function Home() {
 
           {section === 'financeiro' && <section className="page-section"><div className="page-heading"><div><div className="eyebrow">CONTROLE FINANCEIRO</div><h1>O dinheiro da casa</h1><p>Acompanhe vendas, despesas e saldo no período escolhido.</p></div><button className="button button-dark" onClick={() => setShowExpenseForm(true)}><CirclePlus size={17} />Registrar despesa</button></div>
             <div className="period-bar"><span><Clock3 size={15} />Período do relatório</span><label>De<input type="date" value={period.from} onChange={(event) => setPeriod((value) => ({ ...value, from: event.target.value }))} /></label><label>Até<input type="date" value={period.to} onChange={(event) => setPeriod((value) => ({ ...value, to: event.target.value }))} /></label><button className="button button-light" onClick={() => loadReport().catch((error: Error) => setMessage(error.message))}>Atualizar</button></div>
+            <div className="finance-tabs" role="tablist" aria-label="Visão do financeiro">
+              <button className={`finance-tab ${financeView === 'resumo' ? 'active' : ''}`} role="tab" aria-selected={financeView === 'resumo'} onClick={() => setFinanceView('resumo')}>Resumo</button>
+              <button className={`finance-tab ${financeView === 'vendas' ? 'active' : ''}`} role="tab" aria-selected={financeView === 'vendas'} onClick={() => setFinanceView('vendas')}>Vendas</button>
+            </div>
+            {financeView === 'resumo' && <>
             <div className="finance-stats"><div className="finance-card revenue-card"><span className="finance-icon"><ArrowDownLeft size={18} /></span><small>Receita de vendas</small><strong>{money(report?.revenue ?? 0)}</strong><span>{report?.paidOrders ?? 0} contas fechadas no período</span></div><div className="finance-card expense-card"><span className="finance-icon"><ArrowUpRight size={18} /></span><small>Despesas registradas</small><strong>{money(report?.expenses ?? 0)}</strong><span>{report?.expenseCount ?? 0} lançamentos no período</span></div><div className="finance-card balance-card"><span className="finance-icon"><Wallet size={18} /></span><small>Saldo do período</small><strong>{money(report?.balance ?? 0)}</strong><span>Receita menos despesas</span></div></div>
             <div className="finance-columns"><div className="panel"><div className="panel-heading"><div><h2>Despesas</h2><p>Saídas registradas entre as datas escolhidas.</p></div><span className="count-pill">{expenses.length}</span></div>{expenses.length ? <div className="expense-list">{expenses.map((expense) => <div className="expense-row" key={expense.id}><span className="expense-symbol"><ArrowUpRight size={16} /></span><span className="expense-copy"><strong>{expense.description}</strong><small>{new Date(expense.incurredAt).toLocaleDateString('pt-BR')}</small></span><b>{money(expense.amount)}</b></div>)}</div> : <div className="empty-state compact"><Banknote size={22} /><strong>Nenhuma despesa no período</strong><span>Registre uma saída para acompanhar o saldo.</span></div>}</div>
               <div className="panel payment-panel"><div className="panel-heading"><div><h2>Vendas por pagamento</h2><p>Como os clientes pagaram as contas.</p></div></div><div className="payment-list">{Object.entries(paymentLabels).map(([method, label]) => <div className="payment-row" key={method}><span className={`payment-symbol ${method.toLowerCase()}`}>{method === 'CASH' ? <Banknote size={16} /> : method === 'PIX' ? <Sparkles size={16} /> : <CreditCard size={16} />}</span><span>{label}</span><strong>{money(report?.payments?.[method] ?? 0)}</strong></div>)}</div><div className="payment-total"><span>Total recebido</span><b>{money(report?.revenue ?? 0)}</b></div></div>
             </div>
+            </>}
+            {financeView === 'vendas' && <RelatoriosVendasPanel from={period.from} to={period.to} mode={mode} />}
           </section>}
         </div>
       </section>
