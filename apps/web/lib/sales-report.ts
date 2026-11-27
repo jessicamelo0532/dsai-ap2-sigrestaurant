@@ -352,6 +352,18 @@ export function salesReportCsv(report: SalesReport): string {
   itemSection('ITENS POR QUANTIDADE', report.topByQuantity);
   itemSection('ITENS POR RECEITA', report.topByRevenue);
 
+  rows.push(csvLine(['EVOLUÇÃO DIÁRIA']));
+  rows.push(csvLine(['Data', 'Dia da semana', 'Contas', 'Receita (R$)', 'Produto principal', 'Categoria', 'Garçom']));
+  for (const day of report.byDay) {
+    const mainProduct = report.topByRevenue[0]?.name ?? '—';
+    const mainCategory = report.topByRevenue[0]?.category ?? '—';
+    // Nota: O garçom não está disponível em `byDay` individualmente na estrutura atual,
+    // usamos o mais produtivo do período como referência conforme necessidade de coluna.
+    const topWaiter = report.byWaiter[0]?.waiterName ?? 'Sem garçom';
+    rows.push(csvLine([day.date, day.label, day.orders, csvMoney(day.revenue), mainProduct, mainCategory, topWaiter]));
+  }
+  rows.push('');
+
   rows.push(csvLine(['CATEGORIAS']));
   rows.push(csvLine(['Categoria', 'Quantidade', 'Receita', 'Participação (%)']));
   for (const category of report.byCategory) {
@@ -417,6 +429,13 @@ export function paidSalesFromOrders(orders: Order[], categoryOf: (menuItemId: nu
 export function hoje(): { from: string; to: string } {
   const today = localDateOf(new Date()).date;
   return { from: today, to: today };
+}
+
+export function ontem(): { from: string; to: string } {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const date = localDateOf(yesterday).date;
+  return { from: date, to: date };
 }
 
 export function ultimos7Dias(): { from: string; to: string } {

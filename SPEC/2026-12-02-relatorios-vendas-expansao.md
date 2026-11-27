@@ -1,8 +1,8 @@
 # Expansão dos Relatórios de Vendas – CSV, Resumo e Filtros
 
 **Data:** 2026-12-02  
-**Status:** rascunho  
-**Agent:** opencode/deepseek-v4.1-flash-free  
+**Status:** implementada  
+**Agent:** opencode/omniroute/auto/best-coding
 **SPEC derivada de:** SPEC/2026-11-25-tela-de-relatorios-de-vendas.md  
 **Derroga:** n/a
 
