@@ -69,7 +69,7 @@ describe('RelatorioExportJson', () => {
     const onClose = vi.fn();
     render(<RelatorioExportJson current={current} previous={previous} onClose={onClose} />);
     fireEvent.click(screen.getByRole('button', { name: /Exportar JSON/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Fechar/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Fechar$/ }));
     expect(screen.queryByRole('dialog', { name: 'Exportação JSON' })).toBeNull();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
